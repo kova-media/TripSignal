@@ -28,12 +28,19 @@ export default function ThemeToggle() {
 
   return (
     <div className="theme-toggle" aria-label="Choose appearance">
-      <button type="button" className={theme === 'daylight' ? 'theme-option active' : 'theme-option'} onClick={() => changeTheme('daylight')} aria-pressed={theme === 'daylight'}>
-        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3" /><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M12.95 3.05l-1.42 1.42M4.47 11.53l-1.42 1.42" /></svg>
+      <button type="button" className={theme === 'daylight' ? 'theme-option active daylight-option' : 'theme-option daylight-option'} onClick={() => changeTheme('daylight')} aria-pressed={theme === 'daylight'}>
+        <svg className="daylight-icon" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M3 14.5h14" />
+          <path d="M5 14.5a5 5 0 0 1 10 0" />
+          <path d="M10 3v2M4.7 5.7l1.4 1.4M15.3 5.7l-1.4 1.4" />
+        </svg>
         Daylight
       </button>
-      <button type="button" className={theme === 'redeye' ? 'theme-option active' : 'theme-option'} onClick={() => changeTheme('redeye')} aria-pressed={theme === 'redeye'}>
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11.8 10.9A5.3 5.3 0 0 1 5.1 4.2a5.6 5.6 0 1 0 6.7 6.7Z" /></svg>
+      <button type="button" className={theme === 'redeye' ? 'theme-option active redeye-option' : 'theme-option redeye-option'} onClick={() => changeTheme('redeye')} aria-pressed={theme === 'redeye'}>
+        <svg className="redeye-icon" viewBox="0 0 20 20" aria-hidden="true">
+          <path d="M2.5 10s2.8-5 7.5-5 7.5 5 7.5 5-2.8 5-7.5 5-7.5-5-7.5-5Z" />
+          <circle cx="10" cy="10" r="2.5" />
+        </svg>
         Redeye
       </button>
     </div>
