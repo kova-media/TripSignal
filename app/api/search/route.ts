@@ -18,27 +18,18 @@ function windowStart(value: string): string {
   return date.toISOString().slice(0, 10);
 }
 
-function destinationScope(value: string): DestinationScope {
-  const namedDestinations: Record<string, string> = {
-    Amsterdam: 'AMS',
-    Rome: 'FCO',
-    Madrid: 'MAD',
-    Barcelona: 'BCN',
-    Lisbon: 'LIS',
-    Copenhagen: 'CPH',
-  };
-
-  if (value === 'Europe') return { type: 'region', value: 'Europe' };
-  if (namedDestinations[value]) return { type: 'airport', value: namedDestinations[value] };
-  if (/^[A-Z]{3}$/.test(value)) return { type: 'airport', value };
-  return { type: 'airport', value: 'AMS' };
+function destinationScope(mode: string, value: string): DestinationScope {
+  if (mode === 'airport') return { type: 'airport', value };
+  return { type: 'region', value };
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const origin = String(body.origin ?? '').trim().toUpperCase();
-    const destination = String(body.destination ?? 'Europe');
+    const destinationMode = String(body.destinationMode ?? 'region');
+    const destination = String(body.destination ?? 'Europe').trim();
+    const destinationAirport = destination.toUpperCase();
     const maxPrice = Number(body.maxPrice);
     const maxStopsValue = String(body.maxStops ?? '1');
     const [minTripDays, maxTripDays] = tripDays(String(body.tripLength ?? '1–3 weeks'));
@@ -46,16 +37,20 @@ export async function POST(request: Request) {
     if (!/^[A-Z]{3}$/.test(origin)) {
       return NextResponse.json({ error: 'Origin must be a three-letter airport code.' }, { status: 400 });
     }
+    if (destinationMode === 'airport' && !/^[A-Z]{3}$/.test(destinationAirport)) {
+      return NextResponse.json({ error: 'Destination airport must be a three-letter airport code.' }, { status: 400 });
+    }
     if (!Number.isFinite(maxPrice) || maxPrice <= 0) {
       return NextResponse.json({ error: 'Enter a valid maximum price.' }, { status: 400 });
     }
 
+    const airlineMode = String(body.airlineMode ?? 'all');
     const criteria: FlightSearchCriteria = {
       origin,
-      destination: destinationScope(destination),
+      destination: destinationScope(destinationMode, destinationMode === 'airport' ? destinationAirport : destination),
       maxPrice,
       cabin: (body.cabin ?? 'economy') as CabinClass,
-      airlines: body.airlineMode === 'Any airline' ? [] : ['SKYTEAM'],
+      airlines: airlineMode === 'all' ? [] : [airlineMode.toUpperCase()],
       maxStops: maxStopsValue === 'any' ? null : Number(maxStopsValue),
       minTripDays,
       maxTripDays,
@@ -71,9 +66,11 @@ export async function POST(request: Request) {
       provider: provider.name,
       searched: {
         origin: criteria.origin,
-        destination,
+        destination: destinationMode === 'airport' ? destinationAirport : destination,
+        destinationMode,
         departureDate: criteria.departureStart,
         tripDays: minTripDays,
+        airline: airlineMode === 'all' ? 'all' : airlineMode.toUpperCase(),
       },
       offers,
     });
