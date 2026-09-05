@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { runDueAlerts } from '@/lib/alerts';
+import { ensureSchema } from '@/lib/db';
 
 export const runtime = 'nodejs';
 
@@ -11,6 +12,7 @@ export async function GET(request: Request) {
   }
 
   try {
+    await ensureSchema();
     const summary = await runDueAlerts();
     return NextResponse.json({ ok: true, ...summary });
   } catch (error) {
