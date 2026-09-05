@@ -1,13 +1,10 @@
 import Brand from '@/components/brand';
-import ThemeToggle from '@/components/theme-toggle';
+import SiteHeader from '@/components/site-header';
 
 export default function Home() {
   return (
     <main>
-      <nav className="nav shell">
-        <a className="brand-link" href="/" aria-label="TripSignal home"><Brand /></a>
-        <div className="nav-actions"><a className="nav-how" href="#how">How it works</a><a className="text-button" href="/alerts">Sign in</a><ThemeToggle /><a className="button button-dark" href="/alerts">Create alert</a></div>
-      </nav>
+      <SiteHeader />
 
       <section className="hero shell">
         <div className="hero-copy">
