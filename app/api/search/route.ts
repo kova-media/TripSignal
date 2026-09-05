@@ -33,6 +33,10 @@ export async function POST(request: Request) {
     const maxPrice = Number(body.maxPrice);
     const maxStopsValue = String(body.maxStops ?? '1');
     const [minTripDays, maxTripDays] = tripDays(String(body.tripLength ?? '1–3 weeks'));
+    const airlineMode = String(body.airlineMode ?? 'all');
+    const contact = body.contact && typeof body.contact === 'object' ? body.contact : null;
+    const contactType = String(contact?.type ?? '');
+    const contactValue = String(contact?.value ?? '').trim();
 
     if (!/^[A-Z]{3}$/.test(origin)) {
       return NextResponse.json({ error: 'Origin must be a three-letter airport code.' }, { status: 400 });
@@ -43,8 +47,16 @@ export async function POST(request: Request) {
     if (!Number.isFinite(maxPrice) || maxPrice <= 0) {
       return NextResponse.json({ error: 'Enter a valid maximum price.' }, { status: 400 });
     }
+    if (contactType !== 'email' && contactType !== 'sms') {
+      return NextResponse.json({ error: 'Choose how you want to receive TripSignal alerts.' }, { status: 400 });
+    }
+    if (contactType === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactValue)) {
+      return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
+    }
+    if (contactType === 'sms' && contactValue.replace(/\D/g, '').length < 10) {
+      return NextResponse.json({ error: 'Enter a valid mobile phone number.' }, { status: 400 });
+    }
 
-    const airlineMode = String(body.airlineMode ?? 'all');
     const criteria: FlightSearchCriteria = {
       origin,
       destination: destinationScope(destinationMode, destinationMode === 'airport' ? destinationAirport : destination),
@@ -71,6 +83,7 @@ export async function POST(request: Request) {
         departureDate: criteria.departureStart,
         tripDays: minTripDays,
         airline: airlineMode === 'all' ? 'all' : airlineMode.toUpperCase(),
+        contactType,
       },
       offers,
     });
