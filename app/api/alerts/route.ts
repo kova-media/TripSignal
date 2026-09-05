@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     }
 
     let searchError = '';
-    let offers = [];
+    let offers: Awaited<ReturnType<typeof runAlertSearch>>['offers'] = [];
     try {
       const result = await runAlertSearch(alertId, email, criteria);
       offers = result.offers;
