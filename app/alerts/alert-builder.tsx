@@ -7,7 +7,6 @@ import type { FlightOffer } from '@/lib/flights/types';
 type DestinationMode = 'region' | 'airport';
 type Frequency = 'Weekly' | 'Monthly';
 type Cabin = 'economy' | 'premium_economy' | 'business';
-type ContactMode = 'email' | 'sms';
 
 type AirlineOption = { code: string; name: string };
 
@@ -41,8 +40,7 @@ export default function AlertBuilder() {
   const [dateRange, setDateRange] = useState('Next 12 months');
   const [frequency, setFrequency] = useState<Frequency>('Weekly');
   const [cabin, setCabin] = useState<Cabin>('premium_economy');
-  const [contactMode, setContactMode] = useState<ContactMode>('email');
-  const [contactValue, setContactValue] = useState('');
+  const [email, setEmail] = useState('');
   const [saved, setSaved] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
@@ -52,27 +50,24 @@ export default function AlertBuilder() {
   const selectedAirline = airlines.find((airline) => airline.code === airlineMode);
   const airlineLabelText = selectedAirline?.name ?? 'All airlines';
   const cabinLabel = cabin === 'premium_economy' ? 'Premium economy' : cabin === 'business' ? 'Business' : 'Economy';
-  const contactLabel = contactMode === 'email' ? 'Email' : 'SMS';
 
   const summary = useMemo(
     () => `${origin || 'MCI'} → ${destinationLabel} · ${cabinLabel} · under $${Number(price || 0).toLocaleString()} · ${frequency}`,
     [origin, destinationLabel, cabinLabel, price, frequency],
   );
 
-  function isValidContact() {
-    if (!contactValue.trim()) return false;
-    if (contactMode === 'email') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactValue.trim());
-    return contactValue.replace(/\D/g, '').length >= 10;
+  function isValidEmail() {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isValidContact()) {
-      setSearchError(contactMode === 'email' ? 'Enter a valid email address so we can send your signals.' : 'Enter a valid phone number so we can send your signals.');
+    if (!isValidEmail()) {
+      setSearchError('Enter a valid email address so we can send your signals.');
       return;
     }
 
-    setSaved(true); setSearching(true); setSearchError(''); setOffers([]);
+    setSaved(false); setSearching(true); setSearchError(''); setOffers([]);
     const alert = {
       origin,
       destinationMode,
@@ -84,16 +79,22 @@ export default function AlertBuilder() {
       dateRange,
       frequency,
       cabin,
-      contact: { type: contactMode, value: contactValue.trim() },
+      email: email.trim(),
     };
-    localStorage.setItem('tripsignal-alert', JSON.stringify(alert));
+
     try {
-      const response = await fetch('/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(alert) });
+      const response = await fetch('/api/alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(alert),
+      });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Flight search failed.');
+      if (!response.ok) throw new Error(data.error || 'Could not create your alert.');
       setOffers(data.offers ?? []);
+      setSaved(true);
+      if (data.warning) setSearchError(data.warning);
     } catch (error) {
-      setSearchError(error instanceof Error ? error.message : 'Flight search failed.');
+      setSearchError(error instanceof Error ? error.message : 'Could not create your alert.');
     } finally { setSearching(false); }
   }
 
@@ -104,7 +105,7 @@ export default function AlertBuilder() {
       <section className="builder shell">
         <div className="builder-intro">
           <h1>Define the trip.<br /><em>We’ll watch the fare.</em></h1>
-          <p>Set the rules once. TripSignal can run a live flight search and return qualifying offers.</p>
+          <p>Set the rules once. TripSignal will keep checking and email you when a qualifying fare appears.</p>
         </div>
 
         <form className="builder-grid" onSubmit={submit}>
@@ -131,22 +132,21 @@ export default function AlertBuilder() {
             </section>
 
             <section className="form-section contact-section">
-              <div className="form-heading"><div><h2>Where should we send the signal?</h2><p>Give us an email address or phone number for qualifying fare alerts.</p></div></div>
-              <fieldset><legend>Notification method</legend><div className="select-row"><button type="button" className={contactMode === 'email' ? 'option active' : 'option'} onClick={() => { setContactMode('email'); setContactValue(''); setSearchError(''); }}>Email</button><button type="button" className={contactMode === 'sms' ? 'option active' : 'option'} onClick={() => { setContactMode('sms'); setContactValue(''); setSearchError(''); }}>Text message</button></div></fieldset>
-              <label><span>{contactMode === 'email' ? 'Email address' : 'Mobile phone number'}</span><input type={contactMode === 'email' ? 'email' : 'tel'} value={contactValue} onChange={(event) => { setContactValue(event.target.value); setSearchError(''); }} placeholder={contactMode === 'email' ? 'you@example.com' : '(555) 555-5555'} autoComplete={contactMode === 'email' ? 'email' : 'tel'} required /><small>We’ll use this only to send your TripSignal alerts.</small></label>
+              <div className="form-heading"><div><h2>Where should we send the signal?</h2><p>Enter the email address that should receive your fare alerts.</p></div></div>
+              <label><span>Email address</span><input type="email" value={email} onChange={(event) => { setEmail(event.target.value); setSearchError(''); }} placeholder="you@example.com" autoComplete="email" required /><small>We’ll use this to send your TripSignal alerts.</small></label>
             </section>
 
-            <button className="button button-primary builder-submit" type="submit" disabled={searching}>{searching ? 'Searching live fares…' : 'Save alert & run search'} <span>↗</span></button>
-            {searchError && <div className="saved-state"><strong>Action needed</strong><span>{searchError}</span></div>}
-            {saved && !searching && !searchError && offers.length === 0 && <div className="saved-state"><strong>Alert saved</strong><span>We’ll send qualifying signals to your {contactLabel.toLowerCase()}.</span></div>}
+            <button className="button button-primary builder-submit" type="submit" disabled={searching}>{searching ? 'Creating alert & searching…' : 'Create alert & run search'} <span>↗</span></button>
+            {searchError && <div className="saved-state"><strong>{saved ? 'Alert created' : 'Action needed'}</strong><span>{searchError}</span></div>}
+            {saved && !searchError && <div className="saved-state"><strong>Alert active</strong><span>We’ll email qualifying signals to {email.trim()}.</span></div>}
             {offers.length > 0 && <section className="signals live-results"><h2>Qualifying fares.</h2><div className="signal-list">{offers.map((offer) => <div className="signal-item" key={offer.id}><div><strong>{offer.origin} → {offer.destination}</strong><span>{formatDate(offer.departureDate)} – {formatDate(offer.returnDate)} · {airlineLabel(offer)} · {offer.stops === 0 ? 'Nonstop' : `${offer.stops} stop${offer.stops > 1 ? 's' : ''}`}</span></div><div className="signal-price"><strong>${offer.price.toLocaleString()}</strong><small>Below target</small></div></div>)}</div></section>}
           </div>
 
           <aside className="builder-summary">
             <div className="summary-label"><span>Your alert</span><i>{searching ? 'Searching' : 'Live'}</i></div>
             <h2>{summary}</h2>
-            <div className="summary-list"><div><span>From</span><strong>{origin || 'MCI'}</strong></div><div><span>To</span><strong>{destinationLabel}</strong></div><div><span>Price</span><strong>Under ${Number(price || 0).toLocaleString()}</strong></div><div><span>Cabin</span><strong>{cabinLabel}</strong></div><div><span>Airline</span><strong>{airlineLabelText}</strong></div><div><span>Stops</span><strong>{stops === 'any' ? 'Any' : stops === '0' ? 'Nonstop' : `${stops} stop`}</strong></div><div><span>Trip</span><strong>{tripLength}</strong></div><div><span>Window</span><strong>{dateRange}</strong></div><div><span>Frequency</span><strong>{frequency}</strong></div><div><span>Signal</span><strong>{contactValue || 'Not set'}</strong></div></div>
-            <div className="summary-note"><span className="summary-check">✓</span><p>Live searches use Google Flights data.</p></div>
+            <div className="summary-list"><div><span>From</span><strong>{origin || 'MCI'}</strong></div><div><span>To</span><strong>{destinationLabel}</strong></div><div><span>Price</span><strong>Under ${Number(price || 0).toLocaleString()}</strong></div><div><span>Cabin</span><strong>{cabinLabel}</strong></div><div><span>Airline</span><strong>{airlineLabelText}</strong></div><div><span>Stops</span><strong>{stops === 'any' ? 'Any' : stops === '0' ? 'Nonstop' : `${stops} stop`}</strong></div><div><span>Trip</span><strong>{tripLength}</strong></div><div><span>Window</span><strong>{dateRange}</strong></div><div><span>Frequency</span><strong>{frequency}</strong></div><div><span>Signal</span><strong>{email || 'Not set'}</strong></div></div>
+            <div className="summary-note"><span className="summary-check">✓</span><p>Alerts are stored securely and checked on schedule.</p></div>
           </aside>
         </form>
       </section>
