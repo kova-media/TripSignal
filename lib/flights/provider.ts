@@ -76,7 +76,7 @@ async function searchOne(
       body: JSON.stringify({
         data: {
           cabin_class: criteria.cabin,
-          max_connections: criteria.maxStops ?? 1,
+          max_connections: criteria.maxStops === null ? 3 : criteria.maxStops,
           passengers: Array.from({ length: criteria.passengers }, () => ({ type: 'adult' })),
           slices: [
             { origin, destination, departure_date: departureDate },
