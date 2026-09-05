@@ -1,10 +1,11 @@
+import Brand from '@/components/brand';
 import ThemeToggle from '@/components/theme-toggle';
 
 export default function Home() {
   return (
     <main>
       <nav className="nav shell">
-        <a className="brand" href="/" aria-label="TripSignal home"><span className="brand-mark" aria-hidden="true"><i /></span>TripSignal</a>
+        <a className="brand-link" href="/" aria-label="TripSignal home"><Brand /></a>
         <div className="nav-actions"><a className="nav-how" href="#how">How it works</a><a className="text-button" href="/alerts">Sign in</a><ThemeToggle /><a className="button button-dark" href="/alerts">Create alert</a></div>
       </nav>
 
@@ -48,7 +49,7 @@ export default function Home() {
       <section className="signals shell"><div className="section-label">EXAMPLE SIGNALS</div><h2>Useful when you need them.</h2><div className="signal-list"><div className="signal-item"><div><strong>MCI → Amsterdam</strong><span>May 4–18, 2027 · Delta / KLM · 1 stop</span></div><div className="signal-price"><strong>$427</strong><small>Below target</small></div></div><div className="signal-item"><div><strong>MCI → Madrid</strong><span>June 2–15, 2027 · Delta / Air France · 1 stop</span></div><div className="signal-price"><strong>$468</strong><small>Below target</small></div></div><div className="signal-item"><div><strong>MCI → Barcelona</strong><span>June 2–16, 2027 · Delta / KLM · 1 stop</span></div><div className="signal-price"><strong>$489</strong><small>Below target</small></div></div></div></section>
 
       <section className="cta shell"><div><p className="eyebrow">TRIPSIGNAL</p><h2>Tell us what a great fare looks like.</h2></div><a className="button button-dark" href="/alerts">Create an alert <span>↗</span></a></section>
-      <footer className="footer shell"><div className="brand"><span className="brand-mark" aria-hidden="true"><i /></span>TripSignal</div><span>Travel intelligence, on your terms.</span><span>© 2026 TripSignal</span></footer>
+      <footer className="footer shell"><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><span>Travel intelligence, on your terms.</span><span>© 2026 TripSignal</span></footer>
     </main>
   );
 }
