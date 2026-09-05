@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { getDb, ensureSchema } from '@/lib/db';
 import { runAlertSearch, summarizeAlert } from '@/lib/alerts';
 import { sendAlertCreatedEmail } from '@/lib/email';
 
@@ -49,6 +49,7 @@ export async function POST(request: Request) {
       cabin: body.cabin ?? 'premium_economy',
     } as const;
 
+    await ensureSchema();
     const db = getDb();
     const inserted = await db.query<{ id: string }>(
       `insert into alerts (email, criteria, frequency)
