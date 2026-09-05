@@ -15,10 +15,10 @@ export default function SiteHeader({ backHref, backLabel, primaryHref, primaryLa
         <Brand />
       </a>
       <div className="nav-actions">
-        {backHref && backLabel ? <a className="text-link" href={backHref}>{backLabel}</a> : <a className="nav-how" href="#how">How it works</a>}
+        {backHref && backLabel ? <a className="text-link" href={backHref}>{backLabel}</a> : null}
         {!backHref && <a className="text-button" href="/alerts">Sign in</a>}
         <ThemeToggle />
-        {primaryHref && primaryLabel ? <a className="button button-dark" href={primaryHref}>{primaryLabel}</a> : !backHref ? <a className="button button-dark" href="/alerts">Create alert</a> : null}
+        {primaryHref && primaryLabel ? <a className="button button-primary" href={primaryHref}>{primaryLabel}</a> : !backHref ? <a className="button button-primary" href="/alerts">Create alert</a> : null}
       </div>
     </nav>
   );
