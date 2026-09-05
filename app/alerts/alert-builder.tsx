@@ -1,8 +1,7 @@
 'use client';
 
 import { FormEvent, useMemo, useState } from 'react';
-import Brand from '@/components/brand';
-import ThemeToggle from '@/components/theme-toggle';
+import SiteHeader from '@/components/site-header';
 import type { FlightOffer } from '@/lib/flights/types';
 
 type DestinationMode = 'region' | 'airport';
@@ -73,10 +72,7 @@ export default function AlertBuilder() {
 
   return (
     <main className="builder-page">
-      <nav className="nav shell">
-        <a className="brand-link" href="/" aria-label="TripSignal home"><Brand /></a>
-        <div className="nav-actions"><a className="text-link" href="/">Back to home</a><ThemeToggle /></div>
-      </nav>
+      <SiteHeader backHref="/" backLabel="Back to home" />
 
       <section className="builder shell">
         <div className="builder-intro">
