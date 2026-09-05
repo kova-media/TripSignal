@@ -19,9 +19,19 @@ function windowStart(value: string): string {
 }
 
 function destinationScope(value: string): DestinationScope {
+  const namedDestinations: Record<string, string> = {
+    Amsterdam: 'AMS',
+    Rome: 'FCO',
+    Madrid: 'MAD',
+    Barcelona: 'BCN',
+    Lisbon: 'LIS',
+    Copenhagen: 'CPH',
+  };
+
   if (value === 'Europe') return { type: 'region', value: 'Europe' };
+  if (namedDestinations[value]) return { type: 'airport', value: namedDestinations[value] };
   if (/^[A-Z]{3}$/.test(value)) return { type: 'airport', value };
-  return { type: 'region', value };
+  return { type: 'airport', value: 'AMS' };
 }
 
 export async function POST(request: Request) {
@@ -45,7 +55,7 @@ export async function POST(request: Request) {
       destination: destinationScope(destination),
       maxPrice,
       cabin: (body.cabin ?? 'economy') as CabinClass,
-      airlines: body.airlines === 'Delta + SkyTeam' ? ['SKYTEAM'] : [],
+      airlines: body.airlineMode === 'Any airline' ? [] : ['SKYTEAM'],
       maxStops: maxStopsValue === 'any' ? null : Number(maxStopsValue),
       minTripDays,
       maxTripDays,
