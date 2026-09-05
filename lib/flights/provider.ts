@@ -1,11 +1,21 @@
 import { FlightData, getFlights, type DecodedResult, type Itinerary } from 'google-flights-ts';
 import type { FlightOffer, FlightProvider, FlightSearchCriteria, FlightSegment } from './types';
 
-const SKYTEAM_CARRIERS = new Set([
-  'DL', 'AF', 'KL', 'VS', 'KE', 'AM', 'AR', 'AZ', 'CI', 'CZ', 'GA', 'MU', 'RO', 'SV', 'VN',
-]);
+const EUROPE_AIRPORTS = [
+  'AMS', 'FCO', 'MAD', 'BCN', 'LIS', 'CPH', 'FRA', 'MUC', 'BER', 'VIE', 'PRG', 'BUD',
+  'WAW', 'ARN', 'OSL', 'HEL', 'ATH', 'ZAG', 'VCE', 'MXP', 'NAP', 'BRU', 'DUS', 'HAM', 'GVA',
+  'MAN', 'EDI', 'IST',
+];
 
-const EUROPE_AIRPORTS = ['AMS', 'FCO', 'MAD', 'BCN', 'LIS', 'CPH'];
+const REGION_AIRPORTS: Record<string, string[]> = {
+  Europe: EUROPE_AIRPORTS,
+  'North America': ['JFK', 'EWR', 'BOS', 'ATL', 'ORD', 'DFW', 'IAH', 'MIA', 'LAX', 'SFO', 'SEA', 'DEN', 'YYZ', 'YVR', 'MEX'],
+  'South America': ['GRU', 'EZE', 'SCL', 'BOG', 'LIM', 'GIG'],
+  Asia: ['NRT', 'HND', 'ICN', 'PEK', 'PVG', 'HKG', 'SIN', 'BKK', 'DEL', 'BOM', 'TPE', 'KUL'],
+  Africa: ['JNB', 'CPT', 'CAI', 'NBO', 'CMN', 'ADD'],
+  'Middle East': ['DOH', 'DXB', 'AUH', 'RUH', 'JED', 'IST', 'TLV'],
+  Oceania: ['SYD', 'MEL', 'BNE', 'PER', 'AKL'],
+};
 
 function matchesAirline(itinerary: Itinerary, airlines: string[]) {
   if (airlines.length === 0) return true;
@@ -16,8 +26,6 @@ function matchesAirline(itinerary: Itinerary, airlines: string[]) {
     ...(itinerary.flights ?? []).flatMap((flight) => flight.codeshares?.map((code) => code.airline_code) ?? []),
   ];
 
-  if (airlines.includes('DL')) return codes.includes('DL');
-  if (airlines.includes('SKYTEAM')) return codes.some((code) => SKYTEAM_CARRIERS.has(code));
   return airlines.some((code) => codes.includes(code));
 }
 
@@ -134,11 +142,13 @@ class GoogleFlightsProvider implements FlightProvider {
         ? [destination.value]
         : destination.type === 'airports'
           ? destination.value
-          : destination.type === 'region' && destination.value.toLowerCase() === 'europe'
-            ? EUROPE_AIRPORTS
+          : destination.type === 'region'
+            ? REGION_AIRPORTS[destination.value] ?? []
             : destination.type === 'city'
               ? [destination.value]
-              : ['AMS'];
+              : [];
+
+    if (destinations.length === 0) return [];
 
     const departureDate = criteria.departureStart;
     const tripDays = Math.max(criteria.minTripDays, 1);
