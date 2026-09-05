@@ -16,6 +16,18 @@ function offerLabel(offer: FlightOffer) {
   return `${offer.origin} → ${offer.destination} · ${offer.departureDate} to ${offer.returnDate} · ${stopLabel}`;
 }
 
+export async function sendMagicLinkEmail(email: string, url: string) {
+  const resend = getResend();
+  const { error } = await resend.emails.send({
+    from: getFrom(),
+    to: [email],
+    subject: 'Sign in to TripSignal',
+    text: `Sign in to TripSignal:\n\n${url}\n\nThis link expires in 15 minutes and can only be used once.`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;color:#102321"><p style="font-size:13px;font-weight:700">TripSignal</p><h1 style="font-size:32px">Sign in to TripSignal.</h1><p>Use the button below to continue to your account.</p><p style="margin:28px 0"><a href="${escapeHtml(url)}" style="display:inline-block;background:#527f7a;color:#fff;text-decoration:none;padding:13px 19px;border-radius:999px;font-weight:700">Sign in</a></p><p style="color:#68716f;font-size:13px">This link expires in 15 minutes and can only be used once. If you did not request it, you can ignore this email.</p></div>`,
+  });
+  if (error) throw new Error(error.message);
+}
+
 export async function sendAlertCreatedEmail(email: string, summary: string) {
   const resend = getResend();
   const { error } = await resend.emails.send({
