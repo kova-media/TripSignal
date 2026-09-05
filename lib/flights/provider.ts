@@ -1,3 +1,4 @@
+import { FlightData, getFlights, type DecodedResult } from 'google-flights-ts';
 import type { FlightOffer, FlightProvider, FlightSearchCriteria, FlightSegment } from './types';
 
 const SKYTEAM_CARRIERS = new Set([
@@ -6,126 +7,138 @@ const SKYTEAM_CARRIERS = new Set([
 
 const EUROPE_AIRPORTS = ['AMS', 'FCO', 'MAD', 'BCN', 'LIS', 'CPH'];
 
-interface DuffelSegment {
-  origin?: { iata_code?: string };
-  destination?: { iata_code?: string };
-  departing_at?: string;
-  arriving_at?: string;
-  flight_number?: string;
-  marketing_carrier?: { iata_code?: string };
-  operating_carrier?: { iata_code?: string };
-}
-
-interface DuffelOffer {
-  id: string;
-  total_amount?: string;
-  total_currency?: string;
-  slices?: Array<{ segments?: DuffelSegment[] }>;
-}
-
-interface DuffelResponse {
-  data?: {
-    offers?: DuffelOffer[];
+interface GoogleItinerary {
+  airline_code?: string;
+  airline_names?: string[];
+  flights?: Array<{
+    airline_code?: string;
+    airline_name?: string;
+    flight_number?: string;
+    departure_airport?: string;
+    arrival_airport?: string;
+    departure_time?: string;
+    arrival_time?: string;
+  }>;
+  layovers?: Array<{
+    minutes?: number;
+    departure_airport?: string;
+  }>;
+  travel_time?: number;
+  departure_airport?: string;
+  arrival_airport?: string;
+  itinerary_summary?: {
+    price?: number;
+    currency?: string;
   };
 }
 
-function toSegments(offer: DuffelOffer): FlightSegment[] {
-  return (offer.slices ?? []).flatMap((slice) =>
-    (slice.segments ?? []).map((segment) => ({
-      marketingCarrier: segment.marketing_carrier?.iata_code ?? '—',
-      operatingCarrier: segment.operating_carrier?.iata_code ?? '—',
-      flightNumber: segment.flight_number,
-      origin: segment.origin?.iata_code ?? '—',
-      destination: segment.destination?.iata_code ?? '—',
-      departure: segment.departing_at ?? '',
-      arrival: segment.arriving_at ?? '',
-    }))
-  );
+function matchesAirline(itinerary: GoogleItinerary, airlines: string[]) {
+  if (airlines.length === 0) return true;
+
+  const codes = [
+    itinerary.airline_code,
+    ...(itinerary.flights ?? []).map((flight) => flight.airline_code),
+  ].filter((value): value is string => Boolean(value));
+
+  if (airlines.includes('DL')) return codes.includes('DL');
+  if (airlines.includes('SKYTEAM')) return codes.some((code) => SKYTEAM_CARRIERS.has(code));
+  return airlines.some((code) => codes.includes(code));
 }
 
-function matchesAirline(offer: DuffelOffer, airlines: string[]) {
-  if (airlines.length === 0) return true;
-  const segments = toSegments(offer);
-  if (airlines.includes('DL')) {
-    return segments.some((segment) => segment.marketingCarrier === 'DL' || segment.operatingCarrier === 'DL');
-  }
-  if (airlines.includes('SKYTEAM')) {
-    return segments.some((segment) => SKYTEAM_CARRIERS.has(segment.marketingCarrier) || SKYTEAM_CARRIERS.has(segment.operatingCarrier));
-  }
-  return airlines.some((code) => segments.some((segment) => segment.marketingCarrier === code || segment.operatingCarrier === code));
+function itineraryToOffer(
+  itinerary: GoogleItinerary,
+  origin: string,
+  destination: string,
+  departureDate: string,
+  returnDate: string,
+): FlightOffer | null {
+  const price = itinerary.itinerary_summary?.price;
+  if (typeof price !== 'number') return null;
+
+  const segments: FlightSegment[] = (itinerary.flights ?? []).map((flight) => ({
+    marketingCarrier: flight.airline_code ?? itinerary.airline_code ?? '—',
+    operatingCarrier: flight.airline_code ?? itinerary.airline_code ?? '—',
+    flightNumber: flight.flight_number,
+    origin: flight.departure_airport ?? origin,
+    destination: flight.arrival_airport ?? destination,
+    departure: flight.departure_time ?? '',
+    arrival: flight.arrival_time ?? '',
+  }));
+
+  const stops = Math.max(0, segments.length - 1);
+  const id = [
+    departureDate,
+    returnDate,
+    origin,
+    destination,
+    itinerary.airline_code ?? itinerary.airline_names?.join(',') ?? 'flight',
+    price,
+    segments.map((segment) => segment.flightNumber ?? '').join('-'),
+  ].join(':');
+
+  return {
+    id,
+    price,
+    currency: itinerary.itinerary_summary?.currency ?? 'USD',
+    origin,
+    destination,
+    departureDate,
+    returnDate,
+    stops,
+    totalDurationMinutes: itinerary.travel_time,
+    segments,
+    source: 'Google Flights',
+  } satisfies FlightOffer;
 }
 
 async function searchOne(
-  token: string,
   origin: string,
   destination: string,
   departureDate: string,
   returnDate: string,
   criteria: FlightSearchCriteria,
 ): Promise<FlightOffer[]> {
-  const response = await fetch(
-    'https://api.duffel.com/air/offer_requests?return_offers=true&view=offers&supplier_timeout=8000',
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'Duffel-Version': 'v2',
-      },
-      body: JSON.stringify({
-        data: {
-          cabin_class: criteria.cabin,
-          max_connections: criteria.maxStops === null ? 3 : criteria.maxStops,
-          passengers: Array.from({ length: criteria.passengers }, () => ({ type: 'adult' })),
-          slices: [
-            { origin, destination, departure_date: departureDate },
-            { origin: destination, destination: origin, departure_date: returnDate },
-          ],
-        },
+  const result = await getFlights({
+    flight_data: [
+      new FlightData({
+        date: departureDate,
+        from_airport: origin,
+        to_airport: destination,
       }),
-      cache: 'no-store',
-    },
-  );
+      new FlightData({
+        date: returnDate,
+        from_airport: destination,
+        to_airport: origin,
+      }),
+    ],
+    trip: 'round-trip',
+    adults: criteria.passengers,
+    seat:
+      criteria.cabin === 'premium_economy'
+        ? 'premium-economy'
+        : criteria.cabin,
+    max_stops: criteria.maxStops ?? undefined,
+    data_source: 'js',
+    fetch_mode: 'common',
+  });
 
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Duffel search failed (${response.status}): ${body.slice(0, 500)}`);
-  }
+  if (!result || !('best' in result)) return [];
 
-  const json = (await response.json()) as DuffelResponse;
-  return (json.data?.offers ?? [])
-    .filter((offer) => offer.total_amount && offer.total_currency)
-    .filter((offer) => offer.total_currency === 'USD')
-    .filter((offer) => Number(offer.total_amount) < criteria.maxPrice)
-    .filter((offer) => matchesAirline(offer, criteria.airlines))
-    .map((offer) => {
-      const segments = toSegments(offer);
-      const stops = (offer.slices ?? []).reduce((max, slice) => Math.max(max, Math.max(0, (slice.segments?.length ?? 1) - 1)), 0);
-      return {
-        id: offer.id,
-        price: Number(offer.total_amount),
-        currency: offer.total_currency ?? 'USD',
-        origin,
-        destination,
-        departureDate,
-        returnDate,
-        stops,
-        segments,
-        source: 'Duffel',
-      } satisfies FlightOffer;
-    });
+  const decoded = result as DecodedResult;
+  const itineraries = [...(decoded.best ?? []), ...(decoded.other ?? [])] as GoogleItinerary[];
+
+  return itineraries
+    .filter((itinerary) => matchesAirline(itinerary, criteria.airlines))
+    .map((itinerary) => itineraryToOffer(itinerary, origin, destination, departureDate, returnDate))
+    .filter((offer): offer is FlightOffer => Boolean(offer))
+    .filter((offer) => offer.currency === 'USD' && offer.price < criteria.maxPrice)
+    .filter((offer) => criteria.maxStops === null || offer.stops <= criteria.maxStops);
 }
 
-class DuffelFlightProvider implements FlightProvider {
-  readonly name = 'duffel';
+class GoogleFlightsProvider implements FlightProvider {
+  readonly name = 'google-flights';
 
   async search(criteria: FlightSearchCriteria): Promise<FlightOffer[]> {
-    const token = process.env.DUFFEL_ACCESS_TOKEN;
-    if (!token) {
-      throw new Error('DUFFEL_ACCESS_TOKEN is not configured. Add a Duffel access token to the Vercel environment.');
-    }
-
     const destination = criteria.destination;
     const destinations =
       destination.type === 'airport'
@@ -145,7 +158,9 @@ class DuffelFlightProvider implements FlightProvider {
     const returnDate = departure.toISOString().slice(0, 10);
 
     const results = await Promise.all(
-      destinations.map((airport) => searchOne(token, criteria.origin, airport, departureDate, returnDate, criteria))
+      destinations.map((airport) =>
+        searchOne(criteria.origin, airport, departureDate, returnDate, criteria),
+      ),
     );
 
     return results.flat().sort((a, b) => a.price - b.price).slice(0, 25);
@@ -153,5 +168,5 @@ class DuffelFlightProvider implements FlightProvider {
 }
 
 export function getFlightProvider(): FlightProvider {
-  return new DuffelFlightProvider();
+  return new GoogleFlightsProvider();
 }
