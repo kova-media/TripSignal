@@ -101,7 +101,7 @@ async function searchOne(
     .filter((offer) => matchesAirline(offer, criteria.airlines))
     .map((offer) => {
       const segments = toSegments(offer);
-      const stops = Math.max(0, segments.length - 2);
+      const stops = (offer.slices ?? []).reduce((max, slice) => Math.max(max, Math.max(0, (slice.segments?.length ?? 1) - 1)), 0);
       return {
         id: offer.id,
         price: Number(offer.total_amount),
