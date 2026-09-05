@@ -36,13 +36,13 @@ export default function Home() {
       </section>
 
       <section className="demo shell">
-        <div className="demo-copy"><h2>“Anywhere in Europe.<br />Under $500.”</h2><p>That is a search TripSignal can handle. No destination grid. No endless date combinations. Just a clear rule and a signal when it happens.</p><a className="button button-light" href="/alerts">Build an alert <span>↗</span></a></div>
+        <div className="demo-copy"><h2>“Anywhere in Europe.<br />Under $500.”</h2><p>That is a search TripSignal can handle. No destination grid. No endless date combinations. Just a clear rule and a signal when it happens.</p><a className="button button-primary" href="/alerts">Build an alert <span>↗</span></a></div>
         <div className="criteria"><div className="criteria-title"><span>Your alert</span><i>Active</i></div><div className="criteria-item"><span>From</span><strong>Kansas City <small>MCI</small></strong></div><div className="criteria-item"><span>To</span><strong>Anywhere in Europe</strong></div><div className="criteria-item"><span>Price</span><strong>Under $500</strong></div><div className="criteria-item"><span>Trip</span><strong>7–21 days</strong></div><div className="criteria-item"><span>Frequency</span><strong>Every Monday</strong></div></div>
       </section>
 
       <section className="signals shell"><h2>Useful when you need them.</h2><div className="signal-list"><div className="signal-item"><div><strong>MCI → Amsterdam</strong><span>May 4–18, 2027 · Delta / KLM · 1 stop</span></div><div className="signal-price"><strong>$427</strong><small>Below target</small></div></div><div className="signal-item"><div><strong>MCI → Madrid</strong><span>June 2–15, 2027 · Delta / Air France · 1 stop</span></div><div className="signal-price"><strong>$468</strong><small>Below target</small></div></div><div className="signal-item"><div><strong>MCI → Barcelona</strong><span>June 2–16, 2027 · Delta / KLM · 1 stop</span></div><div className="signal-price"><strong>$489</strong><small>Below target</small></div></div></div></section>
 
-      <section className="cta shell"><div><h2>Tell us what a great fare looks like.</h2></div><a className="button button-dark" href="/alerts">Create an alert <span>↗</span></a></section>
+      <section className="cta shell"><div><h2>Tell us what a great fare looks like.</h2></div><a className="button button-primary" href="/alerts">Create an alert <span>↗</span></a></section>
       <footer className="footer shell"><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><span>Travel intelligence, on your terms.</span><span>© 2026 TripSignal</span></footer>
     </main>
   );
