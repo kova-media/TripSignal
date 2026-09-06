@@ -14,6 +14,12 @@ function summarizeCriteria(criteria: Record<string, unknown>) {
   return `${origin} → ${destination} · ${cabin} · under $${price}`;
 }
 
+function firstName(name: string | null, email: string) {
+  const value = name?.trim();
+  if (value) return value.split(/\s+/)[0];
+  return email.split('@')[0];
+}
+
 export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) redirect('/signin');
@@ -28,6 +34,9 @@ export default async function AccountPage() {
     [user.id],
   );
 
+  const activeCount = result.rows.filter((row) => row.active).length;
+  const pausedCount = result.rows.length - activeCount;
+
   return (
     <main className={styles.page}>
       <SiteHeader authenticated primaryHref="/alerts" primaryLabel="Create alert" />
@@ -36,7 +45,7 @@ export default async function AccountPage() {
           <div className={styles.masthead}>
             <div>
               <p className={styles.eyebrow}>TripSignal account</p>
-              <h1 className={styles.title}>Your fare watches.</h1>
+              <h1 className={styles.title}>Welcome back, {firstName(user.name, user.email)}.</h1>
               <p className={styles.email}>{user.email}</p>
             </div>
             <div className={styles.mastheadAction}>
@@ -44,19 +53,26 @@ export default async function AccountPage() {
             </div>
           </div>
 
+          <div className={styles.stats}>
+            <div><span>Active watches</span><strong>{activeCount}</strong></div>
+            <div><span>Total alerts</span><strong>{result.rows.length}</strong></div>
+            <div><span>Paused</span><strong>{pausedCount}</strong></div>
+          </div>
+
           <section className={styles.section}>
             <div className={styles.sectionHeading}>
               <div>
-                <p className={styles.eyebrow}>Alerts</p>
-                <h2 className={styles.sectionTitle}>{result.rows.length} {result.rows.length === 1 ? 'fare watch' : 'fare watches'}</h2>
+                <p className={styles.eyebrow}>Your searches</p>
+                <h2 className={styles.sectionTitle}>{result.rows.length ? 'Fare watches' : 'Start your first fare watch'}</h2>
               </div>
             </div>
 
             {result.rows.length === 0 ? (
               <div className={styles.empty}>
+                <div className={styles.emptyIcon}>↗</div>
                 <h3 className={styles.emptyTitle}>Nothing is being watched yet.</h3>
-                <p className={styles.emptyText}>Create a fare watch and TripSignal will keep an eye on flights that match your criteria.</p>
-                <a className="text-link" href="/alerts">Create your first alert ↗</a>
+                <p className={styles.emptyText}>Tell TripSignal what a great fare looks like. Set your destination, price, dates, airlines, stops, and trip length, then let us do the searching.</p>
+                <a className="button button-primary" href="/alerts">Create your first alert <span>↗</span></a>
               </div>
             ) : (
               <div className={styles.alerts}>
