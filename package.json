@@ -8,7 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "google-flights-ts": "^1.0.0",
+    "fast-flights-ts": "^4.1.0",
     "next": "^15.5.0",
     "pg": "^8.23.0",
     "react": "^19.1.0",
