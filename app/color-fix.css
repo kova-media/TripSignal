@@ -1,7 +1,7 @@
 /* Final shared color tokens. Cobalt is the brand accent in both themes. */
 :root {
   --accent: #2f6fff;
-  --accent-soft: rgba(47, 111, 255, .12);
+  --accent-soft: rgba(47, 111, 255, .11);
   --success: #2f6fff;
   --dark-accent: #67a0ff;
   --tech-blue: #2f6fff;
@@ -41,29 +41,38 @@ select:focus,
   color: #fff;
 }
 
-/* Visual polish: quieter surfaces, stronger hierarchy, less visual noise. */
+/* Cleaner product shell: quieter borders, softer surfaces, tighter hierarchy. */
 .nav {
-  min-height: 76px;
+  min-height: 78px;
 }
 
 .nav-actions {
-  gap: 15px;
+  gap: 16px;
+}
+
+.brand-wordmark {
+  letter-spacing: -.06em;
 }
 
 .button {
-  box-shadow: 0 1px 0 rgba(0, 0, 0, .05);
+  box-shadow: none;
 }
 
 .button-primary {
-  box-shadow: 0 6px 18px rgba(47, 111, 255, .16);
+  box-shadow: 0 5px 16px rgba(47, 111, 255, .14);
+}
+
+.button-primary:hover {
+  box-shadow: 0 7px 20px rgba(47, 111, 255, .18);
 }
 
 .theme-toggle {
-  box-shadow: 0 1px 0 rgba(0, 0, 0, .04);
+  box-shadow: none;
 }
 
 .hero {
-  padding-top: 84px;
+  padding-top: 82px;
+  padding-bottom: 105px;
 }
 
 .hero h1,
@@ -73,18 +82,13 @@ select:focus,
 
 .lede,
 .builder-intro > p:last-child {
-  max-width: 590px;
-}
-
-.product-preview,
-.builder-summary,
-.criteria,
-.demo {
-  box-shadow: none;
+  max-width: 570px;
 }
 
 .product-preview {
-  border-color: color-mix(in srgb, var(--line) 82%, transparent);
+  border-color: color-mix(in srgb, var(--line) 88%, transparent);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  box-shadow: 0 18px 50px rgba(15, 20, 20, .055);
 }
 
 .product-preview:hover {
@@ -100,14 +104,63 @@ select:focus,
 .builder-form select,
 .input-prefix {
   border-color: color-mix(in srgb, var(--line-strong) 82%, transparent);
+  transition: border-color .16s ease, background-color .16s ease, box-shadow .16s ease;
 }
 
 .option.active {
-  box-shadow: 0 5px 16px rgba(47, 111, 255, .12);
+  box-shadow: 0 5px 16px rgba(47, 111, 255, .11);
 }
 
 .builder-summary {
-  border: 1px solid rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.07);
+  box-shadow: 0 20px 55px rgba(0,0,0,.12);
+}
+
+/* Alert builder: reduce the "form stack" feeling and give each section room to breathe. */
+.builder {
+  padding-top: 62px;
+}
+
+.builder-grid {
+  margin-top: 54px;
+}
+
+.form-section {
+  gap: 21px;
+}
+
+.form-heading h2 {
+  font-size: 23px;
+}
+
+.builder-form input,
+.builder-form select {
+  min-height: 50px;
+  border-radius: 12px;
+}
+
+.option {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-prefix {
+  min-height: 50px;
+}
+
+/* A calmer dark product surface. */
+html[data-theme="redeye"] .product-preview {
+  box-shadow: 0 24px 60px rgba(0,0,0,.18);
+}
+
+html[data-theme="redeye"] .builder-summary {
+  background: #14191d;
+}
+
+html[data-theme="redeye"] .demo {
+  background: #0d1216;
 }
 
 @media (max-width: 640px) {
@@ -117,6 +170,7 @@ select:focus,
 
   .hero {
     padding-top: 42px;
+    padding-bottom: 68px;
   }
 
   .hero h1,
@@ -131,5 +185,33 @@ select:focus,
 
   .product-preview {
     border-radius: 18px;
+    box-shadow: 0 14px 35px rgba(0,0,0,.06);
+  }
+
+  .builder {
+    padding-top: 32px;
+  }
+
+  .builder-grid {
+    margin-top: 34px;
+  }
+
+  .builder-form {
+    gap: 42px;
+  }
+
+  .form-heading h2 {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .hero h1,
+  .builder-intro h1 {
+    font-size: 40px;
+  }
+
+  .builder {
+    padding-top: 28px;
   }
 }
