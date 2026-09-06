@@ -4,58 +4,36 @@ import SiteHeader from '@/components/site-header';
 
 export default function Home() {
   return (
-    <main>
+    <main className="home-page">
       <SiteHeader />
-
-      <section className="hero shell">
-        <div className="hero-copy">
+      <section className="home-hero shell">
+        <div className="home-hero-copy">
           <p className="hero-kicker">Flight search, automated.</p>
-          <h1>Tell us what a great flight looks like.<br /><em>We’ll find it.</em></h1>
-          <p className="lede">Set your route, price, dates, cabin, and rules once. TripSignal keeps searching and signals you when a fare fits.</p>
-          <div className="hero-actions"><a className="button button-primary" href="/alerts">Create an alert <span>↗</span></a><a className="text-link" href="#how">How it works</a></div>
+          <h1>The flight you want.<br /><em>Found when the price is right.</em></h1>
+          <p className="lede">Set your trip once. TripSignal keeps watching for fares that match your rules.</p>
+          <div className="hero-actions"><a className="button button-primary" href="/alerts">Create an alert <span>↗</span></a><a className="text-link" href="#how">See how it works</a></div>
         </div>
-
-        <div className="product-preview hero-signal" aria-label="Example TripSignal flight signal">
-          <div className="preview-top"><span className="status"><i /> Signal found</span><span>Just now</span></div>
-          <div className="signal-context">MCI → Anywhere in Europe · Under $500</div>
-          <div className="preview-price"><span>$</span>427</div>
-          <div className="preview-route"><strong>MCI</strong><span>→</span><strong>AMS</strong></div>
-          <div className="preview-dates">May 4–18, 2027</div>
-          <div className="preview-details"><span>Delta / KLM</span><span>Economy · 1 stop</span><span>9h 42m</span></div>
-          <div className="preview-rule"><span>Your target</span><strong>$500</strong><b>$73 below target</b></div>
-          <div className="preview-footer"><span>6 / 6 rules matched</span><a href="/alerts">View signal <span>↗</span></a></div>
+        <div className="signal-card" aria-label="Example TripSignal fare signal">
+          <div className="signal-card-top"><span><i /> Fare match</span><span>TripSignal</span></div>
+          <div className="signal-price"><small>$</small>427</div>
+          <div className="signal-route"><strong>MCI</strong><span>→</span><strong>AMS</strong></div>
+          <div className="signal-date">May 4–18, 2027</div>
+          <div className="signal-meta"><span>Delta / KLM</span><span>Economy</span><span>1 stop</span></div>
+          <div className="signal-rule"><span>Target</span><strong>$500</strong><b>$73 below</b></div>
+          <div className="signal-card-bottom"><span>6 / 6 criteria matched</span><a href="/alerts">View signal ↗</a></div>
         </div>
       </section>
-
-      <section className="proof-strip shell"><span>Flexible destinations</span><i /><span>Price targets</span><i /><span>Airline rules</span><i /><span>Scheduled searches</span></section>
-
+      <div className="home-rule shell" />
+      <section className="capabilities shell" aria-label="TripSignal capabilities"><span>Flexible destinations</span><span>Price targets</span><span>Airline rules</span><span>Scheduled searches</span></section>
       <section id="how" className="how shell">
-        <div className="section-intro"><p className="section-kicker">How it works</p><h2>Set it once.<br />Stop searching.</h2></div>
-        <div className="steps">
-          <article><h3>Define the trip.</h3><p>Route, destination, dates, cabin, airlines, stops, and price.</p></article>
-          <article><h3>Let us watch.</h3><p>TripSignal checks active alerts on your schedule.</p></article>
-          <article><h3>Get the signal.</h3><p>When a fare fits, you get the price and flight details.</p></article>
-        </div>
+        <div className="section-intro"><p className="section-kicker">How it works</p><h2>Search once.<br />Let TripSignal watch.</h2></div>
+        <div className="steps"><article><h3>Define your trip.</h3><p>Choose the route, dates, cabin, airlines, stops, and price that work for you.</p></article><article><h3>We keep searching.</h3><p>Your alert runs on schedule while you get on with your life.</p></article><article><h3>You get the signal.</h3><p>When a fare fits, we send the details and a direct path to the flight.</p></article></div>
       </section>
-
-      <section className="alert-demo shell">
-        <div className="alert-demo-copy">
-          <p className="section-kicker">Example alert</p>
-          <h2>Anywhere in Europe.<br />Under $500.</h2>
-          <a className="button button-primary" href="/alerts">Build your alert <span>↗</span></a>
-        </div>
-        <div className="criteria-live">
-          <div className="criteria-title"><span>WATCHING</span><i>Active</i></div>
-          <div className="criteria-item"><span>From</span><strong>Kansas City <small>MCI</small></strong></div>
-          <div className="criteria-item"><span>Destination</span><strong>Europe</strong></div>
-          <div className="criteria-item"><span>Price</span><strong>Under $500</strong></div>
-          <div className="criteria-item"><span>Trip</span><strong>7–21 days</strong></div>
-          <div className="criteria-item"><span>Stops</span><strong>1 or fewer</strong></div>
-        </div>
+      <section className="search-preview shell">
+        <div className="search-preview-copy"><p className="section-kicker">Your search, your rules</p><h2>Anywhere in Europe.<br />Under $500.</h2><p>TripSignal handles the repetitive searching so you do not have to.</p><a className="button button-primary" href="/alerts">Build your alert <span>↗</span></a></div>
+        <div className="criteria-live"><div className="criteria-title"><span>Active alert</span><i>Watching</i></div><div className="criteria-item"><span>From</span><strong>Kansas City <small>MCI</small></strong></div><div className="criteria-item"><span>Destination</span><strong>Europe</strong></div><div className="criteria-item"><span>Price</span><strong>Under $500</strong></div><div className="criteria-item"><span>Trip length</span><strong>7–21 days</strong></div><div className="criteria-item"><span>Stops</span><strong>1 or fewer</strong></div></div>
       </section>
-
-      <section className="cta shell"><div><p className="section-kicker">Start watching</p><h2>Find the fare.<br />Skip the search.</h2></div><a className="button button-primary" href="/alerts">Create an alert <span>↗</span></a></section>
-
+      <section className="home-cta shell"><h2>Stop searching.<br /><em>Start watching.</em></h2><a className="button button-primary" href="/alerts">Create an alert <span>↗</span></a></section>
       <footer className="footer shell"><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><span>Travel intelligence, on your terms.</span><span>© 2026 TripSignal</span></footer>
     </main>
   );
