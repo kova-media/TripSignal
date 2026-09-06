@@ -29,8 +29,11 @@ export async function ensureSchema() {
       create table if not exists users (
         id uuid primary key default gen_random_uuid(),
         email text not null unique,
+        password_hash text,
         created_at timestamptz not null default now()
       );
+
+      alter table users add column if not exists password_hash text;
 
       create table if not exists auth_tokens (
         id uuid primary key default gen_random_uuid(),
