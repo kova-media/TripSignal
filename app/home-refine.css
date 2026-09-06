@@ -1,11 +1,10 @@
 /* TripSignal homepage: restrained, premium, product-led. */
 html:not([data-theme="redeye"]) body { background:#f7f8fa; }
-html:not([data-theme="redeye"]) { --bg:#f7f8fa; --surface:#ffffff; --surface-2:#f0f2f5; --ink:#0d1117; --muted:#68717f; --quiet:#9aa2ad; --line:#e3e6eb; --line-strong:#cfd5dd; --accent:#246bfe; --accent-soft:rgba(36,107,254,.08); --shadow:0 22px 60px rgba(13,17,23,.08); }
+html:not([data-theme="redeye"]) { --line:#e3e6eb; }
 
 .home-page { min-height:100vh; overflow:hidden; }
 .home-page .site-header { border-bottom:0; }
 .home-page .site-header-primary { min-height:44px; padding-inline:18px; border-radius:10px; }
-
 .home-hero { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(420px,.75fr); gap:clamp(48px,8vw,120px); align-items:center; min-height:690px; padding-top:72px; padding-bottom:92px; position:relative; }
 .home-hero:before { content:""; position:absolute; width:760px; height:520px; right:-260px; top:55px; background:radial-gradient(circle,rgba(36,107,254,.075),transparent 66%); pointer-events:none; }
 .home-hero-copy { position:relative; z-index:1; max-width:690px; }
@@ -18,6 +17,29 @@ html:not([data-theme="redeye"]) { --bg:#f7f8fa; --surface:#ffffff; --surface-2:#
 .home-page .button-primary:hover { background:#246bfe; border-color:#246bfe; box-shadow:0 10px 24px rgba(36,107,254,.18); }
 .home-page .text-link { color:#596271; }
 .home-page .text-link:hover { color:#0d1117; }
+
+/* Redeye contrast: the screenshot exposed daylight text tokens being used on the dark surface. */
+html[data-theme="redeye"] .home-page { background:#0d1214; color:#f1f4f7; }
+html[data-theme="redeye"] .home-hero:before { background:radial-gradient(circle,rgba(63,134,255,.11),transparent 66%); }
+html[data-theme="redeye"] .hero-kicker,html[data-theme="redeye"] .section-kicker { color:#6f9dff; }
+html[data-theme="redeye"] .home-hero h1 { color:#f1f4f7; }
+html[data-theme="redeye"] .home-hero h1 em { color:#aab5c5; }
+html[data-theme="redeye"] .home-hero .lede { color:#a2adbc; }
+html[data-theme="redeye"] .home-page .text-link { color:#c1cad6; }
+html[data-theme="redeye"] .home-page .text-link:hover { color:#fff; }
+html[data-theme="redeye"] .home-page .button-primary,
+html[data-theme="redeye"] .home-page .site-header-primary { background:#f4f6f8; color:#0c1116; border-color:#f4f6f8; }
+html[data-theme="redeye"] .home-page .button-primary:hover,
+html[data-theme="redeye"] .home-page .site-header-primary:hover { background:#4f8dff; color:#07101d; border-color:#4f8dff; box-shadow:0 10px 28px rgba(63,134,255,.24); }
+html[data-theme="redeye"] .home-rule { background:#252d35; }
+html[data-theme="redeye"] .capabilities { color:#8e9aaa; }
+html[data-theme="redeye"] .capabilities span:not(:first-child) { border-left-color:#252d35; }
+html[data-theme="redeye"] .how h2,html[data-theme="redeye"] .home-cta h2 { color:#f1f4f7; }
+html[data-theme="redeye"] .steps article { border-top-color:#303943; }
+html[data-theme="redeye"] .steps h3 { color:#e8edf2; }
+html[data-theme="redeye"] .steps p { color:#8f9aaa; }
+html[data-theme="redeye"] .home-cta h2 em { color:#aab5c5; }
+html[data-theme="redeye"] .home-page .footer { border-top-color:#252d35; color:#7f8a99; }
 
 .signal-card { position:relative; z-index:1; width:100%; max-width:500px; justify-self:end; padding:28px; border-radius:22px; background:#10151d; color:#f7f8fa; border:1px solid #202936; box-shadow:0 30px 80px rgba(13,17,23,.22); overflow:hidden; }
 .signal-card:after { content:""; position:absolute; width:260px; height:260px; right:-110px; top:-100px; background:radial-gradient(circle,rgba(80,135,255,.20),transparent 70%); pointer-events:none; }
@@ -40,9 +62,8 @@ html:not([data-theme="redeye"]) { --bg:#f7f8fa; --surface:#ffffff; --surface-2:#
 .home-rule { height:1px; background:var(--line); }
 .capabilities { display:grid; grid-template-columns:repeat(4,1fr); padding:25px 0; color:#697281; font-size:12px; }
 .capabilities span:not(:first-child) { border-left:1px solid var(--line); padding-left:24px; }
-
 .how { display:grid; grid-template-columns:.7fr 1.3fr; gap:clamp(50px,9vw,150px); padding:145px 0 150px; }
-.how h2,.search-preview h2,.home-cta h2 { margin:0; font-family:'Space Grotesk',sans-serif; font-size:clamp(42px,5.3vw,70px); line-height:.98; letter-spacing:-.065em; font-weight:550; }
+.how h2,.home-cta h2 { margin:0; font-family:'Space Grotesk',sans-serif; font-size:clamp(42px,5.3vw,70px); line-height:.98; letter-spacing:-.065em; font-weight:550; }
 .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:34px; align-self:end; }
 .steps article { padding-top:20px; border-top:1px solid #cfd5dd; }
 .steps h3 { margin:0 0 12px; font-size:17px; letter-spacing:-.025em; font-weight:600; }
@@ -50,7 +71,7 @@ html:not([data-theme="redeye"]) { --bg:#f7f8fa; --surface:#ffffff; --surface-2:#
 
 .search-preview { display:grid; grid-template-columns:.9fr 1.1fr; gap:clamp(50px,9vw,130px); align-items:center; padding:76px; border-radius:26px; background:#111720; color:#f7f8fa; }
 .search-preview .section-kicker { color:#7f8a9a; }
-.search-preview h2 { color:#f7f8fa; }
+.search-preview h2 { margin:0; color:#f7f8fa; font-family:'Space Grotesk',sans-serif; font-size:clamp(42px,5.3vw,70px); line-height:.98; letter-spacing:-.065em; font-weight:550; }
 .search-preview-copy > p:not(.section-kicker) { max-width:390px; margin:25px 0 28px; color:#9ba5b3; font-size:15px; line-height:1.6; }
 .search-preview .button-primary { background:#f7f8fa; color:#111720; border-color:#f7f8fa; }
 .search-preview .button-primary:hover { background:#6f9dff; border-color:#6f9dff; color:#08101d; }
@@ -61,11 +82,9 @@ html:not([data-theme="redeye"]) { --bg:#f7f8fa; --surface:#ffffff; --surface-2:#
 .criteria-item > span { color:#7e8998; font-size:12px; }
 .criteria-item strong { color:#edf1f6; font-size:13px; font-weight:550; }
 .criteria-item small { color:#778393; font-size:11px; font-weight:500; }
-
 .home-cta { display:flex; align-items:flex-end; justify-content:space-between; gap:30px; padding:150px 0 120px; }
 .home-cta h2 { font-size:clamp(46px,6vw,82px); }
 .home-cta .button-primary { margin-bottom:5px; }
-
 .home-page .footer { border-top:1px solid var(--line); padding-top:26px; padding-bottom:34px; color:#8b94a0; }
 
 @media(max-width:900px){
