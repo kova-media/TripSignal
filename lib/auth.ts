@@ -1,7 +1,9 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, scrypt as nodeScrypt, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
 import { cookies } from 'next/headers';
 import { getDb, ensureSchema } from '@/lib/db';
 
+const scrypt = promisify(nodeScrypt);
 const SESSION_COOKIE = 'tripsignal_session';
 const SESSION_DAYS = 30;
 const MAGIC_LINK_MINUTES = 15;
@@ -26,6 +28,77 @@ function appUrl() {
 
 export function getAppUrl() {
   return appUrl();
+}
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString('hex');
+  const derivedKey = (await scrypt(password, salt, 64)) as Buffer;
+  return `scrypt:${salt}:${derivedKey.toString('hex')}`;
+}
+
+async function verifyPassword(password: string, stored: string) {
+  const [algorithm, salt, keyHex] = stored.split(':');
+  if (algorithm !== 'scrypt' || !salt || !keyHex) return false;
+  const expected = Buffer.from(keyHex, 'hex');
+  const actual = (await scrypt(password, salt, expected.length)) as Buffer;
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
+}
+
+async function createSession(userId: string, email: string) {
+  const db = getDb();
+  const sessionToken = randomBytes(32).toString('hex');
+  await db.query(
+    `insert into sessions (user_id, token_hash, expires_at)
+     values ($1, $2, now() + ($3 * interval '1 day'))`,
+    [userId, hashToken(sessionToken), SESSION_DAYS],
+  );
+
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE, sessionToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: SESSION_DAYS * 24 * 60 * 60,
+  });
+
+  return { id: userId, email };
+}
+
+export async function signUp(email: string, password: string) {
+  await ensureSchema();
+  const db = getDb();
+  const normalizedEmail = email.trim().toLowerCase();
+  const passwordHash = await hashPassword(password);
+  const result = await db.query<{ id: string; email: string }>(
+    `insert into users (email, password_hash) values ($1, $2)
+     on conflict (email) do update set password_hash = coalesce(users.password_hash, excluded.password_hash)
+     returning id, email`,
+    [normalizedEmail, passwordHash],
+  );
+  const user = result.rows[0];
+  if (!user) throw new Error('Could not create account.');
+
+  const existing = await db.query<{ password_hash: string | null }>('select password_hash from users where id = $1', [user.id]);
+  if (!existing.rows[0]?.password_hash) throw new Error('Could not create account.');
+  if (existing.rows[0].password_hash !== passwordHash) {
+    throw new Error('An account with this email already exists. Please sign in instead.');
+  }
+
+  return createSession(user.id, user.email);
+}
+
+export async function signIn(email: string, password: string) {
+  await ensureSchema();
+  const db = getDb();
+  const normalizedEmail = email.trim().toLowerCase();
+  const result = await db.query<{ id: string; email: string; password_hash: string | null }>(
+    'select id, email, password_hash from users where email = $1 limit 1',
+    [normalizedEmail],
+  );
+  const user = result.rows[0];
+  if (!user?.password_hash || !(await verifyPassword(password, user.password_hash))) return null;
+  return createSession(user.id, user.email);
 }
 
 export async function createMagicLink(email: string): Promise<MagicLinkResult> {
@@ -72,23 +145,7 @@ export async function consumeMagicLink(token: string) {
   if (!row) return null;
 
   await db.query('delete from auth_tokens where token_hash = $1', [tokenHash]);
-  const sessionToken = randomBytes(32).toString('hex');
-  await db.query(
-    `insert into sessions (user_id, token_hash, expires_at)
-     values ($1, $2, now() + ($3 * interval '1 day'))`,
-    [row.user_id, hashToken(sessionToken), SESSION_DAYS],
-  );
-
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, sessionToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: SESSION_DAYS * 24 * 60 * 60,
-  });
-
-  return { id: row.user_id, email: row.email };
+  return createSession(row.user_id, row.email);
 }
 
 export async function getCurrentUser() {
