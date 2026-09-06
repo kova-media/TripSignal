@@ -8,7 +8,10 @@ export async function GET(request: Request) {
   try {
     const user = await consumeMagicLink(token);
     if (!user) return NextResponse.redirect(new URL('/signin?error=expired', request.url));
-    return NextResponse.redirect(new URL('/alerts', request.url));
+
+    const response = NextResponse.redirect(new URL('/account', request.url));
+    response.headers.set('Cache-Control', 'no-store, max-age=0');
+    return response;
   } catch (error) {
     console.error('TripSignal sign-in verification error:', error);
     return NextResponse.redirect(new URL('/signin?error=failed', request.url));
