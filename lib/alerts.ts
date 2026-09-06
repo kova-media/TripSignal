@@ -98,7 +98,7 @@ export async function runAlertSearch(alertId: string, email: string, criteria: A
 
   if (newOffers.length === 0) return { offers: qualifying, emailed: false };
 
-  await sendFareSignalEmail(email, newOffers);
+  await sendFareSignalEmail(email, newOffers, criteria);
 
   for (const offer of newOffers) {
     await db.query(
