@@ -2,10 +2,10 @@
 @media (max-width: 640px) {
   .site-header {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     grid-template-areas:
-      "brand actions"
-      "theme theme";
+      "brand signin primary"
+      "theme theme theme";
     align-items: center;
     gap: 14px 10px;
     padding: 14px 0 16px;
@@ -17,13 +17,7 @@
   }
 
   .site-header-actions {
-    grid-area: actions;
-    display: grid;
-    grid-template-columns: auto auto;
-    grid-template-areas: "signin primary";
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
+    display: contents;
   }
 
   .site-header-back {
