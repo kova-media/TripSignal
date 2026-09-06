@@ -6,6 +6,12 @@ const SESSION_COOKIE = 'tripsignal_session';
 const SESSION_DAYS = 30;
 const MAGIC_LINK_MINUTES = 15;
 
+type MagicLinkResult = {
+  userId: string;
+  email: string;
+  url: string;
+};
+
 function hashToken(token: string) {
   return createHash('sha256').update(token).digest('hex');
 }
@@ -22,7 +28,7 @@ export function getAppUrl() {
   return appUrl();
 }
 
-export async function createMagicLink(email: string) {
+export async function createMagicLink(email: string): Promise<MagicLinkResult> {
   await ensureSchema();
   const db = getDb();
   const normalizedEmail = email.trim().toLowerCase();
