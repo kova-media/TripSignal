@@ -40,3 +40,96 @@ select:focus,
   background: var(--accent);
   color: #fff;
 }
+
+/* Visual polish: quieter surfaces, stronger hierarchy, less visual noise. */
+.nav {
+  min-height: 76px;
+}
+
+.nav-actions {
+  gap: 15px;
+}
+
+.button {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .05);
+}
+
+.button-primary {
+  box-shadow: 0 6px 18px rgba(47, 111, 255, .16);
+}
+
+.theme-toggle {
+  box-shadow: 0 1px 0 rgba(0, 0, 0, .04);
+}
+
+.hero {
+  padding-top: 84px;
+}
+
+.hero h1,
+.builder-intro h1 {
+  letter-spacing: -.075em;
+}
+
+.lede,
+.builder-intro > p:last-child {
+  max-width: 590px;
+}
+
+.product-preview,
+.builder-summary,
+.criteria,
+.demo {
+  box-shadow: none;
+}
+
+.product-preview {
+  border-color: color-mix(in srgb, var(--line) 82%, transparent);
+}
+
+.product-preview:hover {
+  border-color: var(--line-strong);
+}
+
+.steps article {
+  border-top-color: var(--line);
+}
+
+.option,
+.builder-form input,
+.builder-form select,
+.input-prefix {
+  border-color: color-mix(in srgb, var(--line-strong) 82%, transparent);
+}
+
+.option.active {
+  box-shadow: 0 5px 16px rgba(47, 111, 255, .12);
+}
+
+.builder-summary {
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+@media (max-width: 640px) {
+  .nav {
+    min-height: auto;
+  }
+
+  .hero {
+    padding-top: 42px;
+  }
+
+  .hero h1,
+  .builder-intro h1 {
+    font-size: clamp(40px, 11.5vw, 52px);
+  }
+
+  .lede,
+  .builder-intro > p:last-child {
+    font-size: 15px;
+  }
+
+  .product-preview {
+    border-radius: 18px;
+  }
+}
