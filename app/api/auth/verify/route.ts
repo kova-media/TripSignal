@@ -9,7 +9,8 @@ export async function GET(request: Request) {
     const user = await consumeMagicLink(token);
     if (!user) return NextResponse.redirect(new URL('/signin?error=expired', request.url));
 
-    const response = NextResponse.redirect(new URL('/account', request.url));
+    const destination = user.hasPassword ? '/account' : '/account/setup';
+    const response = NextResponse.redirect(new URL(destination, request.url));
     response.headers.set('Cache-Control', 'no-store, max-age=0');
     return response;
   } catch (error) {
