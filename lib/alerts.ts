@@ -12,6 +12,8 @@ type AlertCriteria = {
   maxStops: string;
   tripLength: string;
   dateRange: string;
+  dateStart?: string;
+  dateEnd?: string;
   frequency: 'Weekly' | 'Monthly';
   cabin: 'economy' | 'premium_economy' | 'business';
 };
@@ -34,17 +36,34 @@ function windowDays(value: string) {
   }
 }
 
-function nextDepartureDate(dateRange: string, salt = 0) {
-  const date = new Date();
-  const horizon = windowDays(dateRange);
-  const offset = Math.min(14 + salt * 21, Math.max(14, horizon - 7));
-  date.setUTCDate(date.getUTCDate() + offset);
-  return date.toISOString().slice(0, 10);
+function dateRangeBounds(alert: AlertCriteria): [string, string] {
+  if (alert.dateStart && alert.dateEnd) return [alert.dateStart, alert.dateEnd];
+
+  const start = new Date();
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + windowDays(alert.dateRange));
+  return [start.toISOString().slice(0, 10), end.toISOString().slice(0, 10)];
+}
+
+function nextDepartureDate(alert: AlertCriteria, salt = 0) {
+  const [startValue, endValue] = dateRangeBounds(alert);
+  const start = new Date(`${startValue}T00:00:00Z`);
+  const end = new Date(`${endValue}T00:00:00Z`);
+  const spanDays = Math.max(0, Math.round((end.getTime() - start.getTime()) / 86_400_000));
+
+  // Google Flights searches exact departure dates. Sample several points
+  // across the requested window rather than collapsing a custom range to one day.
+  const sampleCount = alert.destinationMode === 'airport' ? 4 : 2;
+  const index = salt % sampleCount;
+  const offset = sampleCount === 1 ? 0 : Math.round((spanDays * index) / (sampleCount - 1));
+  start.setUTCDate(start.getUTCDate() + offset);
+  return start.toISOString().slice(0, 10);
 }
 
 function buildCriteria(alert: AlertCriteria, salt = 0): FlightSearchCriteria {
   const [minTripDays, maxTripDays] = tripDays(alert.tripLength);
-  const departureStart = nextDepartureDate(alert.dateRange, salt);
+  const departureStart = nextDepartureDate(alert, salt);
+  const [, windowEnd] = dateRangeBounds(alert);
   return {
     origin: alert.origin,
     destination: alert.destinationMode === 'airport'
@@ -57,7 +76,7 @@ function buildCriteria(alert: AlertCriteria, salt = 0): FlightSearchCriteria {
     minTripDays,
     maxTripDays,
     departureStart,
-    departureEnd: departureStart,
+    departureEnd: windowEnd,
     passengers: 1,
   };
 }
@@ -65,12 +84,12 @@ function buildCriteria(alert: AlertCriteria, salt = 0): FlightSearchCriteria {
 export function summarizeAlert(alert: AlertCriteria) {
   const destination = alert.destinationMode === 'airport' ? alert.destination.toUpperCase() : alert.destination;
   const cabin = alert.cabin === 'premium_economy' ? 'Premium economy' : alert.cabin === 'business' ? 'Business' : 'Economy';
-  return `${alert.origin} → ${destination} · ${cabin} · under $${alert.maxPrice.toLocaleString()} · ${alert.frequency}`;
+  return `${alert.origin} → ${destination} · ${cabin} · under $${alert.maxPrice.toLocaleString()} · ${alert.dateRange} · ${alert.frequency}`;
 }
 
 export async function runAlertSearch(alertId: string, email: string, criteria: AlertCriteria) {
   const provider = getFlightProvider();
-  const searchCount = criteria.destinationMode === 'airport' ? 1 : 1;
+  const searchCount = criteria.destinationMode === 'airport' ? 4 : 2;
   const results: FlightOffer[] = [];
 
   for (let i = 0; i < searchCount; i += 1) {
@@ -81,6 +100,7 @@ export async function runAlertSearch(alertId: string, email: string, criteria: A
   const qualifying = results
     .filter((offer) => offer.price < criteria.maxPrice)
     .sort((a, b) => a.price - b.price)
+    .filter((offer, index, array) => index === array.findIndex((candidate) => candidate.id === offer.id))
     .slice(0, 10);
 
   const db = getDb();
