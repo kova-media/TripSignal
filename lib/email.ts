@@ -16,8 +16,10 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
-function getFrom() {
-  return ALERT_FROM_EMAIL;
+function getFrom() { return ALERT_FROM_EMAIL; }
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character] ?? character));
 }
 
 function cabinLabel(cabin: AlertEmailCriteria['cabin']) {
@@ -31,10 +33,8 @@ function stopLabel(stops: number) {
 }
 
 function airlineLabel(offer: FlightOffer) {
-  const airlines = offer.segments
-    .map((segment) => segment.marketingCarrier)
-    .filter(Boolean)[0] ?? 'Airline unavailable';
-  return airlines.replace(/,\s*/g, ' / ');
+  const airline = offer.segments.find((segment) => segment.marketingCarrier)?.marketingCarrier ?? 'Airline unavailable';
+  return airline.replace(/,\s*/g, ' / ');
 }
 
 function formatDateRange(departureDate: string, returnDate: string) {
@@ -47,13 +47,8 @@ function formatDateRange(departureDate: string, returnDate: string) {
   const returnMonth = month.format(returned);
   const departureYear = year.format(departure);
   const returnYear = year.format(returned);
-
-  if (departureMonth === returnMonth && departureYear === returnYear) {
-    return `${departureMonth} ${day.format(departure)}–${day.format(returned)}, ${departureYear}`;
-  }
-  if (departureYear === returnYear) {
-    return `${departureMonth} ${day.format(departure)}–${returnMonth} ${day.format(returned)}, ${departureYear}`;
-  }
+  if (departureMonth === returnMonth && departureYear === returnYear) return `${departureMonth} ${day.format(departure)}–${day.format(returned)}, ${departureYear}`;
+  if (departureYear === returnYear) return `${departureMonth} ${day.format(departure)}–${returnMonth} ${day.format(returned)}, ${departureYear}`;
   return `${departureMonth} ${day.format(departure)}, ${departureYear}–${returnMonth} ${day.format(returned)}, ${returnYear}`;
 }
 
@@ -66,8 +61,7 @@ function formatDuration(minutes?: number) {
 
 function outboundDuration(offer: FlightOffer) {
   const outbound = offer.segments.filter((segment) => segment.departure.startsWith(offer.departureDate));
-  if (outbound.length === 0) return offer.totalDurationMinutes;
-
+  if (!outbound.length) return offer.totalDurationMinutes;
   return outbound.reduce((total, segment) => {
     const departure = new Date(segment.departure).getTime();
     const arrival = new Date(segment.arrival).getTime();
@@ -93,15 +87,14 @@ function tripLengthRange(value: string): [number, number] {
 function criteriaMatchCount(offer: FlightOffer, criteria: AlertEmailCriteria) {
   const [minTripDays, maxTripDays] = tripLengthRange(criteria.tripLength);
   const tripDays = tripLengthDays(offer);
-  const matches = [
+  return [
     offer.price < criteria.maxPrice,
     true,
     true,
     criteria.airlineMode === 'all' || airlineLabel(offer).toUpperCase().includes(criteria.airlineMode.toUpperCase()),
     criteria.maxStops === 'any' || offer.stops <= Number(criteria.maxStops),
     tripDays >= minTripDays && tripDays <= maxTripDays,
-  ];
-  return matches.filter(Boolean).length;
+  ].filter(Boolean).length;
 }
 
 function flightUrl(offer: FlightOffer) {
@@ -109,7 +102,7 @@ function flightUrl(offer: FlightOffer) {
   return `https://www.google.com/travel/flights?q=${encodeURIComponent(query)}`;
 }
 
-function offerLabel(offer: FlightOffer) {
+function offerText(offer: FlightOffer) {
   return `${offer.origin} → ${offer.destination} · ${formatDateRange(offer.departureDate, offer.returnDate)} · ${stopLabel(offer.stops)} · $${offer.price.toLocaleString()}`;
 }
 
@@ -142,24 +135,16 @@ export async function sendFareSignalEmail(email: string, offers: FlightOffer[], 
   const first = offers[0];
   if (!first) return;
 
-  const featuredCards = offers.map((offer, index) => {
-    const belowTarget = Math.max(0, criteria.maxPrice - offer.price);
-    const matchCount = criteriaMatchCount(offer, criteria);
-    const cardBackground = index === 0 ? '#171c1b' : '#111615';
-    const route = `${escapeHtml(offer.origin)} <span style="color:#7f8985;font-weight:400">→</span> ${escapeHtml(offer.destination)}`;
-    const details = `${escapeHtml(airlineLabel(offer))} <span style="color:#68716f">·</span> ${escapeHtml(cabinLabel(criteria.cabin))} <span style="color:#68716f">·</span> ${escapeHtml(stopLabel(offer.stops))} <span style="color:#68716f">·</span> ${escapeHtml(formatDuration(outboundDuration(offer)))}`;
-    const targetRow = `<tr><td style="padding:20px 0 19px;border-top:1px solid #2b3432"><span style="color:#98a19e;font-size:14px;line-height:20px">Your target</span></td><td align="right" style="padding:20px 0 19px;border-top:1px solid #2b3432"><strong style="color:#f2f4f1;font-size:18px;line-height:24px">$${criteria.maxPrice.toLocaleString()}</strong><span style="color:#91b79e;font-size:14px;font-weight:700;margin-left:14px">$${belowTarget.toLocaleString()} below target</span></td></tr>`;
-    const button = `<a class="cta-button" href="${escapeHtml(flightUrl(offer))}" style="display:inline-block;background:#f2f4f1;color:#101413;text-decoration:none;padding:13px 18px;border-radius:999px;font-size:14px;font-weight:700;line-height:18px">View signal ↗</a>`;
-
-    return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:separate;background:${cardBackground};border:1px solid #2c3633;border-radius:24px;margin:0 0 18px"><tr><td style="padding:22px 24px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-size:14px;font-weight:700;color:#91b79e"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#91b79e;margin-right:10px"></span>Signal found</td><td align="right" style="font-size:13px;color:#8f9995">Just now</td></tr></table><div class="price" style="font-size:72px;line-height:.95;font-weight:800;letter-spacing:-4px;color:#f2f4f1;margin-top:30px"><span style="font-size:26px;letter-spacing:0;color:#7d8783;vertical-align:20px;margin-right:4px">$</span>${offer.price.toLocaleString()}</div><div class="route" style="font-size:31px;line-height:38px;font-weight:800;letter-spacing:-1.2px;color:#f2f4f1;margin-top:26px">${route}</div><div style="font-size:16px;line-height:24px;color:#a9b0ad;margin-top:10px">${escapeHtml(formatDateRange(offer.departureDate, offer.returnDate))}</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:28px"><tr><td class="details" style="padding:18px 0;border-top:1px solid #2b3432;border-bottom:1px solid #2b3432;font-size:14px;line-height:20px;color:#aeb5b2">${details}</td></tr>${targetRow}</table><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:18px 0 22px;font-size:14px;line-height:20px;color:#89938f">Matches ${matchCount} of 6 criteria</td><td class="cta-cell" align="right" style="padding:18px 0 22px">${button}</td></tr></table></td></tr></table>`;
-  }).join('');
+  const belowTarget = Math.max(0, criteria.maxPrice - first.price);
+  const details = `${escapeHtml(airlineLabel(first))} <span style="color:#68716f">·</span> ${escapeHtml(cabinLabel(criteria.cabin))} <span style="color:#68716f">·</span> ${escapeHtml(stopLabel(first.stops))} <span style="color:#68716f">·</span> ${escapeHtml(formatDuration(outboundDuration(first)))}`;
+  const card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:separate;background:#171c1b;border:1px solid #2c3633;border-radius:24px"><tr><td style="padding:22px 24px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-size:14px;font-weight:700;color:#91b79e"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#91b79e;margin-right:10px"></span>Signal found</td><td align="right" style="font-size:13px;color:#8f9995">Just now</td></tr></table><div class="price" style="font-size:72px;line-height:.95;font-weight:800;letter-spacing:-4px;color:#f2f4f1;margin-top:30px"><span style="font-size:26px;letter-spacing:0;color:#7d8783;vertical-align:20px;margin-right:4px">$</span>${first.price.toLocaleString()}</div><div class="route" style="font-size:31px;line-height:38px;font-weight:800;letter-spacing:-1.2px;color:#f2f4f1;margin-top:26px">${escapeHtml(first.origin)} <span style="color:#7f8985;font-weight:400">→</span> ${escapeHtml(first.destination)}</div><div style="font-size:16px;line-height:24px;color:#a9b0ad;margin-top:10px">${escapeHtml(formatDateRange(first.departureDate, first.returnDate))}</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:28px"><tr><td class="details" style="padding:18px 0;border-top:1px solid #2b3432;border-bottom:1px solid #2b3432;font-size:14px;line-height:20px;color:#aeb5b2">${details}</td></tr><tr><td style="padding:20px 0 19px;border-top:1px solid #2b3432"><span style="color:#98a19e;font-size:14px;line-height:20px">Your target</span></td><td align="right" style="padding:20px 0 19px;border-top:1px solid #2b3432"><strong style="color:#f2f4f1;font-size:18px;line-height:24px">$${criteria.maxPrice.toLocaleString()}</strong><span style="color:#91b79e;font-size:14px;font-weight:700;margin-left:14px">$${belowTarget.toLocaleString()} below target</span></td></tr></table><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:18px 0 22px;font-size:14px;line-height:20px;color:#89938f">Matches ${criteriaMatchCount(first, criteria)} of 6 criteria</td><td class="cta-cell" align="right" style="padding:18px 0 22px"><a class="cta-button" href="${escapeHtml(flightUrl(first))}" style="display:inline-block;background:#f2f4f1;color:#101413;text-decoration:none;padding:13px 18px;border-radius:999px;font-size:14px;font-weight:700;line-height:18px">View signal ↗</a></td></tr></table></td></tr></table>`;
 
   const moreSignals = offers.length > 1
-    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px"><tr><td style="padding:8px 0 14px;color:#e7ebe8;font-size:18px;font-weight:700">More signals</td></tr>${offers.slice(1).map((offer) => `<tr><td style="padding:14px 0;border-top:1px solid #2b3432"><a href="${escapeHtml(flightUrl(offer))}" style="color:#f2f4f1;text-decoration:none;font-weight:700">${escapeHtml(offer.origin)} → ${escapeHtml(offer.destination)}</a><br><span style="color:#8f9995;font-size:13px;line-height:21px">${escapeHtml(formatDateRange(offer.departureDate, offer.returnDate))} · $${offer.price.toLocaleString()} · ${escapeHtml(stopLabel(offer.stops))}</span></td></tr>`).join('')}</table>`
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px"><tr><td style="padding:0 0 12px;color:#e7ebe8;font-size:18px;font-weight:700">More signals</td></tr>${offers.slice(1, 4).map((offer) => `<tr><td style="padding:14px 0;border-top:1px solid #2b3432"><a href="${escapeHtml(flightUrl(offer))}" style="color:#f2f4f1;text-decoration:none;font-weight:700">${escapeHtml(offer.origin)} → ${escapeHtml(offer.destination)}</a><br><span style="color:#8f9995;font-size:13px;line-height:21px">${escapeHtml(formatDateRange(offer.departureDate, offer.returnDate))} · $${offer.price.toLocaleString()} · ${escapeHtml(stopLabel(offer.stops))}</span></td></tr>`).join('')}</table>`
     : '';
 
-  const text = `TripSignal found a qualifying fare.\n\n${offers.map(offerLabel).join('\n')}\n\nPrices and availability can change. View the signal to continue to Google Flights.`;
-  const html = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"><meta name="supported-color-schemes" content="dark light"><style>:root{color-scheme:dark light}@media only screen and (max-width:600px){.email-shell{padding:18px 12px!important}.price{font-size:58px!important;letter-spacing:-3px!important}.route{font-size:27px!important;line-height:34px!important}.details{font-size:12px!important}.cta-cell{display:block!important;text-align:left!important;padding-top:6px!important}.cta-button{display:block!important;text-align:center!important}.footer-copy{font-size:11px!important}}</style></head><body bgcolor="#0b0f0e" style="margin:0;padding:0;background:#0b0f0e;color:#f2f4f1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b0f0e" style="width:100%;background:#0b0f0e"><tr><td class="email-shell" align="center" style="padding:32px 16px"><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px"><tr><td style="padding:0 2px 22px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="color:#f2f4f1;font-size:18px;font-weight:800;letter-spacing:-.4px"><span style="font-size:19px;color:#91b79e;vertical-align:1px;margin-right:8px">✈</span>TripSignal</td><td align="right" style="color:#91b79e;font-size:12px;font-weight:700;letter-spacing:.02em">SIGNAL FOUND</td></tr></table></td></tr><tr><td>${featuredCards}</td></tr><tr><td>${moreSignals}</td></tr><tr><td style="padding:20px 4px 0;color:#79837f;font-size:12px;line-height:19px">Prices and availability can change. Open the signal as soon as possible to see the current fare. TripSignal does not sell tickets or guarantee fare availability.</td></tr><tr><td class="footer-copy" style="padding:24px 4px 4px;color:#5f6965;font-size:12px;line-height:18px">You received this email because an active TripSignal alert matched a qualifying fare.<br><a href="https://tripsignal.travel" style="color:#91b79e;text-decoration:none">tripsignal.travel</a></td></tr></table></td></tr></table></body></html>`;
+  const text = `TripSignal found a qualifying fare.\n\n${offers.map(offerText).join('\n')}\n\nPrices and availability can change. View the signal to continue to Google Flights.`;
+  const html = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"><meta name="supported-color-schemes" content="dark light"><style>:root{color-scheme:dark light}@media only screen and (max-width:600px){.email-shell{padding:18px 12px!important}.price{font-size:58px!important;letter-spacing:-3px!important}.route{font-size:27px!important;line-height:34px!important}.details{font-size:12px!important}.cta-cell{display:block!important;text-align:left!important;padding-top:6px!important}.cta-button{display:block!important;text-align:center!important}.footer-copy{font-size:11px!important}}</style></head><body bgcolor="#0b0f0e" style="margin:0;padding:0;background:#0b0f0e;color:#f2f4f1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b0f0e" style="width:100%;background:#0b0f0e"><tr><td class="email-shell" align="center" style="padding:32px 16px"><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px"><tr><td style="padding:0 2px 22px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="color:#f2f4f1;font-size:18px;font-weight:800;letter-spacing:-.4px"><span style="font-size:19px;color:#91b79e;vertical-align:1px;margin-right:8px">✈</span>TripSignal</td><td align="right" style="color:#91b79e;font-size:12px;font-weight:700;letter-spacing:.02em">SIGNAL FOUND</td></tr></table></td></tr><tr><td>${card}</td></tr><tr><td>${moreSignals}</td></tr><tr><td style="padding:20px 4px 0;color:#79837f;font-size:12px;line-height:19px">Prices and availability can change. Open the signal as soon as possible to see the current fare. TripSignal does not sell tickets or guarantee fare availability.</td></tr><tr><td class="footer-copy" style="padding:24px 4px 4px;color:#5f6965;font-size:12px;line-height:18px">You received this email because an active TripSignal alert matched a qualifying fare.<br><a href="https://tripsignal.travel" style="color:#91b79e;text-decoration:none">tripsignal.travel</a></td></tr></table></td></tr></table></body></html>`;
 
   const { error } = await resend.emails.send({
     from: getFrom(),
@@ -169,8 +154,4 @@ export async function sendFareSignalEmail(email: string, offers: FlightOffer[], 
     html,
   });
   if (error) throw new Error(error.message);
-}
-
-function escapeHtml(value: string) {
-  return value.replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character] ?? character));
 }
