@@ -55,7 +55,7 @@ function nextDepartureDate(alert: AlertCriteria, salt = 0) {
   // across the requested window rather than collapsing a custom range to one day.
   const sampleCount = alert.destinationMode === 'airport' ? 4 : 2;
   const index = salt % sampleCount;
-  const offset = sampleCount === 1 ? 0 : Math.round((spanDays * index) / (sampleCount - 1));
+  const offset = Math.round((spanDays * index) / (sampleCount - 1));
   start.setUTCDate(start.getUTCDate() + offset);
   return start.toISOString().slice(0, 10);
 }
