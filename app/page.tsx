@@ -40,9 +40,9 @@ export default function Home() {
       <section id="how" className="how shell">
         <div className="section-intro"><p className="section-kicker">How it works</p><h2>Give us the hard search.<br />Keep the easy part.</h2><p>Google Flights is excellent when you want to search. TripSignal is for when you already know what a good fare looks like and want someone to keep looking for it.</p></div>
         <div className="steps">
-          <article><span className="step-number">01</span><h3>Define the trip.</h3><p>Choose your origin, destination or region, dates, cabin, airlines, trip length, stop limit, and target price.</p></article>
-          <article><span className="step-number">02</span><h3>Let us watch.</h3><p>TripSignal checks active alerts on your schedule and filters out anything that misses the rules you set.</p></article>
-          <article><span className="step-number">03</span><h3>Get the signal.</h3><p>When a qualifying fare appears, you get the route, dates, price, airline, and a link to view the flight.</p></article>
+          <article><h3>Define the trip.</h3><p>Choose your origin, destination or region, dates, cabin, airlines, trip length, stop limit, and target price.</p></article>
+          <article><h3>Let us watch.</h3><p>TripSignal checks active alerts on your schedule and filters out anything that misses the rules you set.</p></article>
+          <article><h3>Get the signal.</h3><p>When a qualifying fare appears, you get the route, dates, price, airline, and a link to view the flight.</p></article>
         </div>
       </section>
 
