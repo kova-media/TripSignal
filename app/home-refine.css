@@ -19,7 +19,6 @@ html:not([data-theme="redeye"]) .status i { box-shadow:0 0 0 4px rgba(36,107,254
 .how h2 { font-family:'Space Grotesk',sans-serif; font-size:clamp(40px,5vw,62px); line-height:1.02; letter-spacing:-.06em; margin:0; }
 .steps { margin-top:54px; }
 .steps article { position:relative; padding-top:18px; }
-.step-index { display:block; color:var(--accent); font-family:'Space Grotesk',sans-serif; font-size:10px; font-weight:600; letter-spacing:.06em; margin-bottom:17px; }
 .alert-demo h2,.cta h2 { font-family:'Space Grotesk',sans-serif; font-size:clamp(40px,5vw,62px); line-height:1.02; letter-spacing:-.06em; margin:0 0 23px; }
 .cta { border-top:1px solid var(--line); padding:83px 0 108px; display:flex; justify-content:space-between; align-items:flex-end; gap:32px; }
 .cta h2 { margin-bottom:0; }
