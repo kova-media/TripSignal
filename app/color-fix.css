@@ -1,0 +1,42 @@
+/* Final shared color tokens. Cobalt is the brand accent in both themes. */
+:root {
+  --accent: #2f6fff;
+  --accent-soft: rgba(47, 111, 255, .12);
+  --success: #2f6fff;
+  --dark-accent: #67a0ff;
+  --tech-blue: #2f6fff;
+}
+
+html[data-theme="redeye"] {
+  --accent: #3f86ff;
+  --accent-soft: rgba(63, 134, 255, .14);
+  --success: #3f86ff;
+  --dark-accent: #67a0ff;
+  --tech-blue: #3f86ff;
+}
+
+.brand-signal,
+.status,
+.preview-rule b,
+.signal-price small,
+.criteria-title i,
+.summary-label i,
+.summary-check {
+  color: var(--accent);
+}
+
+.status i {
+  background: var(--accent);
+}
+
+input:focus,
+select:focus,
+.input-prefix:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft) !important;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
