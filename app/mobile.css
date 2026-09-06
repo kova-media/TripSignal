@@ -1,0 +1,57 @@
+/* Purpose-built mobile shell for the TripSignal header and hero. */
+@media (max-width: 640px) {
+  .site-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand primary"
+      "theme theme";
+    align-items: center;
+    gap: 12px 10px;
+    padding: 12px 0 14px;
+  }
+
+  .site-header-brand {
+    grid-area: brand;
+    min-width: 0;
+  }
+
+  .site-header-actions {
+    display: contents;
+  }
+
+  .site-header-signin {
+    display: none;
+  }
+
+  .site-header-primary {
+    grid-area: primary;
+    justify-self: end;
+  }
+
+  .site-header-theme {
+    grid-area: theme;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .site-header-theme .theme-toggle {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .site-header-theme .theme-option {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-header {
+    gap: 10px 8px;
+  }
+
+  .site-header-primary {
+    padding-inline: 12px;
+  }
+}
