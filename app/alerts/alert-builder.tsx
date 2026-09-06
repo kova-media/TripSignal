@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import SiteHeader from '@/components/site-header';
 import type { FlightOffer } from '@/lib/flights/types';
+import styles from './alert-builder.module.css';
 
 type DestinationMode = 'region' | 'airport';
 type Frequency = 'Weekly' | 'Monthly';
@@ -142,7 +143,7 @@ export default function AlertBuilder() {
             {offers.length > 0 && <section className="signals live-results"><h2>Qualifying fares.</h2><div className="signal-list">{offers.map((offer) => <div className="signal-item" key={offer.id}><div><strong>{offer.origin} → {offer.destination}</strong><span>{formatDate(offer.departureDate)} – {formatDate(offer.returnDate)} · {airlineLabel(offer)} · {offer.stops === 0 ? 'Nonstop' : `${offer.stops} stop${offer.stops > 1 ? 's' : ''}`}</span></div><div className="signal-price"><strong>${offer.price.toLocaleString()}</strong><small>Below target</small></div></div>)}</div></section>}
           </div>
 
-          <aside className="builder-summary">
+          <aside className={`builder-summary ${styles.mobileSummary}`}>
             <div className="summary-label"><span>Your alert</span><i>{searching ? 'Searching' : 'Live'}</i></div>
             <h2>{summary}</h2>
             <div className="summary-list"><div><span>From</span><strong>{origin || 'MCI'}</strong></div><div><span>To</span><strong>{destinationLabel}</strong></div><div><span>Price</span><strong>Under ${Number(price || 0).toLocaleString()}</strong></div><div><span>Cabin</span><strong>{cabinLabel}</strong></div><div><span>Airline</span><strong>{airlineLabelText}</strong></div><div><span>Stops</span><strong>{stops === 'any' ? 'Any' : stops === '0' ? 'Nonstop' : `${stops} stop`}</strong></div><div><span>Trip</span><strong>{tripLength}</strong></div><div><span>Window</span><strong>{dateRange}</strong></div><div><span>Frequency</span><strong>{frequency}</strong></div><div><span>Signal</span><strong>{email || 'Not set'}</strong></div></div>
