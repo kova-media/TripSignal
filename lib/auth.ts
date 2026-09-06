@@ -124,15 +124,16 @@ export async function signIn(email: string, password: string) {
   return createSession(user.id, user.email);
 }
 
-export async function createMagicLink(email: string): Promise<MagicLinkResult> {
+export async function createMagicLink(email: string, name?: string): Promise<MagicLinkResult> {
   await ensureSchema();
   const db = getDb();
   const normalizedEmail = email.trim().toLowerCase();
+  const normalizedName = name?.trim().replace(/\s+/g, ' ') || '';
   const userResult = await db.query<{ id: string }>(
-    `insert into users (email) values ($1)
-     on conflict (email) do update set email = excluded.email
+    `insert into users (email, name) values ($1, nullif($2, ''))
+     on conflict (email) do update set name = coalesce(users.name, excluded.name)
      returning id`,
-    [normalizedEmail],
+    [normalizedEmail, normalizedName],
   );
   const userId = userResult.rows[0]?.id;
   if (!userId) throw new Error('Could not create account.');
@@ -179,8 +180,8 @@ export async function getCurrentUser() {
 
   await ensureSchema();
   const db = getDb();
-  const result = await db.query<{ id: string; email: string }>(
-    `select users.id, users.email
+  const result = await db.query<{ id: string; email: string; name: string | null }>(
+    `select users.id, users.email, users.name
      from sessions
      join users on users.id = sessions.user_id
      where sessions.token_hash = $1 and sessions.expires_at > now()
