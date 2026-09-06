@@ -23,25 +23,6 @@ function formatGoogleTime(date: readonly [number, number, number], time: readonl
   return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`;
 }
 
-function getLegs(result: Flights, origin: string, destination: string) {
-  const flights = [...result.flights];
-  const outbound = flights.filter((flight) => flight.from_airport.code === origin || flight.to_airport.code !== origin);
-  const returnFlights = flights.filter((flight) => flight.from_airport.code === destination || flight.to_airport.code !== destination);
-
-  if (outbound.length === 0 || returnFlights.length === 0) {
-    return { outbound: flights, returnFlights: [] };
-  }
-
-  return {
-    outbound: outbound.filter((flight) => flight.from_airport.code !== destination),
-    returnFlights: returnFlights.filter((flight) => flight.from_airport.code !== origin),
-  };
-}
-
-function countStops(flights: readonly Flights['flights'][number][]) {
-  return Math.max(0, flights.length - 1);
-}
-
 function itineraryToOffer(
   result: Flights,
   origin: string,
@@ -49,31 +30,41 @@ function itineraryToOffer(
   departureDate: string,
   returnDate: string,
 ): FlightOffer | null {
-  if (!Number.isFinite(result.price)) return null;
+  if (!Number.isFinite(result.price) || result.price <= 0) return null;
 
   const segments: FlightSegment[] = result.flights.map((flight) => ({
-    marketingCarrier: flight.from_airport.code,
-    operatingCarrier: flight.from_airport.code,
+    marketingCarrier: result.airlines.join(', ') || 'Unknown airline',
+    operatingCarrier: result.airlines.join(', ') || 'Unknown airline',
     origin: flight.from_airport.code,
     destination: flight.to_airport.code,
     departure: formatGoogleTime(flight.departure.date, flight.departure.time),
     arrival: formatGoogleTime(flight.arrival.date, flight.arrival.time),
   }));
 
-  const outbound = segments.filter((segment) => segment.departure.startsWith(departureDate));
-  const returnSegments = segments.filter((segment) => segment.departure.startsWith(returnDate));
-  const outboundStops = countStops(outbound);
-  const returnStops = countStops(returnSegments);
+  const outboundSegments = result.flights.filter((flight) =>
+    formatGoogleTime(flight.departure.date, flight.departure.time).startsWith(departureDate),
+  );
+  const returnSegments = result.flights.filter((flight) =>
+    formatGoogleTime(flight.departure.date, flight.departure.time).startsWith(returnDate),
+  );
 
   return {
-    id: [departureDate, returnDate, origin, destination, result.airlines.join('-'), result.price, segments.map((segment) => `${segment.origin}-${segment.destination}`).join('|')].join(':'),
+    id: [
+      departureDate,
+      returnDate,
+      origin,
+      destination,
+      result.airlines.join('-'),
+      result.price,
+      segments.map((segment) => `${segment.origin}-${segment.destination}`).join('|'),
+    ].join(':'),
     price: result.price,
     currency: 'USD',
     origin,
     destination,
     departureDate,
     returnDate,
-    stops: Math.max(outboundStops, returnStops),
+    stops: Math.max(0, outboundSegments.length - 1, returnSegments.length - 1),
     totalDurationMinutes: result.flights.reduce((total, flight) => total + flight.duration, 0),
     segments,
     source: 'Google Flights',
