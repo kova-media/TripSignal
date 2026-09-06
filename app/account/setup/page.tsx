@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react';
 import Brand from '@/components/brand';
 import ThemeToggle from '@/components/theme-toggle';
+import styles from '../account.module.css';
 
 export default function AccountSetupPage() {
   const [password, setPassword] = useState('');
@@ -21,7 +22,6 @@ export default function AccountSetupPage() {
       setError('Passwords do not match.');
       return;
     }
-
     setLoading(true);
     try {
       const response = await fetch('/api/auth/setup-password', {
@@ -40,28 +40,28 @@ export default function AccountSetupPage() {
   }
 
   return (
-    <main className="auth-page">
+    <main className={styles.page}>
       <header className="nav shell">
         <a className="brand-link" href="/" aria-label="TripSignal home"><Brand /></a>
         <ThemeToggle />
       </header>
-
-      <section className="auth-card shell">
-        <div className="auth-panel">
-          <p className="eyebrow">One last step</p>
-          <h1>Set your TripSignal password.</h1>
-          <p>Your email has been verified. Create a password so you can sign in to your account anytime.</p>
-          <form onSubmit={submit} className="auth-form">
-            <label><span>Password</span><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 8 characters" autoComplete="new-password" minLength={8} required /></label>
-            <label><span>Confirm password</span><input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Enter your password again" autoComplete="new-password" minLength={8} required /></label>
-            {error && <p className="auth-error">{error}</p>}
-            <button className="button button-primary auth-submit" type="submit" disabled={loading}>{loading ? 'Saving password…' : 'Finish setup'} <span>↗</span></button>
-          </form>
-          <p className="auth-note">Your account is already verified. Your password is securely encrypted before it is stored.</p>
+      <section className="shell">
+        <div className={styles.setup}>
+          <div className={styles.setupPanel}>
+            <p className={`${styles.eyebrow} ${styles.setupEyebrow}`}>Account verified</p>
+            <h1 className={styles.setupTitle}>Set your password.</h1>
+            <p className={styles.setupText}>Your email has been verified. Create a password so you can sign in to TripSignal anytime and manage your fare watches.</p>
+            <form onSubmit={submit} className={styles.form}>
+              <label className={styles.label}><span>Password</span><input className={styles.input} type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 8 characters" autoComplete="new-password" minLength={8} required /></label>
+              <label className={styles.label}><span>Confirm password</span><input className={styles.input} type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Enter your password again" autoComplete="new-password" minLength={8} required /></label>
+              {error && <p className={styles.error}>{error}</p>}
+              <button className={`button button-primary ${styles.submit}`} type="submit" disabled={loading}>{loading ? 'Saving password…' : 'Finish setup'} <span>↗</span></button>
+            </form>
+            <p className={styles.note}>Your password is securely encrypted before it is stored.</p>
+          </div>
         </div>
       </section>
-
-      <footer className="footer shell"><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><span>Travel intelligence, on your terms.</span><span>© 2026 TripSignal</span></footer>
+      <footer className={`footer shell ${styles.footer}`}><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><span>Travel intelligence, on your terms.</span><span>© 2026 TripSignal</span></footer>
     </main>
   );
 }
