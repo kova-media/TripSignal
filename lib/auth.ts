@@ -44,6 +44,7 @@ export async function createMagicLink(email: string) {
   );
 
   return {
+    userId,
     email: normalizedEmail,
     url: `${appUrl()}/api/auth/verify?token=${encodeURIComponent(token)}`,
   };
