@@ -18,7 +18,9 @@ export default function SiteHeader({ backHref, backLabel, primaryHref, primaryLa
 
       <div className="nav-actions site-header-actions">
         {backHref && backLabel ? <a className="text-link site-header-back" href={backHref}>{backLabel}</a> : null}
-        {authenticated ? <a className="text-button site-header-signin" href="/api/auth/signout">Sign out</a> : !backHref ? <a className="text-button site-header-signin" href="/signin">Sign in</a> : null}
+        <a className="text-button site-header-signin" href={authenticated ? '/api/auth/signout' : '/signin'}>
+          {authenticated ? 'Sign out' : 'Sign in'}
+        </a>
         <div className="site-header-theme"><ThemeToggle /></div>
         {primaryHref && primaryLabel ? <a className="button button-primary site-header-primary" href={primaryHref}>{primaryLabel}</a> : !backHref ? <a className="button button-primary site-header-primary" href="/alerts">Create alert</a> : null}
       </div>
