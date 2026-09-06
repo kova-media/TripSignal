@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getDb, ensureSchema } from '@/lib/db';
+import { createMagicLink } from '@/lib/auth';
 import { runAlertSearch, summarizeAlert } from '@/lib/alerts';
-import { sendAlertCreatedEmail } from '@/lib/email';
+import { sendAlertCreatedEmail, sendMagicLinkEmail } from '@/lib/email';
 
 type AlertInput = {
   origin: string;
@@ -50,12 +51,18 @@ export async function POST(request: Request) {
     } as const;
 
     await ensureSchema();
+
+    // Creating an alert also creates the account for a new email address and
+    // gives the user a passwordless sign-in link immediately.
+    const account = await createMagicLink(email);
+    await sendMagicLinkEmail(email, account.url);
+
     const db = getDb();
     const inserted = await db.query<{ id: string }>(
-      `insert into alerts (email, criteria, frequency)
-       values ($1, $2::jsonb, $3)
+      `insert into alerts (email, user_id, criteria, frequency)
+       values ($1, $2, $3::jsonb, $4)
        returning id`,
-      [email, JSON.stringify(criteria), criteria.frequency],
+      [email, account.userId, JSON.stringify(criteria), criteria.frequency],
     );
     const alertId = inserted.rows[0]?.id;
     if (!alertId) throw new Error('Could not create alert.');
@@ -81,6 +88,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       alertId,
       active: true,
+      accountCreated: true,
+      signInEmailSent: true,
       offers,
       confirmationSent: !confirmationError,
       warning: confirmationError || searchError || undefined,
