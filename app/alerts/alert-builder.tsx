@@ -24,6 +24,12 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
 }
 
+function datePlusDays(days: number) {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
 function airlineLabel(offer: FlightOffer) {
   const codes = Array.from(new Set(offer.segments.map((segment) => segment.marketingCarrier).filter(Boolean)));
   return codes.join(' / ') || 'Airline';
@@ -39,6 +45,8 @@ export default function AlertBuilder() {
   const [stops, setStops] = useState('1');
   const [tripLength, setTripLength] = useState('1–3 weeks');
   const [dateRange, setDateRange] = useState('Next 12 months');
+  const [customStart, setCustomStart] = useState(datePlusDays(30));
+  const [customEnd, setCustomEnd] = useState(datePlusDays(90));
   const [frequency, setFrequency] = useState<Frequency>('Weekly');
   const [cabin, setCabin] = useState<Cabin>('premium_economy');
   const [email, setEmail] = useState('');
@@ -51,6 +59,8 @@ export default function AlertBuilder() {
   const selectedAirline = airlines.find((airline) => airline.code === airlineMode);
   const airlineLabelText = selectedAirline?.name ?? 'All airlines';
   const cabinLabel = cabin === 'premium_economy' ? 'Premium economy' : cabin === 'business' ? 'Business' : 'Economy';
+  const customRangeLabel = `${formatDate(customStart)} – ${formatDate(customEnd)}`;
+  const displayDateRange = dateRange === 'Custom dates' ? customRangeLabel : dateRange;
 
   const summary = useMemo(
     () => `${origin || 'MCI'} → ${destinationLabel} · ${cabinLabel} · under $${Number(price || 0).toLocaleString()} · ${frequency}`,
@@ -67,6 +77,10 @@ export default function AlertBuilder() {
       setSearchError('Enter a valid email address so we can send your signals.');
       return;
     }
+    if (dateRange === 'Custom dates' && customEnd < customStart) {
+      setSearchError('The end date must be on or after the start date.');
+      return;
+    }
 
     setSaved(false); setSearching(true); setSearchError(''); setOffers([]);
     const alert = {
@@ -77,7 +91,9 @@ export default function AlertBuilder() {
       airlineMode,
       maxStops: stops,
       tripLength,
-      dateRange,
+      dateRange: displayDateRange,
+      dateStart: dateRange === 'Custom dates' ? customStart : undefined,
+      dateEnd: dateRange === 'Custom dates' ? customEnd : undefined,
       frequency,
       cabin,
       email: email.trim(),
@@ -129,7 +145,9 @@ export default function AlertBuilder() {
 
             <section className="form-section">
               <div className="form-heading"><div><h2>When should we look?</h2><p>Choose the travel window and monitoring rhythm.</p></div></div>
-              <div className="two-col"><label><span>Travel window</span><select value={dateRange} onChange={(event) => setDateRange(event.target.value)}><option>Anytime</option><option>Next 3 months</option><option>Next 6 months</option><option>Next 12 months</option></select></label><label><span>Search frequency</span><select value={frequency} onChange={(event) => setFrequency(event.target.value as Frequency)}><option>Weekly</option><option>Monthly</option></select></label></div>
+              <div className="two-col"><label><span>Travel window</span><select value={dateRange} onChange={(event) => setDateRange(event.target.value)}><option>Anytime</option><option>Next 3 months</option><option>Next 6 months</option><option>Next 12 months</option><option>Custom dates</option></select></label><label><span>Search frequency</span><select value={frequency} onChange={(event) => setFrequency(event.target.value as Frequency)}><option>Weekly</option><option>Monthly</option></select></label></div>
+              {dateRange === 'Custom dates' && <div className="two-col custom-date-fields"><label><span>Start date</span><input type="date" value={customStart} min={datePlusDays(0)} onChange={(event) => setCustomStart(event.target.value)} required /></label><label><span>End date</span><input type="date" value={customEnd} min={customStart || datePlusDays(0)} onChange={(event) => setCustomEnd(event.target.value)} required /></label></div>}
+              {dateRange === 'Custom dates' && <small className="date-range-help">We’ll look for departures within this window.</small>}
             </section>
 
             <section className="form-section contact-section">
@@ -146,7 +164,7 @@ export default function AlertBuilder() {
           <aside className={`builder-summary ${styles.mobileSummary}`}>
             <div className="summary-label"><span>Your alert</span><i>{searching ? 'Searching' : 'Live'}</i></div>
             <h2>{summary}</h2>
-            <div className="summary-list"><div><span>From</span><strong>{origin || 'MCI'}</strong></div><div><span>To</span><strong>{destinationLabel}</strong></div><div><span>Price</span><strong>Under ${Number(price || 0).toLocaleString()}</strong></div><div><span>Cabin</span><strong>{cabinLabel}</strong></div><div><span>Airline</span><strong>{airlineLabelText}</strong></div><div><span>Stops</span><strong>{stops === 'any' ? 'Any' : stops === '0' ? 'Nonstop' : `${stops} stop`}</strong></div><div><span>Trip</span><strong>{tripLength}</strong></div><div><span>Window</span><strong>{dateRange}</strong></div><div><span>Frequency</span><strong>{frequency}</strong></div><div><span>Signal</span><strong>{email || 'Not set'}</strong></div></div>
+            <div className="summary-list"><div><span>From</span><strong>{origin || 'MCI'}</strong></div><div><span>To</span><strong>{destinationLabel}</strong></div><div><span>Price</span><strong>Under ${Number(price || 0).toLocaleString()}</strong></div><div><span>Cabin</span><strong>{cabinLabel}</strong></div><div><span>Airline</span><strong>{airlineLabelText}</strong></div><div><span>Stops</span><strong>{stops === 'any' ? 'Any' : stops === '0' ? 'Nonstop' : `${stops} stop`}</strong></div><div><span>Trip</span><strong>{tripLength}</strong></div><div><span>Window</span><strong>{displayDateRange}</strong></div><div><span>Frequency</span><strong>{frequency}</strong></div><div><span>Signal</span><strong>{email || 'Not set'}</strong></div></div>
             <div className="summary-note"><span className="summary-check">✓</span><p>Alerts are stored securely and checked on schedule.</p></div>
           </aside>
         </form>
