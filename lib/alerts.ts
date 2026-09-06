@@ -64,6 +64,7 @@ function buildCriteria(alert: AlertCriteria, salt = 0): FlightSearchCriteria {
   const [minTripDays, maxTripDays] = tripDays(alert.tripLength);
   const departureStart = nextDepartureDate(alert, salt);
   const [, windowEnd] = dateRangeBounds(alert);
+  const allAirlines = alert.airlineMode.toLowerCase() === 'all';
   return {
     origin: alert.origin,
     destination: alert.destinationMode === 'airport'
@@ -71,7 +72,7 @@ function buildCriteria(alert: AlertCriteria, salt = 0): FlightSearchCriteria {
       : { type: 'region', value: alert.destination },
     maxPrice: alert.maxPrice,
     cabin: alert.cabin,
-    airlines: alert.airlineMode === 'all' ? [] : [alert.airlineMode.toUpperCase()],
+    airlines: allAirlines ? [] : [alert.airlineMode.toUpperCase()],
     maxStops: alert.maxStops === 'any' ? null : Number(alert.maxStops),
     minTripDays,
     maxTripDays,
