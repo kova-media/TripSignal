@@ -39,6 +39,8 @@ export async function POST(request: Request) {
     const dateRange = String(body.dateRange ?? 'Next 12 months').trim();
     const dateStart = body.dateStart ? String(body.dateStart).trim() : undefined;
     const dateEnd = body.dateEnd ? String(body.dateEnd).trim() : undefined;
+    const rawAirlineMode = String(body.airlineMode ?? 'all').trim();
+    const airlineMode = rawAirlineMode.toLowerCase() === 'all' ? 'all' : rawAirlineMode.toUpperCase();
 
     if (!/^[A-Z]{3}$/.test(origin)) return NextResponse.json({ error: 'Origin must be a three-letter airport code.' }, { status: 400 });
     if (destinationMode === 'airport' && !/^[A-Za-z]{3}$/.test(destination)) return NextResponse.json({ error: 'Destination airport must be a three-letter airport code.' }, { status: 400 });
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
       destinationMode,
       destination: destinationMode === 'airport' ? destination.toUpperCase() : destination,
       maxPrice,
-      airlineMode: String(body.airlineMode ?? 'all').toUpperCase(),
+      airlineMode,
       maxStops: String(body.maxStops ?? '1'),
       tripLength: String(body.tripLength ?? '1–3 weeks'),
       dateRange,
