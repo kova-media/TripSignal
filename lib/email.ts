@@ -1,14 +1,15 @@
 import { Resend } from 'resend';
 import type { FlightOffer } from './flights/types';
 
+const ALERT_FROM_EMAIL = 'TripSignal Alerts <alerts@tripsignal.travel>';
+
 function getResend() {
   if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY is not configured.');
   return new Resend(process.env.RESEND_API_KEY);
 }
 
 function getFrom() {
-  if (!process.env.ALERT_FROM_EMAIL) throw new Error('ALERT_FROM_EMAIL is not configured.');
-  return process.env.ALERT_FROM_EMAIL;
+  return ALERT_FROM_EMAIL;
 }
 
 function offerLabel(offer: FlightOffer) {
