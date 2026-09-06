@@ -10,12 +10,17 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+    const name = typeof body.name === 'string' ? body.name.trim().replace(/\s+/g, ' ') : '';
+
+    if (name.length < 2 || name.length > 100) {
+      return NextResponse.json({ error: 'Enter your name.' }, { status: 400 });
+    }
 
     if (!validEmail(email)) {
       return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
     }
 
-    const { url } = await createMagicLink(email);
+    const { url } = await createMagicLink(email, name);
     await sendMagicLinkEmail(email, url);
     return NextResponse.json({ sent: true });
   } catch (error) {
