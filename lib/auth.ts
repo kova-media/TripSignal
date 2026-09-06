@@ -88,6 +88,29 @@ export async function signUp(email: string, password: string) {
   return createSession(user.id, user.email);
 }
 
+export async function setPasswordForCurrentUser(password: string) {
+  await ensureSchema();
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!sessionToken) return null;
+
+  const db = getDb();
+  const result = await db.query<{ id: string; email: string }>(
+    `select users.id, users.email
+     from sessions
+     join users on users.id = sessions.user_id
+     where sessions.token_hash = $1 and sessions.expires_at > now()
+     limit 1`,
+    [hashToken(sessionToken)],
+  );
+  const user = result.rows[0];
+  if (!user) return null;
+
+  const passwordHash = await hashPassword(password);
+  await db.query('update users set password_hash = $1 where id = $2', [passwordHash, user.id]);
+  return user;
+}
+
 export async function signIn(email: string, password: string) {
   await ensureSchema();
   const db = getDb();
@@ -133,8 +156,8 @@ export async function consumeMagicLink(token: string) {
   await ensureSchema();
   const db = getDb();
   const tokenHash = hashToken(token);
-  const result = await db.query<{ user_id: string; email: string }>(
-    `select auth_tokens.user_id, users.email
+  const result = await db.query<{ user_id: string; email: string; password_hash: string | null }>(
+    `select auth_tokens.user_id, users.email, users.password_hash
      from auth_tokens
      join users on users.id = auth_tokens.user_id
      where auth_tokens.token_hash = $1 and auth_tokens.expires_at > now()
@@ -145,7 +168,8 @@ export async function consumeMagicLink(token: string) {
   if (!row) return null;
 
   await db.query('delete from auth_tokens where token_hash = $1', [tokenHash]);
-  return createSession(row.user_id, row.email);
+  const user = await createSession(row.user_id, row.email);
+  return { ...user, hasPassword: Boolean(row.password_hash) };
 }
 
 export async function getCurrentUser() {
