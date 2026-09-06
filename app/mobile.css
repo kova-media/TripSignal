@@ -4,11 +4,11 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-      "brand primary"
+      "brand actions"
       "theme theme";
     align-items: center;
-    gap: 12px 10px;
-    padding: 12px 0 14px;
+    gap: 14px 10px;
+    padding: 14px 0 16px;
   }
 
   .site-header-brand {
@@ -17,16 +17,34 @@
   }
 
   .site-header-actions {
-    display: contents;
+    grid-area: actions;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas: "signin primary";
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .site-header-back {
+    display: none;
   }
 
   .site-header-signin {
-    display: none;
+    grid-area: signin;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    font-size: 12px;
+    white-space: nowrap;
   }
 
   .site-header-primary {
     grid-area: primary;
     justify-self: end;
+    padding: 10px 13px !important;
+    font-size: 12px !important;
   }
 
   .site-header-theme {
@@ -48,10 +66,10 @@
 
 @media (max-width: 420px) {
   .site-header {
-    gap: 10px 8px;
+    gap: 12px 8px;
   }
 
   .site-header-primary {
-    padding-inline: 12px;
+    padding-inline: 11px !important;
   }
 }
