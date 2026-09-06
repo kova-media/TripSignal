@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './brand.css';
 import './tech.css';
+import './color-fix.css';
 
 export const metadata: Metadata = {
   title: 'TripSignal | Travel intelligence, on your terms',
