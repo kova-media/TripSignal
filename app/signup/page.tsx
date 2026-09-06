@@ -5,6 +5,7 @@ import Brand from '@/components/brand';
 import ThemeToggle from '@/components/theme-toggle';
 
 export default function SignUpPage() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -18,7 +19,7 @@ export default function SignUpPage() {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ name, email }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Could not send your verification email.');
@@ -43,8 +44,9 @@ export default function SignUpPage() {
             <>
               <p className="eyebrow">New to TripSignal</p>
               <h1>Create your account.</h1>
-              <p>Enter your email and we’ll send you a secure link to verify your address and finish setting up your account.</p>
+              <p>Enter your name and email. We’ll send you a secure link to verify your address and finish setting up your account.</p>
               <form onSubmit={submit} className="auth-form">
+                <label><span>Full name</span><input type="text" value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" autoComplete="name" minLength={2} maxLength={100} required /></label>
                 <label><span>Email address</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" required /></label>
                 {error && <p className="auth-error">{error}</p>}
                 <button className="button button-primary auth-submit" type="submit" disabled={loading}>{loading ? 'Sending link…' : 'Send verification link'} <span>↗</span></button>
