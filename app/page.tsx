@@ -32,9 +32,9 @@ export default function Home() {
       <section id="how" className="how shell">
         <div className="section-intro"><p className="section-kicker">How it works</p><h2>Set it once.<br />Stop searching.</h2></div>
         <div className="steps">
-          <article><span className="step-index">01</span><h3>Define the trip.</h3><p>Route, destination, dates, cabin, airlines, stops, and price.</p></article>
-          <article><span className="step-index">02</span><h3>Let us watch.</h3><p>TripSignal checks active alerts on your schedule.</p></article>
-          <article><span className="step-index">03</span><h3>Get the signal.</h3><p>When a fare fits, you get the price and flight details.</p></article>
+          <article><h3>Define the trip.</h3><p>Route, destination, dates, cabin, airlines, stops, and price.</p></article>
+          <article><h3>Let us watch.</h3><p>TripSignal checks active alerts on your schedule.</p></article>
+          <article><h3>Get the signal.</h3><p>When a fare fits, you get the price and flight details.</p></article>
         </div>
       </section>
 
