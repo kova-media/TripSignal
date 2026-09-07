@@ -1,4 +1,5 @@
 import './home-refine.css';
+import './home-align.css';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
 
