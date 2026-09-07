@@ -1,5 +1,98 @@
 @media (max-width: 900px) {
   .mobileSummary {
     order: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding: 24px !important;
+    overflow: hidden !important;
+  }
+
+  .mobileSummary .summary-label {
+    width: 100%;
+    min-width: 0;
+    min-height: 24px;
+    padding: 0;
+    line-height: 1.25;
+  }
+
+  .mobileSummary .summary-label span,
+  .mobileSummary .summary-label i {
+    min-width: 0;
+  }
+
+  .mobileSummary h2 {
+    width: 100%;
+    min-width: 0;
+    margin: 18px 0 22px;
+    overflow-wrap: anywhere;
+  }
+
+  .mobileSummary .summary-list {
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .mobileSummary .summary-list div,
+  .mobileSummary .summary-list div:nth-child(even) {
+    width: 100%;
+    min-width: 0;
+    min-height: 58px;
+    padding: 12px 0 !important;
+    border-left: 0 !important;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mobileSummary .summary-list span {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  .mobileSummary .summary-list strong {
+    min-width: 0;
+    max-width: 68%;
+    text-align: right;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .mobileSummary .summary-note {
+    min-width: 0;
+  }
+
+  .mobileSummary .summary-note p {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (min-width: 901px) {
+  .mobileSummary {
+    width: 100%;
+    max-width: 390px;
+    min-width: 0;
+    justify-self: end;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 420px) {
+  .mobileSummary {
+    padding: 20px !important;
+  }
+
+  .mobileSummary .summary-list div,
+  .mobileSummary .summary-list div:nth-child(even) {
+    gap: 12px;
+  }
+
+  .mobileSummary .summary-list strong {
+    max-width: 64%;
   }
 }
