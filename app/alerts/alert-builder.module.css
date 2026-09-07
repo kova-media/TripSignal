@@ -9,7 +9,7 @@
     overflow: hidden !important;
   }
 
-  .mobileSummary .summary-label {
+  .mobileSummary :global(.summary-label) {
     width: 100%;
     min-width: 0;
     min-height: 24px;
@@ -18,8 +18,8 @@
     line-height: 1.25;
   }
 
-  .mobileSummary .summary-label span,
-  .mobileSummary .summary-label i {
+  .mobileSummary :global(.summary-label span),
+  .mobileSummary :global(.summary-label i) {
     min-width: 0;
   }
 
@@ -32,14 +32,14 @@
     overflow-wrap: anywhere;
   }
 
-  .mobileSummary .summary-list {
+  .mobileSummary :global(.summary-list) {
     width: 100%;
     min-width: 0;
     grid-template-columns: 1fr;
   }
 
-  .mobileSummary .summary-list div,
-  .mobileSummary .summary-list div:nth-child(even) {
+  .mobileSummary :global(.summary-list div),
+  .mobileSummary :global(.summary-list div:nth-child(even)) {
     width: 100%;
     min-width: 0;
     min-height: 58px;
@@ -53,13 +53,13 @@
     box-sizing: border-box;
   }
 
-  .mobileSummary .summary-list span {
+  .mobileSummary :global(.summary-list span) {
     flex: 0 1 42%;
     min-width: 0;
     overflow-wrap: anywhere;
   }
 
-  .mobileSummary .summary-list strong {
+  .mobileSummary :global(.summary-list strong) {
     min-width: 0;
     max-width: 58%;
     flex: 0 1 auto;
@@ -69,13 +69,13 @@
     white-space: normal;
   }
 
-  .mobileSummary .summary-note {
+  .mobileSummary :global(.summary-note) {
     min-width: 0;
     padding: 18px 48px 24px !important;
     box-sizing: border-box;
   }
 
-  .mobileSummary .summary-note p {
+  .mobileSummary :global(.summary-note p) {
     min-width: 0;
     overflow-wrap: anywhere;
   }
@@ -89,10 +89,31 @@
     justify-self: end;
     box-sizing: border-box;
   }
+
+  .mobileSummary :global(.summary-label) {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+
+  .mobileSummary h2 {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+
+  .mobileSummary :global(.summary-list div),
+  .mobileSummary :global(.summary-list div:nth-child(even)) {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+
+  .mobileSummary :global(.summary-note) {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
 }
 
 @media (max-width: 420px) {
-  .mobileSummary .summary-label {
+  .mobileSummary :global(.summary-label) {
     padding-left: 32px !important;
     padding-right: 32px !important;
   }
@@ -102,90 +123,20 @@
     padding-right: 32px !important;
   }
 
-  .mobileSummary .summary-list div,
-  .mobileSummary .summary-list div:nth-child(even) {
+  .mobileSummary :global(.summary-list div),
+  .mobileSummary :global(.summary-list div:nth-child(even)) {
     padding-left: 32px !important;
     padding-right: 32px !important;
     gap: 14px;
   }
 
-  .mobileSummary .summary-list strong {
+  .mobileSummary :global(.summary-list strong) {
     max-width: 58%;
   }
 
-  .mobileSummary .summary-note {
+  .mobileSummary :global(.summary-note) {
     padding-left: 32px !important;
     padding-right: 32px !important;
     padding-bottom: 20px !important;
-  }
-}
-
-/* The card stays in place. Only its contents get a deliberate inner gutter. */
-@media (min-width: 901px) {
-  .mobileSummary .summary-label {
-    padding-left: 48px !important;
-    padding-right: 48px !important;
-  }
-
-  .mobileSummary h2 {
-    padding-left: 48px !important;
-    padding-right: 48px !important;
-  }
-
-  .mobileSummary .summary-list div,
-  .mobileSummary .summary-list div:nth-child(even) {
-    padding-left: 48px !important;
-    padding-right: 48px !important;
-  }
-
-  .mobileSummary .summary-note {
-    padding-left: 48px !important;
-    padding-right: 48px !important;
-  }
-}
-
-@media (max-width: 900px) and (min-width: 421px) {
-  .mobileSummary .summary-label {
-    padding-left: 48px !important;
-    padding-right: 48px !important;
-  }
-
-  .mobileSummary h2 {
-    padding-left: 48px !important;
-    padding-right: 48px !important;
-  }
-
-  .mobileSummary .summary-list div,
-  .mobileSummary .summary-list div:nth-child(even) {
-    padding-left: 48px !important;
-    padding-right: 48px !important;
-  }
-
-  .mobileSummary .summary-note {
-    padding-left: 48px !important;
-    padding-right: 48px !important;
-  }
-}
-
-@media (max-width: 420px) {
-  .mobileSummary .summary-label {
-    padding-left: 32px !important;
-    padding-right: 32px !important;
-  }
-
-  .mobileSummary h2 {
-    padding-left: 32px !important;
-    padding-right: 32px !important;
-  }
-
-  .mobileSummary .summary-list div,
-  .mobileSummary .summary-list div:nth-child(even) {
-    padding-left: 32px !important;
-    padding-right: 32px !important;
-  }
-
-  .mobileSummary .summary-note {
-    padding-left: 32px !important;
-    padding-right: 32px !important;
   }
 }
