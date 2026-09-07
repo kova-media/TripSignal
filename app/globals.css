@@ -161,7 +161,7 @@ a { color: inherit; text-decoration: none; }
 .select-row .option { flex: 1; min-width: 0; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .builder-submit { width: max-content; }
-.builder-summary { position: sticky; top: 22px; background: var(--dark); color: #f1f0ea; border-radius: 21px; padding: 27px; min-width: 0; overflow: visible; }
+.builder-summary { position: sticky; top: 22px; background: var(--dark); color: #f1f0ea; border-radius: 21px; padding: 40px !important; min-width: 0; overflow: visible; }
 .summary-label { display: flex; justify-content: space-between; align-items: center; color: #929a97; font-size: 11px; line-height: 1.35; min-height: 20px; padding-top: 2px; overflow: visible; }
 .summary-label i { font-style: normal; color: var(--dark-accent); }
 .builder-summary h2 { font-family: 'Space Grotesk', sans-serif; font-size: 25px; line-height: 1.08; letter-spacing: -.045em; margin: 20px 0 25px; overflow-wrap: anywhere; }
@@ -201,7 +201,7 @@ a { color: inherit; text-decoration: none; }
   .nav-actions { gap: 12px; }
   .nav-how { display: none; }
   .builder-grid { grid-template-columns: 1fr; gap: 42px; }
-  .builder-summary { position: static; order: -1; }
+  .builder-summary { position: static; order: -1; padding: 32px !important; }
   .builder-form { gap: 52px; }
 }
 
@@ -218,73 +218,4 @@ a { color: inherit; text-decoration: none; }
   .hero { padding: 48px 0 68px; gap: 38px; }
   .hero h1, .builder-intro h1 { font-size: clamp(42px, 13vw, 54px); line-height: 1; letter-spacing: -.065em; margin-bottom: 22px; }
   .lede { font-size: 15px; line-height: 1.62; }
-  .hero-actions { align-items: stretch; flex-direction: column; gap: 15px; margin-top: 28px; }
-  .hero-actions .button { width: 100%; }
-  .hero-actions .text-link { align-self: flex-start; }
-  .product-preview { padding: 21px; border-radius: 20px; }
-  .preview-price { font-size: clamp(58px, 19vw, 70px); margin-top: 42px; }
-  .preview-price span { font-size: 18px; vertical-align: 11px; }
-  .preview-route { gap: 9px; }
-  .preview-route strong { font-size: 23px; }
-  .preview-details { flex-direction: column; align-items: flex-start; gap: 7px; }
-  .preview-rule { align-items: flex-start; flex-wrap: wrap; }
-  .preview-rule b { margin-left: 0; width: 100%; }
-  .preview-footer { align-items: flex-start; flex-direction: column; gap: 9px; }
-  .trust { padding: 18px 0; line-height: 1.5; }
-  .trust div { gap: 8px 16px; }
-  .trust b { font-size: 11px; }
-  .how, .signals { padding: 78px 0; }
-  .how h2, .signals h2, .cta h2, .demo h2 { font-size: clamp(36px, 11vw, 48px); margin-bottom: 42px; }
-  .steps { gap: 28px; }
-  .steps article { padding-top: 18px; }
-  .steps h3 { font-size: 19px; }
-  .steps p { font-size: 13px; }
-  .demo { padding: 34px 22px; border-radius: 20px; gap: 34px; }
-  .demo h2 { margin-bottom: 18px; }
-  .demo-copy > p:not(.eyebrow) { font-size: 13px; margin-bottom: 24px; }
-  .demo .button { width: 100%; }
-  .criteria { padding: 8px 16px; }
-  .criteria-item { gap: 12px; padding: 15px 0; }
-  .criteria-item strong { max-width: 65%; }
-  .signal-item { align-items: flex-start; gap: 14px; padding: 18px 0; }
-  .signal-item strong { font-size: 15px; }
-  .signal-item span { font-size: 10px; line-height: 1.45; }
-  .signal-price strong { font-size: 24px; }
-  .signal-price small { font-size: 9px; }
-  .cta { flex-direction: column; padding: 68px 0 78px; gap: 25px; }
-  .cta .button { width: 100%; }
-  .footer { grid-template-columns: 1fr; gap: 10px; padding: 22px 0 28px; }
-  .builder { padding: 46px 0 80px; }
-  .builder-intro > p:last-child { font-size: 15px; }
-  .builder-grid { margin-top: 42px; gap: 34px; }
-  .builder-form { gap: 44px; }
-  .form-section { gap: 20px; }
-  .form-heading h2 { font-size: 21px; }
-  .form-heading p { font-size: 11px; }
-  .select-row { flex-direction: column; }
-  .select-row .option { width: 100%; }
-  .two-col { grid-template-columns: 1fr; gap: 18px; }
-  .builder-submit { width: 100%; }
-  .builder-summary { padding: 20px; border-radius: 18px; }
-  .summary-label { min-height: 22px; line-height: 1.4; padding-top: 3px; }
-  .builder-summary h2 { font-size: 21px; margin: 15px 0 19px; }
-  .summary-list div { min-height: 62px; padding-top: 10px; padding-bottom: 10px; }
-  .summary-list div:nth-child(even) { padding-left: 12px; }
-  .summary-list strong { font-size: 11px; }
-}
-
-@media (max-width: 420px) {
-  .shell { width: min(100% - 24px, 1160px); }
-  .nav { min-height: 64px; gap: 7px; }
-  .brand { font-size: 16px; }
-  .brand-symbol { width: 21px; height: 21px; }
-  .nav-actions { gap: 5px; }
-  .theme-option { padding: 5px 6px; font-size: 8px; gap: 4px; }
-  .theme-option svg { width: 12px; height: 12px; }
-  .nav-actions .button { padding: 9px 10px; font-size: 11px; }
-  .hero { padding-top: 40px; }
-  .hero h1, .builder-intro h1 { font-size: 40px; }
-  .builder-summary { padding: 18px; }
-  .summary-label { min-height: 23px; line-height: 1.4; padding-top: 4px; }
-  .summary-list div { min-height: 58px; }
 }
