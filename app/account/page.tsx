@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import SiteHeader from '@/components/site-header';
+import AlertActions from './alert-actions';
 import { getCurrentUser } from '@/lib/auth';
 import { getDb, ensureSchema } from '@/lib/db';
 import styles from './account.module.css';
@@ -82,7 +83,10 @@ export default async function AccountPage() {
                       <p className={styles.route}>{summarizeCriteria(alert.criteria)}</p>
                       <div className={styles.meta}><span>{alert.frequency}</span><span>·</span><span>Created {new Date(alert.created_at).toLocaleDateString()}</span></div>
                     </div>
-                    <span className={`${styles.status} ${!alert.active ? styles.paused : ''}`}><i className={styles.dot} />{alert.active ? 'Watching' : 'Paused'}</span>
+                    <div className={styles.alertRight}>
+                      <span className={`${styles.status} ${!alert.active ? styles.paused : ''}`}><i className={styles.dot} />{alert.active ? 'Watching' : 'Paused'}</span>
+                      <AlertActions id={alert.id} />
+                    </div>
                   </article>
                 ))}
               </div>
