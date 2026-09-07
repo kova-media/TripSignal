@@ -1,0 +1,22 @@
+/* Keep preview cards at their existing size. Inset only the text and values. */
+.criteria-title {
+  padding-left: 42px !important;
+  padding-right: 42px !important;
+}
+
+.criteria-item {
+  padding-left: 42px !important;
+  padding-right: 42px !important;
+}
+
+@media (max-width: 640px) {
+  .criteria-title {
+    padding-left: 28px !important;
+    padding-right: 28px !important;
+  }
+
+  .criteria-item {
+    padding-left: 28px !important;
+    padding-right: 28px !important;
+  }
+}
