@@ -119,3 +119,73 @@
     padding-bottom: 20px !important;
   }
 }
+
+/* The card stays in place. Only its contents get a deliberate inner gutter. */
+@media (min-width: 901px) {
+  .mobileSummary .summary-label {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+
+  .mobileSummary h2 {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+
+  .mobileSummary .summary-list div,
+  .mobileSummary .summary-list div:nth-child(even) {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+
+  .mobileSummary .summary-note {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+}
+
+@media (max-width: 900px) and (min-width: 421px) {
+  .mobileSummary .summary-label {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+
+  .mobileSummary h2 {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+
+  .mobileSummary .summary-list div,
+  .mobileSummary .summary-list div:nth-child(even) {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+
+  .mobileSummary .summary-note {
+    padding-left: 48px !important;
+    padding-right: 48px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .mobileSummary .summary-label {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+
+  .mobileSummary h2 {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+
+  .mobileSummary .summary-list div,
+  .mobileSummary .summary-list div:nth-child(even) {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+
+  .mobileSummary .summary-note {
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+  }
+}
