@@ -1,0 +1,233 @@
+/* Final homepage layout and theme correction. Keep homepage wide, centered, and use TripSignal blue in both themes. */
+.home-page .shell {
+  width: min(1440px, calc(100% - 72px));
+  max-width: 1440px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* The watch dashboard is a section inside the page, not the page's outer card. */
+.home-page .product-preview {
+  padding-bottom: 0;
+  margin-bottom: 104px;
+}
+
+/* TripSignal brand blue. */
+.home-page .hero-kicker,
+.home-page .section-kicker {
+  color: #5b8def;
+}
+
+.home-page .home-page-button-primary,
+.home-page .button-primary:hover,
+.home-page .watch-pill {
+  border-color: #5b8def;
+}
+
+.home-page .button-primary:hover {
+  background: #5b8def;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(91, 141, 239, .18);
+}
+
+.home-page .watch-pill {
+  background: #e8eeff;
+  color: #3f6fcb;
+}
+
+.home-page .dashboard-status i {
+  background: #5b8def;
+  box-shadow: 0 0 0 5px rgba(91, 141, 239, .10);
+}
+
+/* Light mode should actually be light. Product previews remain crisp and editorial. */
+html:not([data-theme="redeye"]) .home-page .signal-card,
+html:not([data-theme="redeye"]) .home-page .notification-card {
+  color: var(--ink);
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: var(--shadow);
+}
+
+html:not([data-theme="redeye"]) .home-page .signal-card::after {
+  background: radial-gradient(circle, rgba(91, 141, 239, .12), transparent 70%);
+}
+
+html:not([data-theme="redeye"]) .home-page .signal-card-top,
+html:not([data-theme="redeye"]) .home-page .signal-date,
+html:not([data-theme="redeye"]) .home-page .signal-price small,
+html:not([data-theme="redeye"]) .home-page .signal-rule,
+html:not([data-theme="redeye"]) .home-page .signal-card-bottom {
+  color: var(--muted);
+}
+
+html:not([data-theme="redeye"]) .home-page .signal-card-top span:first-child,
+html:not([data-theme="redeye"]) .home-page .signal-card-bottom a,
+html:not([data-theme="redeye"]) .home-page .signal-rule strong {
+  color: var(--ink);
+}
+
+html:not([data-theme="redeye"]) .home-page .signal-card-top i,
+html:not([data-theme="redeye"]) .home-page .notification-top i {
+  background: #5b8def;
+  box-shadow: 0 0 0 5px rgba(91, 141, 239, .10);
+}
+
+html:not([data-theme="redeye"]) .home-page .signal-meta,
+html:not([data-theme="redeye"]) .home-page .notification-main,
+html:not([data-theme="redeye"]) .home-page .notification-action {
+  border-color: var(--line);
+}
+
+html:not([data-theme="redeye"]) .home-page .signal-rule b,
+html:not([data-theme="redeye"]) .home-page .notification-details b {
+  color: #3f6fcb;
+}
+
+html:not([data-theme="redeye"]) .home-page .notification-top,
+html:not([data-theme="redeye"]) .home-page .notification-main p,
+html:not([data-theme="redeye"]) .home-page .notification-main span,
+html:not([data-theme="redeye"]) .home-page .notification-details,
+html:not([data-theme="redeye"]) .home-page .notification-action {
+  color: var(--muted);
+}
+
+html:not([data-theme="redeye"]) .home-page .notification-top span:first-child,
+html:not([data-theme="redeye"]) .home-page .notification-main strong,
+html:not([data-theme="redeye"]) .home-page .notification-action {
+  color: var(--ink);
+}
+
+html:not([data-theme="redeye"]) .home-page .search-preview {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+html:not([data-theme="redeye"]) .home-page .search-preview .section-kicker {
+  color: #5b8def;
+}
+
+html:not([data-theme="redeye"]) .home-page .search-preview h2 {
+  color: var(--ink);
+}
+
+html:not([data-theme="redeye"]) .home-page .search-preview-copy > p:not(.section-kicker) {
+  color: var(--muted);
+}
+
+html:not([data-theme="redeye"]) .home-page .search-preview .button-primary {
+  border-color: #5b8def;
+  background: #5b8def;
+  color: #fff;
+}
+
+html:not([data-theme="redeye"]) .home-page .search-preview .button-primary:hover {
+  border-color: #3f6fcb;
+  background: #3f6fcb;
+  color: #fff;
+}
+
+html:not([data-theme="redeye"]) .home-page .criteria-title,
+html:not([data-theme="redeye"]) .home-page .criteria-item {
+  border-color: var(--line);
+}
+
+html:not([data-theme="redeye"]) .home-page .criteria-title {
+  color: var(--ink);
+}
+
+html:not([data-theme="redeye"]) .home-page .criteria-title i {
+  color: #3f6fcb;
+}
+
+html:not([data-theme="redeye"]) .home-page .criteria-item > span {
+  color: var(--muted);
+}
+
+html:not([data-theme="redeye"]) .home-page .criteria-item strong {
+  color: var(--ink);
+}
+
+html:not([data-theme="redeye"]) .home-page .criteria-item small {
+  color: var(--quiet);
+}
+
+/* Keep the criteria panel visually separated without turning the whole section into a dark block. */
+html:not([data-theme="redeye"]) .home-page .criteria-live {
+  padding: 20px 0 20px 40px;
+  border-left: 1px solid var(--line);
+}
+
+/* Redeye uses the same brand blue, not the previous green accent. */
+html[data-theme="redeye"] .home-page .hero-kicker,
+html[data-theme="redeye"] .home-page .section-kicker,
+html[data-theme="redeye"] .home-page .criteria-title i {
+  color: #6c9bff;
+}
+
+html[data-theme="redeye"] .home-page .watch-pill {
+  border-color: rgba(108, 155, 255, .28);
+  background: rgba(108, 155, 255, .10);
+  color: #8eb2ff;
+}
+
+html[data-theme="redeye"] .home-page .dashboard-status i,
+html[data-theme="redeye"] .home-page .signal-card-top i,
+html[data-theme="redeye"] .home-page .notification-top i {
+  background: #6c9bff;
+  box-shadow: 0 0 0 5px rgba(108, 155, 255, .10);
+}
+
+html[data-theme="redeye"] .home-page .signal-card::after {
+  background: radial-gradient(circle, rgba(108, 155, 255, .14), transparent 70%);
+}
+
+html[data-theme="redeye"] .home-page .signal-rule b,
+html[data-theme="redeye"] .home-page .notification-details b {
+  color: #8eb2ff;
+}
+
+html[data-theme="redeye"] .home-page .button-primary:hover {
+  border-color: #6c9bff;
+  background: #6c9bff;
+  color: #0f1417;
+  box-shadow: 0 10px 28px rgba(108, 155, 255, .18);
+}
+
+html[data-theme="redeye"] .home-page .criteria-title,
+html[data-theme="redeye"] .home-page .criteria-item {
+  border-color: #2a3131;
+}
+
+html[data-theme="redeye"] .home-page .criteria-live {
+  padding: 3px 0 3px 40px;
+  border-left: 1px solid #2a3131;
+}
+
+@media (max-width: 900px) {
+  .home-page .shell {
+    width: min(100% - 48px, 1160px);
+  }
+
+  .home-page .product-preview {
+    margin-bottom: 80px;
+  }
+
+  html:not([data-theme="redeye"]) .home-page .criteria-live,
+  html[data-theme="redeye"] .home-page .criteria-live {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-page .shell {
+    width: calc(100% - 32px);
+  }
+
+  .home-page .product-preview {
+    margin-bottom: 64px;
+  }
+}
