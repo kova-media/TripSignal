@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   icons: { icon: '/favicon.svg', shortcut: '/favicon.svg', apple: '/tripsignal-icon-daylight.svg' },
 };
 
-const themeScript = `(() => { try { const saved = localStorage.getItem('tripsignal-theme'); document.documentElement.dataset.theme = saved === 'daylight' ? 'daylight' : 'redeye'; } catch { document.documentElement.dataset.theme = 'redeye'; } })();`;
+const themeScript = `(() => { try { const saved = localStorage.getItem('tripsignal-theme-v2'); document.documentElement.dataset.theme = saved === 'daylight' ? 'daylight' : 'redeye'; } catch { document.documentElement.dataset.theme = 'redeye'; } })();`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="en" suppressHydrationWarning><body><script dangerouslySetInnerHTML={{ __html: themeScript }} />{children}</body></html>;
