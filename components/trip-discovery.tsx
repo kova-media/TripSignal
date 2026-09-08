@@ -6,34 +6,90 @@ import { feature } from 'topojson-client';
 import worldAtlas from 'world-atlas/countries-110m.json';
 
 const routes = [
-  { code:'AMS',city:'Amsterdam',region:'Europe',price:687,typical:940,cabin:'Premium economy',stops:'1 stop',days:'7–21 days',coordinates:[4.7639,52.3086] as [number,number] },
-  { code:'FCO',city:'Rome',region:'Europe',price:812,typical:1090,cabin:'Premium economy',stops:'1 stop',days:'7–21 days',coordinates:[12.2389,41.8003] as [number,number] },
-  { code:'BCN',city:'Barcelona',region:'Europe',price:774,typical:1010,cabin:'Premium economy',stops:'1 stop',days:'7–21 days',coordinates:[2.0833,41.2974] as [number,number] },
-  { code:'CDG',city:'Paris',region:'Europe',price:862,typical:1120,cabin:'Premium economy',stops:'1 stop',days:'7–21 days',coordinates:[2.5553,49.0097] as [number,number] },
-  { code:'LIS',city:'Lisbon',region:'Europe',price:798,typical:1060,cabin:'Premium economy',stops:'1 stop',days:'7–21 days',coordinates:[-9.1359,38.7742] as [number,number] },
-  { code:'AMS',city:'Amsterdam',region:'Europe',price:1486,typical:2180,cabin:'Business',stops:'1 stop',days:'7–21 days',coordinates:[4.7639,52.3086] as [number,number] },
-  { code:'FRA',city:'Frankfurt',region:'Europe',price:1520,typical:2250,cabin:'Business',stops:'1 stop',days:'7–21 days',coordinates:[8.5622,50.0379] as [number,number] },
-  { code:'MAD',city:'Madrid',region:'Europe',price:1340,typical:1980,cabin:'Business',stops:'1 stop',days:'7–21 days',coordinates:[-3.5676,40.4983] as [number,number] },
-  { code:'LHR',city:'London',region:'Europe',price:1210,typical:1780,cabin:'Economy',stops:'1 stop',days:'3–10 days',coordinates:[-0.4543,51.47] as [number,number] },
-  { code:'CDG',city:'Paris',region:'Europe',price:1180,typical:1690,cabin:'Economy',stops:'1 stop',days:'3–10 days',coordinates:[2.5553,49.0097] as [number,number] },
-  { code:'CUN',city:'Cancún',region:'North America',price:398,typical:525,cabin:'Economy',stops:'1 stop',days:'3–7 days',coordinates:[-86.8515,21.0365] as [number,number] },
-  { code:'LAX',city:'Los Angeles',region:'North America',price:455,typical:590,cabin:'Economy',stops:'Nonstop',days:'3–10 days',coordinates:[-118.4085,33.9416] as [number,number] },
-  { code:'NRT',city:'Tokyo',region:'Asia',price:1198,typical:1450,cabin:'Premium economy',stops:'1 stop',days:'10–21 days',coordinates:[140.3929,35.772] as [number,number] },
-  { code:'ICN',city:'Seoul',region:'Asia',price:1270,typical:1510,cabin:'Premium economy',stops:'1 stop',days:'10–21 days',coordinates:[126.4407,37.4602] as [number,number] },
+  { code: 'AMS', city: 'Amsterdam', region: 'Europe', price: 687, typical: 940, cabin: 'Premium economy', stops: '1 stop', days: '7–21 days', coordinates: [4.7639, 52.3086] as [number, number] },
+  { code: 'FCO', city: 'Rome', region: 'Europe', price: 812, typical: 1090, cabin: 'Premium economy', stops: '1 stop', days: '7–21 days', coordinates: [12.2389, 41.8003] as [number, number] },
+  { code: 'BCN', city: 'Barcelona', region: 'Europe', price: 774, typical: 1010, cabin: 'Premium economy', stops: '1 stop', days: '7–21 days', coordinates: [2.0833, 41.2974] as [number, number] },
+  { code: 'CDG', city: 'Paris', region: 'Europe', price: 862, typical: 1120, cabin: 'Premium economy', stops: '1 stop', days: '7–21 days', coordinates: [2.5553, 49.0097] as [number, number] },
+  { code: 'LIS', city: 'Lisbon', region: 'Europe', price: 798, typical: 1060, cabin: 'Premium economy', stops: '1 stop', days: '7–21 days', coordinates: [-9.1359, 38.7742] as [number, number] },
+  { code: 'AMS', city: 'Amsterdam', region: 'Europe', price: 1486, typical: 2180, cabin: 'Business', stops: '1 stop', days: '7–21 days', coordinates: [4.7639, 52.3086] as [number, number] },
+  { code: 'FRA', city: 'Frankfurt', region: 'Europe', price: 1520, typical: 2250, cabin: 'Business', stops: '1 stop', days: '7–21 days', coordinates: [8.5622, 50.0379] as [number, number] },
+  { code: 'MAD', city: 'Madrid', region: 'Europe', price: 1340, typical: 1980, cabin: 'Business', stops: '1 stop', days: '7–21 days', coordinates: [-3.5676, 40.4983] as [number, number] },
+  { code: 'LHR', city: 'London', region: 'Europe', price: 1210, typical: 1780, cabin: 'Economy', stops: '1 stop', days: '3–10 days', coordinates: [-0.4543, 51.47] as [number, number] },
+  { code: 'CDG', city: 'Paris', region: 'Europe', price: 1180, typical: 1690, cabin: 'Economy', stops: '1 stop', days: '3–10 days', coordinates: [2.5553, 49.0097] as [number, number] },
+  { code: 'CUN', city: 'Cancún', region: 'North America', price: 398, typical: 525, cabin: 'Economy', stops: '1 stop', days: '3–7 days', coordinates: [-86.8515, 21.0365] as [number, number] },
+  { code: 'LAX', city: 'Los Angeles', region: 'North America', price: 455, typical: 590, cabin: 'Economy', stops: 'Nonstop', days: '3–10 days', coordinates: [-118.4085, 33.9416] as [number, number] },
+  { code: 'NRT', city: 'Tokyo', region: 'Asia', price: 1198, typical: 1450, cabin: 'Premium economy', stops: '1 stop', days: '10–21 days', coordinates: [140.3929, 35.772] as [number, number] },
+  { code: 'ICN', city: 'Seoul', region: 'Asia', price: 1270, typical: 1510, cabin: 'Premium economy', stops: '1 stop', days: '10–21 days', coordinates: [126.4407, 37.4602] as [number, number] },
 ];
-const benchmarks: Record<string,{excellent:number;good:number;typical:number}> = { Economy:{excellent:500,good:650,typical:800}, 'Premium economy':{excellent:900,good:1100,typical:1350}, Business:{excellent:1600,good:1900,typical:2400} };
-const destinationOptions=['Europe','North America','Asia'];
-const cabinOptions=['Premium economy','Business','Economy'];
-const airports:Record<string,[number,number]>={MCI:[-94.7139,39.2976],JFK:[-73.7781,40.6413],LAX:[-118.4085,33.9416],ORD:[-87.9073,41.9742],ATL:[-84.4277,33.6407]};
-const worldFeatures=feature(worldAtlas as any,(worldAtlas as any).objects.countries) as any;
-function projectRoutePath(projection:ReturnType<typeof geoEqualEarth>,from:[number,number],to:[number,number]) { const interpolate=geoInterpolate(from,to); const coordinates=Array.from({length:41},(_,i)=>interpolate(i/40)); return geoPath(projection)({type:'LineString',coordinates} as any) ?? ''; }
+
+const benchmarks: Record<string, { excellent: number; good: number; typical: number }> = {
+  Economy: { excellent: 500, good: 650, typical: 800 },
+  'Premium economy': { excellent: 900, good: 1100, typical: 1350 },
+  Business: { excellent: 1600, good: 1900, typical: 2400 },
+};
+const destinationOptions = ['Europe', 'North America', 'Asia'];
+const cabinOptions = ['Premium economy', 'Business', 'Economy'];
+const airports: Record<string, [number, number]> = { MCI: [-94.7139, 39.2976], JFK: [-73.7781, 40.6413], LAX: [-118.4085, 33.9416], ORD: [-87.9073, 41.9742], ATL: [-84.4277, 33.6407] };
+const worldFeatures = feature(worldAtlas as any, (worldAtlas as any).objects.countries) as any;
+
+function projectRoutePath(projection: ReturnType<typeof geoEqualEarth>, from: [number, number], to: [number, number]) {
+  const interpolate = geoInterpolate(from, to);
+  const coordinates = Array.from({ length: 41 }, (_, index) => interpolate(index / 40));
+  return geoPath(projection)({ type: 'LineString', coordinates } as any) ?? '';
+}
 
 export default function TripDiscovery() {
-  const [origin,setOrigin]=useState('MCI'); const [destination,setDestination]=useState('Europe'); const [cabin,setCabin]=useState('Premium economy'); const [budget,setBudget]=useState('1000'); const [selectedCode,setSelectedCode]=useState('AMS');
-  const filtered=useMemo(()=>routes.filter(r=>r.region===destination&&r.cabin===cabin),[destination,cabin]);
-  const selected=filtered.find(r=>r.code===selectedCode)??filtered[0]??routes[0]; const benchmark=benchmarks[cabin]; const budgetValue=Number(budget)||0; const signalCount=filtered.filter(r=>r.price<=budgetValue).length; const originCoordinates=airports[origin]??airports.MCI;
-  const projection=useMemo(()=>geoEqualEarth().fitExtent([[34,34],[966,470]],worldFeatures),[]); const path=useMemo(()=>geoPath(projection),[projection]); const graticule=useMemo(()=>geoGraticule().step([20,20])(),[]); const originPoint=projection(originCoordinates); const destinationPoint=projection(selected.coordinates);
-  function buildWatch(){const params=new URLSearchParams({origin,destinationMode:'airport',destinationAirport:selected.code,price:String(budgetValue||selected.price),cabin:cabin==='Premium economy'?'premium_economy':cabin.toLowerCase(),tripLength:selected.days});window.location.href=`/alerts?${params.toString()}`;}
-  function chooseDestination(item:string){setDestination(item);const next=routes.find(r=>r.region===item&&r.cabin===cabin);if(next)setSelectedCode(next.code);} function chooseCabin(item:string){setCabin(item);const next=routes.find(r=>r.region===destination&&r.cabin===item);if(next)setSelectedCode(next.code);}
-  return <section className="discovery shell" id="explore"><div className="discovery-head"><div><p className="section-kicker">Find a trip</p><h2>Search the map.<br/><em>Know what a good fare looks like.</em></h2></div><p>Start broad, then narrow the search when a route catches your eye. The benchmark gives you context before you create a watch.</p></div><div className="discovery-layout"><div className="discovery-controls"><div className="discovery-field"><label htmlFor="discovery-origin">From</label><input id="discovery-origin" value={origin} maxLength={3} onChange={e=>setOrigin(e.target.value.toUpperCase())}/></div><div className="discovery-field"><label>Where</label><div className="discovery-options">{destinationOptions.map(item=><button type="button" key={item} className={destination===item?'active':''} onClick={()=>chooseDestination(item)}>{item}</button>)}</div></div><div className="discovery-field"><label>Cabin</label><div className="discovery-options">{cabinOptions.map(item=><button type="button" key={item} className={cabin===item?'active':''} onClick={()=>chooseCabin(item)}>{item}</button>)}</div></div><div className="discovery-field"><label htmlFor="discovery-budget">Maximum fare</label><div className="discovery-price"><span>$</span><input id="discovery-budget" inputMode="numeric" value={budget} onChange={e=>setBudget(e.target.value.replace(/[^0-9]/g,''))}/></div></div><div className="benchmark"><div className="benchmark-head"><span>Fare benchmark</span><strong>{cabin}</strong></div><div className="benchmark-scale"><span className="excellent" style={{width:`${Math.min(100,benchmark.excellent/benchmark.typical*100)}%`}}/></div><div className="benchmark-labels"><span><b>Excellent</b> under ${benchmark.excellent.toLocaleString()}</span><span><b>Good</b> under ${benchmark.good.toLocaleString()}</span><span><b>Typical</b> ${benchmark.typical.toLocaleString()}</span></div><p>{selected.price<=benchmark.excellent?'This route is in excellent territory.':selected.price<=benchmark.good?'This route is in good territory.':'This route is above the good-fare range.'}</p></div><button type="button" className="button button-primary discovery-cta" onClick={buildWatch}>Watch {origin} → {selected.code} <span>↗</span></button></div><div className="route-map" aria-label="TripSignal geographic fare map"><div className="route-map-top"><span>FARE MAP</span><span>{signalCount} routes under your budget</span></div><div className="route-map-canvas"><svg viewBox="0 0 1000 520" role="img" aria-label={`World map showing routes from ${origin}`}><path d={path(graticule)??''} className="map-graticule"/><g className="map-countries">{worldFeatures.features.map((country:any)=><path key={country.id??country.properties?.name} d={path(country)??''}/>)}</g><g className="map-routes">{filtered.map(route=>{const active=route.code===selected.code;const point=projection(route.coordinates);return <g key={`${route.code}-${route.cabin}`} className={active?'map-route active':'map-route'} onClick={()=>setSelectedCode(route.code)}><path d={projectRoutePath(projection,originCoordinates,route.coordinates)}/>{point&&<circle cx={point[0]} cy={point[1]} r={active?5.5:3.5}/>}</g>})}</g><g className="map-origin">{originPoint&&<><circle cx={originPoint[0]} cy={originPoint[1]} r="6"/><circle cx={originPoint[0]} cy={originPoint[1]} r="13"/><text x={originPoint[0]+12} y={originPoint[1]-10}>{origin}</text></>}</g>{destinationPoint&&<circle className="map-selected-destination" cx={destinationPoint[0]} cy={destinationPoint[1]} r="8"/></svg></div><div className="route-map-detail"><div><span>{origin} → {selected.code}</span><strong>${selected.price.toLocaleString()}</strong></div><p>{selected.city} · {selected.cabin} · {selected.stops}</p><small>${Math.max(0,selected.typical-selected.price).toLocaleString()} below typical · {selected.days}</small></div></div></div><div className="discovery-routes"><div className="discovery-routes-head"><span>Routes worth watching</span><span>Personalized to {origin}</span></div>{filtered.slice(0,4).map(route=><button type="button" key={`${route.code}-${route.cabin}`} className={route.code===selected.code?'route-row active':'route-row'} onClick={()=>setSelectedCode(route.code)}><span><strong>{origin} → {route.code}</strong><small>{route.city} · {route.cabin} · {route.stops}</small></span><span><b>${route.price.toLocaleString()}</b><small>${Math.max(0,route.typical-route.price).toLocaleString()} below typical</small></span></button>)}</div></section>;
+  const [origin, setOrigin] = useState('MCI');
+  const [destination, setDestination] = useState('Europe');
+  const [cabin, setCabin] = useState('Premium economy');
+  const [budget, setBudget] = useState('1000');
+  const [selectedCode, setSelectedCode] = useState('AMS');
+  const filtered = useMemo(() => routes.filter((route) => route.region === destination && route.cabin === cabin), [destination, cabin]);
+  const selected = filtered.find((route) => route.code === selectedCode) ?? filtered[0] ?? routes[0];
+  const benchmark = benchmarks[cabin];
+  const budgetValue = Number(budget) || 0;
+  const signalCount = filtered.filter((route) => route.price <= budgetValue).length;
+  const originCoordinates = airports[origin] ?? airports.MCI;
+  const projection = useMemo(() => geoEqualEarth().fitExtent([[34, 34], [966, 470]], worldFeatures), []);
+  const path = useMemo(() => geoPath(projection), [projection]);
+  const graticule = useMemo(() => geoGraticule().step([20, 20])(), []);
+  const originPoint = projection(originCoordinates);
+  const destinationPoint = projection(selected.coordinates);
+
+  function buildWatch() {
+    const params = new URLSearchParams({ origin, destinationMode: 'airport', destinationAirport: selected.code, price: String(budgetValue || selected.price), cabin: cabin === 'Premium economy' ? 'premium_economy' : cabin.toLowerCase(), tripLength: selected.days });
+    window.location.href = `/alerts?${params.toString()}`;
+  }
+  function chooseDestination(item: string) {
+    setDestination(item);
+    const next = routes.find((route) => route.region === item && route.cabin === cabin);
+    if (next) setSelectedCode(next.code);
+  }
+  function chooseCabin(item: string) {
+    setCabin(item);
+    const next = routes.find((route) => route.region === destination && route.cabin === item);
+    if (next) setSelectedCode(next.code);
+  }
+
+  return (
+    <section className="discovery shell" id="explore">
+      <div className="discovery-head"><div><p className="section-kicker">Find a trip</p><h2>Search the map.<br /><em>Know what a good fare looks like.</em></h2></div><p>Start broad, then narrow the search when a route catches your eye. The benchmark gives you context before you create a watch.</p></div>
+      <div className="discovery-layout">
+        <div className="discovery-controls">
+          <div className="discovery-field"><label htmlFor="discovery-origin">From</label><input id="discovery-origin" value={origin} maxLength={3} onChange={(event) => setOrigin(event.target.value.toUpperCase())} /></div>
+          <div className="discovery-field"><label>Where</label><div className="discovery-options">{destinationOptions.map((item) => <button type="button" key={item} className={destination === item ? 'active' : ''} onClick={() => chooseDestination(item)}>{item}</button>)}</div></div>
+          <div className="discovery-field"><label>Cabin</label><div className="discovery-options">{cabinOptions.map((item) => <button type="button" key={item} className={cabin === item ? 'active' : ''} onClick={() => chooseCabin(item)}>{item}</button>)}</div></div>
+          <div className="discovery-field"><label htmlFor="discovery-budget">Maximum fare</label><div className="discovery-price"><span>$</span><input id="discovery-budget" inputMode="numeric" value={budget} onChange={(event) => setBudget(event.target.value.replace(/[^0-9]/g, ''))} /></div></div>
+          <div className="benchmark"><div className="benchmark-head"><span>Fare benchmark</span><strong>{cabin}</strong></div><div className="benchmark-scale"><span className="excellent" style={{ width: `${Math.min(100, benchmark.excellent / benchmark.typical * 100)}%` }} /></div><div className="benchmark-labels"><span><b>Excellent</b> under ${benchmark.excellent.toLocaleString()}</span><span><b>Good</b> under ${benchmark.good.toLocaleString()}</span><span><b>Typical</b> ${benchmark.typical.toLocaleString()}</span></div><p>{selected.price <= benchmark.excellent ? 'This route is in excellent territory.' : selected.price <= benchmark.good ? 'This route is in good territory.' : 'This route is above the good-fare range.'}</p></div>
+          <button type="button" className="button button-primary discovery-cta" onClick={buildWatch}>Watch {origin} → {selected.code} <span>↗</span></button>
+        </div>
+        <div className="route-map" aria-label="TripSignal geographic fare map">
+          <div className="route-map-top"><span>FARE MAP</span><span>{signalCount} routes under your budget</span></div>
+          <div className="route-map-canvas"><svg viewBox="0 0 1000 520" role="img" aria-label={`World map showing routes from ${origin}`}><path d={path(graticule) ?? ''} className="map-graticule" /><g className="map-countries">{worldFeatures.features.map((country: any) => <path key={country.id ?? country.properties?.name} d={path(country) ?? ''} />)}</g><g className="map-routes">{filtered.map((route) => { const active = route.code === selected.code; const point = projection(route.coordinates); return <g key={`${route.code}-${route.cabin}`} className={active ? 'map-route active' : 'map-route'} onClick={() => setSelectedCode(route.code)}><path d={projectRoutePath(projection, originCoordinates, route.coordinates)} />{point && <circle cx={point[0]} cy={point[1]} r={active ? 5.5 : 3.5} />}</g>; })}</g><g className="map-origin">{originPoint && <><circle cx={originPoint[0]} cy={originPoint[1]} r="6" /><circle cx={originPoint[0]} cy={originPoint[1]} r="13" /><text x={originPoint[0] + 12} y={originPoint[1] - 10}>{origin}</text></>}</g>{destinationPoint && <circle className="map-selected-destination" cx={destinationPoint[0]} cy={destinationPoint[1]} r="8" />}</svg></div>
+          <div className="route-map-detail"><div><span>{origin} → {selected.code}</span><strong>${selected.price.toLocaleString()}</strong></div><p>{selected.city} · {selected.cabin} · {selected.stops}</p><small>${Math.max(0, selected.typical - selected.price).toLocaleString()} below typical · {selected.days}</small></div>
+        </div>
+      </div>
+      <div className="discovery-routes"><div className="discovery-routes-head"><span>Routes worth watching</span><span>Personalized to {origin}</span></div>{filtered.slice(0, 4).map((route) => <button type="button" key={`${route.code}-${route.cabin}`} className={route.code === selected.code ? 'route-row active' : 'route-row'} onClick={() => setSelectedCode(route.code)}><span><strong>{origin} → {route.code}</strong><small>{route.city} · {route.cabin} · {route.stops}</small></span><span><b>${route.price.toLocaleString()}</b><small>${Math.max(0, route.typical - route.price).toLocaleString()} below typical</small></span></button>)}</div>
+    </section>
+  );
 }
