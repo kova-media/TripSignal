@@ -1,9 +1,6 @@
 import './home-refine.css';
 import './home-align.css';
 import './home-product.css';
-import './discovery-map.css';
-import './home-buttons.css';
-import './home-accessibility.css';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
 import TripDiscovery from '@/components/trip-discovery';
@@ -18,9 +15,7 @@ export default async function Home() {
   if (user) {
     const sql = getDb();
     await ensureSchema(sql);
-    watches = await sql<Array<{ id: string; criteria: any; frequency: string }>>`
-      select id, criteria, frequency from alerts where user_id = ${user.id} and active = true order by created_at desc limit 3
-    `;
+    watches = await sql<Array<{ id: string; criteria: any; frequency: string }>>`select id, criteria, frequency from alerts where user_id = ${user.id} and active = true order by created_at desc limit 3`;
   }
   return (
     <main className="home-page">
