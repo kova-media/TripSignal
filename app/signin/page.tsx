@@ -1,9 +1,11 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Brand from '@/components/brand';
 
 export default function SignInPage() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,8 @@ export default function SignInPage() {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Invalid email or password.');
-      window.location.href = '/account';
+      const next = searchParams.get('next');
+      window.location.href = next && next.startsWith('/') ? next : '/account';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid email or password.');
     } finally {
