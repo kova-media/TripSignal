@@ -31,7 +31,7 @@
 .fare-target-signal, .fare-target-note { display: none !important; }
 
 .discovery-head h2 em { font-size: 0; }
-.discovery-head h2 em::after { content: 'Set the fare you want.'; font-size: inherit; }
+.discovery-head h2 em::after { content: 'Set the fare you want.'; display: inline; font-size: clamp(43px, 5vw, 66px); line-height: .98; letter-spacing: -.065em; }
 
 .option, .discovery-options button { border-radius: 8px !important; }
 .discovery-cta:disabled { cursor: not-allowed; opacity: .45; transform: none; }
@@ -57,4 +57,5 @@
 @media (max-width: 700px) {
   .discovery-airport-results { position: relative; top: auto; margin-top: -2px; }
   .fare-target-head { gap: 18px; }
+  .discovery-head h2 em::after { font-size: 43px; }
 }
