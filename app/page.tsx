@@ -1,6 +1,7 @@
 import './home-refine.css';
 import './home-align.css';
 import './home-product.css';
+import './home-next.css';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
 import TripDiscoveryDirect from '@/components/trip-discovery-direct';
