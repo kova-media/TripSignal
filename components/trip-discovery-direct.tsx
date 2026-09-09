@@ -99,7 +99,7 @@ export default function TripDiscoveryDirect({ children }: DiscoveryDirectProps) 
   }
 
   return (
-    <div onClickCapture={handleClick} aria-busy={submitting}>
+    <div className="discovery-direct" onClickCapture={handleClick} aria-busy={submitting}>
       <TripDiscovery />
       {success && <p className="discovery-direct-success" role="status">{success}</p>}
       {error && <p className="discovery-direct-error" role="alert">{error}</p>}
