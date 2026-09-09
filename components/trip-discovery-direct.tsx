@@ -1,6 +1,7 @@
 'use client';
 
 import { MouseEvent, ReactNode, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import TripDiscovery from '@/components/trip-discovery';
 
 type DiscoveryDirectProps = {
@@ -36,6 +37,7 @@ function cabinParam(cabin: string) {
 }
 
 export default function TripDiscoveryDirect({ children }: DiscoveryDirectProps) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -88,7 +90,7 @@ export default function TripDiscoveryDirect({ children }: DiscoveryDirectProps) 
       setSuccess(data.signInEmailSent
         ? 'Alert created. Check your email for your TripSignal sign-in link.'
         : 'Alert created. TripSignal is now watching this fare.');
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create alert.');
     } finally {
