@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { geoEqualEarth, geoGraticule, geoInterpolate, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import worldAtlas from 'world-atlas/countries-110m.json';
@@ -14,6 +14,8 @@ const routes = [
   { code: 'AMS', city: 'Amsterdam', region: 'Europe', price: 1486, typical: 2180, cabin: 'Business', stops: '1 stop', days: '7–21 days', coordinates: [4.7639, 52.3086] as [number, number] },
   { code: 'FRA', city: 'Frankfurt', region: 'Europe', price: 1520, typical: 2250, cabin: 'Business', stops: '1 stop', days: '7–21 days', coordinates: [8.5622, 50.0379] as [number, number] },
   { code: 'MAD', city: 'Madrid', region: 'Europe', price: 1340, typical: 1980, cabin: 'Business', stops: '1 stop', days: '7–21 days', coordinates: [-3.5676, 40.4983] as [number, number] },
+  { code: 'AMS', city: 'Amsterdam', region: 'Europe', price: 2680, typical: 3400, cabin: 'First class', stops: '1 stop', days: '7–21 days', coordinates: [4.7639, 52.3086] as [number, number] },
+  { code: 'FRA', city: 'Frankfurt', region: 'Europe', price: 2890, typical: 3650, cabin: 'First class', stops: '1 stop', days: '7–21 days', coordinates: [8.5622, 50.0379] as [number, number] },
   { code: 'LHR', city: 'London', region: 'Europe', price: 1210, typical: 1780, cabin: 'Economy', stops: '1 stop', days: '3–10 days', coordinates: [-0.4543, 51.47] as [number, number] },
   { code: 'CDG', city: 'Paris', region: 'Europe', price: 1180, typical: 1690, cabin: 'Economy', stops: '1 stop', days: '3–10 days', coordinates: [2.5553, 49.0097] as [number, number] },
   { code: 'CUN', city: 'Cancún', region: 'North America', price: 398, typical: 525, cabin: 'Economy', stops: '1 stop', days: '3–7 days', coordinates: [-86.8515, 21.0365] as [number, number] },
@@ -26,11 +28,89 @@ const benchmarks: Record<string, { excellent: number; good: number; typical: num
   Economy: { excellent: 500, good: 650, typical: 800 },
   'Premium economy': { excellent: 900, good: 1100, typical: 1350 },
   Business: { excellent: 1600, good: 1900, typical: 2400 },
+  'First class': { excellent: 2400, good: 3000, typical: 3800 },
 };
 const destinationOptions = ['Europe', 'North America', 'Asia'];
-const cabinOptions = ['Premium economy', 'Business', 'Economy'];
+const cabinOptions = ['Premium economy', 'Business', 'First class', 'Economy'];
+const priceOptions = ['500', '1000', '1500', '2000'];
 const airports: Record<string, [number, number]> = { MCI: [-94.7139, 39.2976], JFK: [-73.7781, 40.6413], LAX: [-118.4085, 33.9416], ORD: [-87.9073, 41.9742], ATL: [-84.4277, 33.6407] };
 const worldFeatures = feature(worldAtlas as any, (worldAtlas as any).objects.countries) as any;
+
+type Airport = { iata_code: string; name: string; municipality?: string };
+
+type AirportSearchProps = {
+  label: string;
+  value: string;
+  code: string;
+  onSelect: (airport: Airport) => void;
+};
+
+function AirportSearch({ label, value, code, onSelect }: AirportSearchProps) {
+  const [query, setQuery] = useState(value);
+  const [results, setResults] = useState<Airport[]>([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => setQuery(value), [value]);
+
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed.length < 2 || trimmed === value.trim()) {
+      setResults([]);
+      return;
+    }
+    const timer = window.setTimeout(async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/airports?q=${encodeURIComponent(trimmed)}`);
+        const data = await response.json();
+        setResults(Array.isArray(data.airports) ? data.airports : []);
+        setOpen(true);
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 180);
+    return () => window.clearTimeout(timer);
+  }, [query, value]);
+
+  return (
+    <div className="airport-search">
+      <label>{label}</label>
+      <input
+        value={query}
+        onChange={(event) => { setQuery(event.target.value); setOpen(true); }}
+        onFocus={() => { if (query.trim().length >= 2) setOpen(true); }}
+        onBlur={() => window.setTimeout(() => setOpen(false), 150)}
+        placeholder="Search city or airport"
+        autoComplete="off"
+      />
+      <small>{code ? `${code} selected` : 'Type a city or airport name'}</small>
+      {open && (loading || results.length > 0) && (
+        <div className="airport-results" role="listbox">
+          {loading && <div className="airport-result">Searching airports…</div>}
+          {!loading && results.map((airport) => (
+            <button
+              type="button"
+              className="airport-result"
+              key={`${airport.iata_code}-${airport.name}`}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => {
+                onSelect(airport);
+                setQuery(`${airport.municipality || airport.name} (${airport.iata_code})`);
+                setOpen(false);
+              }}
+            >
+              <strong>{airport.municipality || airport.name}</strong>
+              <span>{airport.iata_code} · {airport.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function projectRoutePath(projection: ReturnType<typeof geoEqualEarth>, from: [number, number], to: [number, number]) {
   const interpolate = geoInterpolate(from, to);
@@ -40,10 +120,15 @@ function projectRoutePath(projection: ReturnType<typeof geoEqualEarth>, from: [n
 
 export default function TripDiscovery() {
   const [origin, setOrigin] = useState('MCI');
+  const [originSearch, setOriginSearch] = useState('Kansas City (MCI)');
+  const [destinationMode, setDestinationMode] = useState<'region' | 'airport'>('region');
   const [destination, setDestination] = useState('Europe');
+  const [destinationAirport, setDestinationAirport] = useState('AMS');
+  const [destinationSearch, setDestinationSearch] = useState('Amsterdam (AMS)');
   const [cabin, setCabin] = useState('Premium economy');
   const [budget, setBudget] = useState('1000');
   const [selectedCode, setSelectedCode] = useState('AMS');
+
   const filtered = useMemo(() => routes.filter((route) => route.region === destination && route.cabin === cabin), [destination, cabin]);
   const selected = filtered.find((route) => route.code === selectedCode) ?? filtered[0] ?? routes[0];
   const benchmark = benchmarks[cabin];
@@ -57,14 +142,25 @@ export default function TripDiscovery() {
   const destinationPoint = projection(selected.coordinates);
 
   function buildWatch() {
-    const params = new URLSearchParams({ origin, destinationMode: 'airport', destinationAirport: selected.code, price: String(budgetValue || selected.price), cabin: cabin === 'Premium economy' ? 'premium_economy' : cabin.toLowerCase(), tripLength: selected.days });
+    const params = new URLSearchParams({
+      origin,
+      destinationMode,
+      destination: destinationMode === 'region' ? destination : destinationAirport,
+      destinationAirport: destinationMode === 'airport' ? destinationAirport : selected.code,
+      price: String(budgetValue || selected.price),
+      cabin: cabin === 'Premium economy' ? 'premium_economy' : cabin === 'First class' ? 'first_class' : cabin.toLowerCase(),
+      tripLength: selected.days,
+    });
     window.location.href = `/alerts?${params.toString()}`;
   }
+
   function chooseDestination(item: string) {
     setDestination(item);
+    setDestinationMode('region');
     const next = routes.find((route) => route.region === item && route.cabin === cabin);
     if (next) setSelectedCode(next.code);
   }
+
   function chooseCabin(item: string) {
     setCabin(item);
     const next = routes.find((route) => route.region === destination && route.cabin === item);
@@ -73,20 +169,31 @@ export default function TripDiscovery() {
 
   return (
     <section className="discovery shell" id="explore">
-      <div className="discovery-head"><div><p className="section-kicker">Find a trip</p><h2>Search the map.<br /><em>Know what a good fare looks like.</em></h2></div><p>Start broad, then narrow the search when a route catches your eye. The benchmark gives you context before you create a watch.</p></div>
+      <div className="discovery-head">
+        <div><p className="section-kicker">Find a trip</p><h2>Search the map.<br /><em>Know what a good fare looks like.</em></h2></div>
+        <p>Start broad, then narrow the search when a route catches your eye. The benchmark gives you context before you create a watch.</p>
+      </div>
       <div className="discovery-layout">
         <div className="discovery-controls">
-          <div className="discovery-field"><label htmlFor="discovery-origin">From</label><input id="discovery-origin" value={origin} maxLength={3} onChange={(event) => setOrigin(event.target.value.toUpperCase())} /></div>
-          <div className="discovery-field"><label>Where</label><div className="discovery-options">{destinationOptions.map((item) => <button type="button" key={item} className={destination === item ? 'active' : ''} onClick={() => chooseDestination(item)}>{item}</button>)}</div></div>
+          <div className="discovery-field"><AirportSearch label="From" value={originSearch} code={origin} onSelect={(airport) => { setOrigin(airport.iata_code); setOriginSearch(`${airport.municipality || airport.name} (${airport.iata_code})`); }} /></div>
+          <div className="discovery-field">
+            <label>Where</label>
+            <div className="discovery-options"><button type="button" className={destinationMode === 'region' ? 'active' : ''} onClick={() => setDestinationMode('region')}>General location</button><button type="button" className={destinationMode === 'airport' ? 'active' : ''} onClick={() => setDestinationMode('airport')}>Specific airport</button></div>
+            {destinationMode === 'region' ? (
+              <div className="discovery-options destination-options">{destinationOptions.map((item) => <button type="button" key={item} className={destination === item ? 'active' : ''} onClick={() => chooseDestination(item)}>{item}</button>)}</div>
+            ) : (
+              <AirportSearch label="Arrival airport" value={destinationSearch} code={destinationAirport} onSelect={(airport) => { setDestinationAirport(airport.iata_code); setDestinationSearch(`${airport.municipality || airport.name} (${airport.iata_code})`); const next = routes.find((route) => route.code === airport.iata_code); if (next) setSelectedCode(next.code); }} />
+            )}
+          </div>
           <div className="discovery-field"><label>Cabin</label><div className="discovery-options">{cabinOptions.map((item) => <button type="button" key={item} className={cabin === item ? 'active' : ''} onClick={() => chooseCabin(item)}>{item}</button>)}</div></div>
-          <div className="discovery-field"><label htmlFor="discovery-budget">Maximum fare</label><div className="discovery-price"><span>$</span><input id="discovery-budget" inputMode="numeric" value={budget} onChange={(event) => setBudget(event.target.value.replace(/[^0-9]/g, ''))} /></div></div>
+          <div className="discovery-field"><label>Maximum fare</label><div className="discovery-options price-options">{priceOptions.map((item) => <button type="button" key={item} className={budget === item ? 'active' : ''} onClick={() => setBudget(item)}>${Number(item).toLocaleString()}</button>)}</div><div className="discovery-price"><span>$</span><input id="discovery-budget" inputMode="numeric" value={budget} onChange={(event) => setBudget(event.target.value.replace(/[^0-9]/g, ''))} /></div></div>
           <div className="benchmark"><div className="benchmark-head"><span>Fare benchmark</span><strong>{cabin}</strong></div><div className="benchmark-scale"><span className="excellent" style={{ width: `${Math.min(100, benchmark.excellent / benchmark.typical * 100)}%` }} /></div><div className="benchmark-labels"><span><b>Excellent</b> under ${benchmark.excellent.toLocaleString()}</span><span><b>Good</b> under ${benchmark.good.toLocaleString()}</span><span><b>Typical</b> ${benchmark.typical.toLocaleString()}</span></div><p>{selected.price <= benchmark.excellent ? 'This route is in excellent territory.' : selected.price <= benchmark.good ? 'This route is in good territory.' : 'This route is above the good-fare range.'}</p></div>
-          <button type="button" className="button button-primary discovery-cta" onClick={buildWatch}>Watch {origin} → {selected.code} <span>↗</span></button>
+          <button type="button" className="button button-primary discovery-cta" onClick={buildWatch}>Watch {origin} → {destinationMode === 'airport' ? destinationAirport : selected.code} <span>↗</span></button>
         </div>
         <div className="route-map" aria-label="TripSignal geographic fare map">
           <div className="route-map-top"><span>FARE MAP</span><span>{signalCount} routes under your budget</span></div>
           <div className="route-map-canvas"><svg viewBox="0 0 1000 520" role="img" aria-label={`World map showing routes from ${origin}`}><path d={path(graticule) ?? ''} className="map-graticule" /><g className="map-countries">{worldFeatures.features.map((country: any) => <path key={country.id ?? country.properties?.name} d={path(country) ?? ''} />)}</g><g className="map-routes">{filtered.map((route) => { const active = route.code === selected.code; const point = projection(route.coordinates); return <g key={`${route.code}-${route.cabin}`} className={active ? 'map-route active' : 'map-route'} onClick={() => setSelectedCode(route.code)}><path d={projectRoutePath(projection, originCoordinates, route.coordinates)} />{point && <circle cx={point[0]} cy={point[1]} r={active ? 5.5 : 3.5} />}</g>; })}</g><g className="map-origin">{originPoint && <><circle cx={originPoint[0]} cy={originPoint[1]} r="6" /><circle cx={originPoint[0]} cy={originPoint[1]} r="13" /><text x={originPoint[0] + 12} y={originPoint[1] - 10}>{origin}</text></>}</g>{destinationPoint && <circle className="map-selected-destination" cx={destinationPoint[0]} cy={destinationPoint[1]} r="8" />}</svg></div>
-          <div className="route-map-detail"><div><span>{origin} → {selected.code}</span><strong>${selected.price.toLocaleString()}</strong></div><p>{selected.city} · {selected.cabin} · {selected.stops}</p><small>${Math.max(0, selected.typical - selected.price).toLocaleString()} below typical · {selected.days}</small></div>
+          <div className="route-map-detail"><div><span>{origin} → {destinationMode === 'airport' ? destinationAirport : selected.code}</span><strong>${selected.price.toLocaleString()}</strong></div><p>{selected.city} · {selected.cabin} · {selected.stops}</p><small>${Math.max(0, selected.typical - selected.price).toLocaleString()} below typical · {selected.days}</small></div>
         </div>
       </div>
       <div className="discovery-routes"><div className="discovery-routes-head"><span>Routes worth watching</span><span>Personalized to {origin}</span></div>{filtered.slice(0, 4).map((route) => <button type="button" key={`${route.code}-${route.cabin}`} className={route.code === selected.code ? 'route-row active' : 'route-row'} onClick={() => setSelectedCode(route.code)}><span><strong>{origin} → {route.code}</strong><small>{route.city} · {route.cabin} · {route.stops}</small></span><span><b>${route.price.toLocaleString()}</b><small>${Math.max(0, route.typical - route.price).toLocaleString()} below typical</small></span></button>)}</div>
