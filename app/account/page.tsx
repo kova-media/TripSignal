@@ -8,9 +8,9 @@ import styles from './account.module.css';
 export const dynamic = 'force-dynamic';
 
 function summarizeCriteria(criteria: Record<string, unknown>) {
-  const origin = String(criteria.origin ?? 'MCI');
-  const destination = String(criteria.destination ?? 'Anywhere');
-  const cabin = criteria.cabin === 'premium_economy' ? 'Premium economy' : criteria.cabin === 'business' ? 'Business' : 'Economy';
+  const origin = String(criteria.origin ?? 'Not set');
+  const destination = String(criteria.destination ?? 'Not set');
+  const cabin = criteria.cabin === 'premium_economy' ? 'Premium economy' : criteria.cabin === 'business' ? 'Business' : criteria.cabin === 'first' ? 'First class' : 'Economy';
   const price = Number(criteria.maxPrice ?? 0).toLocaleString();
   return `${origin} → ${destination} · ${cabin} · under $${price}`;
 }
@@ -31,9 +31,13 @@ export default async function AccountPage() {
     `select id, criteria, frequency, active, created_at
      from alerts
      where user_id = $1
+       and criteria ? 'destination'
+       and criteria ? 'maxPrice'
      order by created_at desc`,
     [user.id],
   );
+  const planResult = await db.query<{ plan: string }>('select plan from users where id = $1 limit 1', [user.id]);
+  const plan = planResult.rows[0]?.plan ?? 'free';
 
   const activeCount = result.rows.filter((row) => row.active).length;
   const pausedCount = result.rows.length - activeCount;
@@ -50,7 +54,8 @@ export default async function AccountPage() {
               <p className={styles.email}>{user.email}</p>
             </div>
             <div className={styles.mastheadAction}>
-              <a className="button button-primary" href="/alerts">Create alert <span>↗</span></a>
+              <a className="button button-primary" href="/alerts">Create alert</a>
+              {plan !== 'pro' && <a className="button button-light" href="/api/billing/checkout">Upgrade to Pro</a>}
             </div>
           </div>
 
@@ -73,7 +78,7 @@ export default async function AccountPage() {
                 <div className={styles.emptyIcon}>↗</div>
                 <h3 className={styles.emptyTitle}>Nothing is being watched yet.</h3>
                 <p className={styles.emptyText}>Tell TripSignal what a great fare looks like. Set your destination, price, dates, airlines, stops, and trip length, then let us do the searching.</p>
-                <a className="button button-primary" href="/alerts">Create your first alert <span>↗</span></a>
+                <a className="button button-primary" href="/alerts">Create your first alert</a>
               </div>
             ) : (
               <div className={styles.alerts}>
