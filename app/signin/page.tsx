@@ -2,7 +2,6 @@
 
 import { FormEvent, useState } from 'react';
 import Brand from '@/components/brand';
-import ThemeToggle from '@/components/theme-toggle';
 
 export default function SignInPage() {
   const [email, setEmail] = useState('');
@@ -34,7 +33,6 @@ export default function SignInPage() {
     <main className="auth-page">
       <header className="nav shell">
         <a className="brand-link" href="/" aria-label="TripSignal home"><Brand /></a>
-        <ThemeToggle />
       </header>
 
       <section className="auth-card shell">
@@ -51,7 +49,7 @@ export default function SignInPage() {
               <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Your password" autoComplete="current-password" required />
             </label>
             {error && <p className="auth-error">{error}</p>}
-            <button className="button button-primary auth-submit" type="submit" disabled={loading}>{loading ? 'Signing in…' : 'Sign in'} <span>↗</span></button>
+            <button className="button button-primary auth-submit" type="submit" disabled={loading}>{loading ? 'Signing in…' : 'Sign in'}</button>
           </form>
           <p className="auth-switch">Don’t have an account? <a href="/signup">Sign up</a></p>
           <p className="auth-note">By continuing, you agree to TripSignal’s terms and privacy policy.</p>
