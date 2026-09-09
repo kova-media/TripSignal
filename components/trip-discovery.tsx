@@ -10,12 +10,13 @@ type Airport = { iata_code: string; name: string; municipality?: string; iso_cou
 type Coordinate = [number, number];
 
 const regions = ['Europe', 'North America', 'South America', 'Asia', 'Africa', 'Middle East', 'Oceania'];
-const cabinOptions = ['Economy', 'Premium economy', 'Business'];
+const cabinOptions = ['Economy', 'Premium economy', 'Business', 'First class'];
 
 const benchmarks: Record<string, { excellent: number; good: number; typical: number; max: number }> = {
   Economy: { excellent: 500, good: 650, typical: 800, max: 1500 },
   'Premium economy': { excellent: 900, good: 1100, typical: 1350, max: 2500 },
   Business: { excellent: 1600, good: 1900, typical: 2400, max: 4000 },
+  'First class': { excellent: 2500, good: 3200, typical: 4200, max: 6000 },
 };
 
 const airportCoordinates: Record<string, Coordinate> = {
@@ -110,9 +111,15 @@ function AirportSearch({ label, value, code, onSelect, placeholder }: { label: s
   );
 }
 
+function cabinParam(cabin: string) {
+  if (cabin === 'Premium economy') return 'premium_economy';
+  if (cabin === 'First class') return 'first';
+  return cabin.toLowerCase();
+}
+
 export default function TripDiscovery() {
-  const [origin, setOrigin] = useState('MCI');
-  const [originSearch, setOriginSearch] = useState('Kansas City (MCI)');
+  const [origin, setOrigin] = useState('');
+  const [originSearch, setOriginSearch] = useState('');
   const [destinationMode, setDestinationMode] = useState<DestinationMode>('airport');
   const [region, setRegion] = useState('Europe');
   const [destinationAirport, setDestinationAirport] = useState('');
@@ -125,18 +132,18 @@ export default function TripDiscovery() {
   const benchmark = benchmarks[cabin];
   const budgetValue = Number(budget) || 0;
   const destinationCoordinates = destinationAirport ? airportCoordinates[destinationAirport] : undefined;
-  const originCoordinates = airportCoordinates[origin] ?? airportCoordinates.MCI;
+  const originCoordinates = origin ? airportCoordinates[origin] : undefined;
   const projection = useMemo(() => geoEqualEarth().fitExtent([[34, 34], [966, 470]], worldFeatures), []);
   const path = useMemo(() => geoPath(projection), [projection]);
   const graticule = useMemo(() => geoGraticule().step([20, 20])(), []);
-  const originPoint = projection(originCoordinates);
+  const originPoint = originCoordinates ? projection(originCoordinates) : undefined;
   const destinationPoint = destinationCoordinates ? projection(destinationCoordinates) : undefined;
   const fareSignal = budgetValue <= benchmark.excellent ? 'Excellent' : budgetValue <= benchmark.good ? 'Good' : budgetValue <= benchmark.typical ? 'Typical' : 'High';
   const fareSignalText = fareSignal === 'Excellent' ? 'A strong target for this cabin.' : fareSignal === 'Good' ? 'A reasonable target for this cabin.' : fareSignal === 'Typical' ? 'Around the normal planning range.' : 'A higher target that should be easier to hit.';
 
   function buildWatch() {
-    if (destinationMode === 'airport' && !destinationAirport) return;
-    const params = new URLSearchParams({ ...(origin ? { origin } : {}), destinationMode, ...(destinationMode === 'region' ? { region } : { destinationAirport }), ...(budget ? { price: budget } : {}), passengers, cabin: cabin === 'Premium economy' ? 'premium_economy' : cabin.toLowerCase(), ...(specificDate ? { dateRange: 'Custom dates', dateStart: specificDate, dateEnd: specificDate } : {}) });
+    if (!origin || (destinationMode === 'airport' && !destinationAirport)) return;
+    const params = new URLSearchParams({ origin, destinationMode, ...(destinationMode === 'region' ? { region } : { destinationAirport }), ...(budget ? { price: budget } : {}), passengers, cabin: cabinParam(cabin), ...(specificDate ? { dateRange: 'Custom dates', dateStart: specificDate, dateEnd: specificDate } : {}) });
     window.location.href = `/alerts?${params.toString()}`;
   }
 
@@ -193,21 +200,21 @@ export default function TripDiscovery() {
             <input id="discovery-date" type="date" value={specificDate} onChange={(event) => setSpecificDate(event.target.value)} min={new Date().toISOString().slice(0, 10)} />
           </div>
 
-          <button type="button" className="button button-primary discovery-cta" onClick={buildWatch} disabled={destinationMode === 'airport' && !destinationAirport}>Create alert</button>
+          <button type="button" className="button button-primary discovery-cta" onClick={buildWatch} disabled={!origin || (destinationMode === 'airport' && !destinationAirport)}>Create alert</button>
         </div>
 
         <div className="route-map" aria-label="TripSignal geographic trip map">
-          <div className="route-map-top"><span>TRIP MAP</span><span>{destinationAirport ? `${origin} → ${destinationAirport}` : 'Select a destination'}</span></div>
+          <div className="route-map-top"><span>TRIP MAP</span><span>{destinationAirport && origin ? `${origin} → ${destinationAirport}` : 'Select a route'}</span></div>
           <div className="route-map-canvas">
-            <svg viewBox="0 0 1000 520" role="img" aria-label={`World map showing a route from ${origin}${destinationAirport ? ` to ${destinationAirport}` : ''}`}>
+            <svg viewBox="0 0 1000 520" role="img" aria-label={`World map${origin ? ` showing a route from ${origin}` : ''}${destinationAirport ? ` to ${destinationAirport}` : ''}`}>
               <path d={path(graticule) ?? ''} className="map-graticule" />
               <g className="map-countries">{worldFeatures.features.map((country: any) => <path key={country.id ?? country.properties?.name} d={path(country) ?? ''} />)}</g>
-              {destinationCoordinates && <g className="map-routes"><path d={projectRoutePath(projection, originCoordinates, destinationCoordinates)} className="map-route active" /></g>}
+              {originCoordinates && destinationCoordinates && <g className="map-routes"><path d={projectRoutePath(projection, originCoordinates, destinationCoordinates)} className="map-route active" /></g>}
               <g className="map-origin">{originPoint && <><circle cx={originPoint[0]} cy={originPoint[1]} r="6" /><circle cx={originPoint[0]} cy={originPoint[1]} r="13" /><text x={originPoint[0] + 12} y={originPoint[1] - 10}>{origin}</text></>}</g>
               {destinationPoint && <g className="map-selected-destination"><circle cx={destinationPoint[0]} cy={destinationPoint[1]} r="8" /><text x={destinationPoint[0] + 12} y={destinationPoint[1] - 10}>{destinationAirport}</text></g>}
             </svg>
           </div>
-          <div className="route-map-detail"><div><span>{destinationAirport ? `${origin} → ${destinationAirport}` : 'Choose a destination'}</span><strong>{destinationSearch || 'No destination selected'}</strong></div><p>{destinationAirport ? 'Route selected for your alert' : 'Search for a city or airport to plot the route.'}</p><small>Map location only. Fare information is set by your target above.</small></div>
+          <div className="route-map-detail"><div><span>{destinationAirport && origin ? `${origin} → ${destinationAirport}` : 'Choose a route'}</span><strong>{destinationSearch || 'No destination selected'}</strong></div><p>{destinationAirport && origin ? 'Route selected for your alert' : 'Search for a city or airport to plot the route.'}</p><small>Map location only. Fare information is set by your target above.</small></div>
         </div>
       </div>
     </section>
