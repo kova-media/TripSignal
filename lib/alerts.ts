@@ -52,7 +52,7 @@ function nextDepartureDate(alert: AlertCriteria, salt = 0) {
   const spanDays = Math.max(0, Math.round((end.getTime() - start.getTime()) / 86_400_000));
   const sampleCount = alert.destinationMode === 'airport' ? 4 : 2;
   const index = salt % sampleCount;
-  const offset = sampleCount === 1 ? 0 : Math.round((spanDays * index) / (sampleCount - 1));
+  const offset = Math.round((spanDays * index) / (sampleCount - 1));
   start.setUTCDate(start.getUTCDate() + offset);
   return start.toISOString().slice(0, 10);
 }
@@ -110,7 +110,7 @@ export async function runAlertSearch(alertId: string, email: string, criteria: A
   const newOffers = qualifying.filter((offer) => !sentIds.has(offer.id));
   if (newOffers.length === 0) return { offers: qualifying, emailed: false };
 
-  await sendFareSignalEmail(email, newOffers, criteria);
+  await sendFareSignalEmail(email, newOffers, criteria as Parameters<typeof sendFareSignalEmail>[2]);
   for (const offer of newOffers) {
     await db.query(
       'insert into signals (alert_id, offer_id, offer) values ($1, $2, $3::jsonb) on conflict (alert_id, offer_id) do nothing',
