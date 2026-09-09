@@ -31,8 +31,11 @@ export default async function AccountPage() {
     `select id, criteria, frequency, active, created_at
      from alerts
      where user_id = $1
+       and jsonb_typeof(criteria) = 'object'
+       and length(coalesce(criteria->>'origin', '')) = 3
        and criteria ? 'destination'
        and criteria ? 'maxPrice'
+       and lower(coalesce(criteria->>'destination', '')) not in ('any destination', 'any airport')
      order by created_at desc`,
     [user.id],
   );
