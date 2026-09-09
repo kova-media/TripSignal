@@ -66,7 +66,6 @@ export default async function Home() {
         <div className="home-difference-copy">
           <p className="section-kicker">Why TripSignal</p>
           <h2>Search once.<br /><em>Let TripSignal keep checking.</em></h2>
-          <p>Flight search sites show you a price when you search. TripSignal keeps watching after you leave, using the route, dates, cabin and target price you set.</p>
         </div>
         <div className="home-steps">
           <article>
