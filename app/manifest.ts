@@ -14,7 +14,7 @@ export default function manifest(): MetadataRoute.Manifest {
         src: '/tripsignal-icon-blue.svg',
         sizes: 'any',
         type: 'image/svg+xml',
-        purpose: 'any maskable',
+        purpose: 'any',
       },
     ],
   };
