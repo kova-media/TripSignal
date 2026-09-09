@@ -70,17 +70,17 @@ export default async function Home() {
         </div>
         <div className="home-steps">
           <article>
-            <span>01</span>
+            <span>1</span>
             <h3>Set your watch</h3>
             <p>Choose your route, travel window, cabin and target price.</p>
           </article>
           <article>
-            <span>02</span>
+            <span>2</span>
             <h3>We keep watching</h3>
             <p>TripSignal checks your watch on the schedule you choose.</p>
           </article>
           <article>
-            <span>03</span>
+            <span>3</span>
             <h3>Get alerted</h3>
             <p>When a fare matches your criteria, we’ll tell you.</p>
           </article>
@@ -124,11 +124,6 @@ export default async function Home() {
       </section>
 
       <section className="pricing-preview shell" aria-label="TripSignal pricing">
-        <div className="pricing-preview-copy">
-          <p className="section-kicker">Simple pricing</p>
-          <h2>Free to start.<br /><em>Unlimited when you need it.</em></h2>
-          <p>Start with one new watch each month. Upgrade when you want unlimited watches.</p>
-        </div>
         <div className="pricing-preview-card">
           <div className="pricing-tier">
             <span>Free</span>
