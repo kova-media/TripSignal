@@ -55,7 +55,6 @@ export default async function AccountPage() {
             </div>
             <div className={styles.mastheadAction}>
               <a className="button button-primary" href="/alerts">Create alert</a>
-              {plan !== 'pro' && <a className="button button-light" href="/api/billing/checkout">Upgrade to Pro</a>}
             </div>
           </div>
 
@@ -96,6 +95,20 @@ export default async function AccountPage() {
                 ))}
               </div>
             )}
+          </section>
+
+          <section className={styles.section}>
+            <div className={styles.sectionHeading}>
+              <div>
+                <p className={styles.eyebrow}>TripSignal plan</p>
+                <h2 className={styles.sectionTitle}>{plan === 'pro' ? 'TripSignal Pro' : 'Free plan'}</h2>
+              </div>
+            </div>
+            <div className={styles.empty}>
+              <h3 className={styles.emptyTitle}>{plan === 'pro' ? 'Pro is active.' : 'Upgrade to TripSignal Pro.'}</h3>
+              <p className={styles.emptyText}>{plan === 'pro' ? 'Your account has unlimited alerts with weekly or monthly checks.' : 'Get unlimited alerts with weekly or monthly checks for $19.99 per year.'}</p>
+              {plan !== 'pro' && <a className="button button-primary" href="/api/billing/checkout">Upgrade to Pro</a>}
+            </div>
           </section>
         </div>
       </section>
