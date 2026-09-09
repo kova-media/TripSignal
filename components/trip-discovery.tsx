@@ -174,9 +174,9 @@ export default function TripDiscovery() {
       <div className="discovery-head">
         <div>
           <p className="section-kicker">Find a trip</p>
-          <h2>Search the map.<br /><em>Set the fare you want.</em></h2>
+          <h2>Tell us where.<br /><em>We'll watch the fare.</em></h2>
         </div>
-        <p>Tell TripSignal where you want to go and what matters. We’ll use those rules when you create the alert.</p>
+        <p>Set the route, timing and fare you want. Advanced criteria are optional.</p>
       </div>
 
       <div className="discovery-layout">
@@ -201,8 +201,8 @@ export default function TripDiscovery() {
           )}
 
           <div className="discovery-field">
-            <label>Cabin</label>
-            <div className="discovery-options discovery-cabin-options">{cabinOptions.map((item) => <button type="button" key={item} className={cabin === item ? 'active' : ''} onClick={() => setCabin(item)}>{item}</button>)}</div>
+            <label htmlFor="discovery-window">When</label>
+            <select id="discovery-window" value={dateRange} onChange={(event) => setDateRange(event.target.value)}><option>Anytime</option><option>Next 3 months</option><option>Next 6 months</option><option>Next 12 months</option></select>
           </div>
 
           <div className="discovery-field">
@@ -211,47 +211,52 @@ export default function TripDiscovery() {
             <div className="fare-target-labels"><span>Lower</span><span>Higher</span></div>
           </div>
 
-          <div className="discovery-field">
-            <label htmlFor="discovery-airline">Airline</label>
-            <select id="discovery-airline" value={airlineMode} onChange={(event) => setAirlineMode(event.target.value)}>{airlines.map((airline) => <option key={airline.code} value={airline.code}>{airline.name}</option>)}</select>
-          </div>
+          <details className="discovery-advanced">
+            <summary>Advanced options</summary>
+            <div className="discovery-advanced-fields">
+              <div className="discovery-field">
+                <label>Cabin</label>
+                <div className="discovery-options discovery-cabin-options">{cabinOptions.map((item) => <button type="button" key={item} className={cabin === item ? 'active' : ''} onClick={() => setCabin(item)}>{item}</button>)}</div>
+              </div>
 
-          <div className="discovery-field">
-            <label htmlFor="discovery-stops">Maximum stops</label>
-            <select id="discovery-stops" value={stops} onChange={(event) => setStops(event.target.value)}><option value="0">Nonstop</option><option value="1">1 stop</option><option value="2">2 stops</option><option value="any">Any</option></select>
-          </div>
+              <div className="discovery-field">
+                <label htmlFor="discovery-airline">Airline</label>
+                <select id="discovery-airline" value={airlineMode} onChange={(event) => setAirlineMode(event.target.value)}>{airlines.map((airline) => <option key={airline.code} value={airline.code}>{airline.name}</option>)}</select>
+              </div>
 
-          <div className="discovery-field">
-            <label htmlFor="discovery-trip-length">Trip length</label>
-            <select id="discovery-trip-length" value={tripLength} onChange={(event) => setTripLength(event.target.value)}><option>3–7 days</option><option>1–2 weeks</option><option>1–3 weeks</option><option>1–4 weeks</option></select>
-          </div>
+              <div className="discovery-field">
+                <label htmlFor="discovery-stops">Maximum stops</label>
+                <select id="discovery-stops" value={stops} onChange={(event) => setStops(event.target.value)}><option value="0">Nonstop</option><option value="1">1 stop</option><option value="2">2 stops</option><option value="any">Any</option></select>
+              </div>
 
-          <div className="discovery-field">
-            <label htmlFor="discovery-window">Travel window</label>
-            <select id="discovery-window" value={dateRange} onChange={(event) => setDateRange(event.target.value)}><option>Anytime</option><option>Next 3 months</option><option>Next 6 months</option><option>Next 12 months</option></select>
-          </div>
+              <div className="discovery-field">
+                <label htmlFor="discovery-trip-length">Trip length</label>
+                <select id="discovery-trip-length" value={tripLength} onChange={(event) => setTripLength(event.target.value)}><option>3–7 days</option><option>1–2 weeks</option><option>1–3 weeks</option><option>1–4 weeks</option></select>
+              </div>
 
-          <div className="discovery-field">
-            <label htmlFor="discovery-date">Specific departure date <small>Optional</small></label>
-            <input id="discovery-date" type="date" value={specificDate} onChange={(event) => setSpecificDate(event.target.value)} min={new Date().toISOString().slice(0, 10)} />
-          </div>
+              <div className="discovery-field">
+                <label htmlFor="discovery-date">Specific departure date <small>Optional</small></label>
+                <input id="discovery-date" type="date" value={specificDate} onChange={(event) => setSpecificDate(event.target.value)} min={new Date().toISOString().slice(0, 10)} />
+              </div>
 
-          <div className="discovery-field">
-            <label htmlFor="discovery-frequency">Search frequency</label>
-            <select id="discovery-frequency" value={frequency} onChange={(event) => setFrequency(event.target.value as Frequency)}><option>Weekly</option><option>Monthly</option></select>
-          </div>
+              <div className="discovery-field">
+                <label htmlFor="discovery-frequency">Search frequency</label>
+                <select id="discovery-frequency" value={frequency} onChange={(event) => setFrequency(event.target.value as Frequency)}><option>Weekly</option><option>Monthly</option></select>
+              </div>
 
-          <div className="discovery-field">
-            <label htmlFor="discovery-passengers">Passengers</label>
-            <select id="discovery-passengers" value={passengers} onChange={(event) => setPassengers(event.target.value)}>{Array.from({ length: 9 }, (_, index) => index + 1).map((count) => <option key={count} value={count}>{count} passenger{count === 1 ? '' : 's'}</option>)}</select>
-          </div>
+              <div className="discovery-field">
+                <label htmlFor="discovery-passengers">Passengers</label>
+                <select id="discovery-passengers" value={passengers} onChange={(event) => setPassengers(event.target.value)}>{Array.from({ length: 9 }, (_, index) => index + 1).map((count) => <option key={count} value={count}>{count} passenger{count === 1 ? '' : 's'}</option>)}</select>
+              </div>
+            </div>
+          </details>
 
           <div className="discovery-field">
             <label htmlFor="discovery-email">Alert email</label>
             <input id="discovery-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" />
           </div>
 
-          <button type="button" className="button button-primary discovery-cta" onClick={buildWatch} disabled={!origin || (destinationMode === 'airport' && !destinationAirport) || !email.trim()}>Create alert</button>
+          <button type="button" className="button button-primary discovery-cta" onClick={buildWatch} disabled={!origin || (destinationMode === 'airport' && !destinationAirport) || !email.trim()}>Start watching</button>
         </div>
 
         <div className="route-map" aria-label="TripSignal geographic trip map">
