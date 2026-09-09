@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDb, ensureSchema } from '@/lib/db';
-import { createMagicLink } from '@/lib/auth';
+import { createMagicLink, getCurrentUser } from '@/lib/auth';
 import { runAlertSearch, summarizeAlert } from '@/lib/alerts';
 import { sendAlertCreatedEmail, sendMagicLinkEmail } from '@/lib/email';
 
@@ -77,15 +77,23 @@ export async function POST(request: Request) {
 
     await ensureSchema();
 
-    const account = await createMagicLink(email);
-    await sendMagicLinkEmail(email, account.url);
+    const currentUser = await getCurrentUser();
+    let userId = currentUser?.id;
+    let signInEmailSent = false;
+
+    if (!userId) {
+      const account = await createMagicLink(email);
+      await sendMagicLinkEmail(email, account.url);
+      userId = account.userId;
+      signInEmailSent = true;
+    }
 
     const db = getDb();
     const inserted = await db.query<{ id: string }>(
       `insert into alerts (email, user_id, criteria, frequency)
        values ($1, $2, $3::jsonb, $4)
        returning id`,
-      [email, account.userId, JSON.stringify(criteria), criteria.frequency],
+      [email, userId, JSON.stringify(criteria), criteria.frequency],
     );
     const alertId = inserted.rows[0]?.id;
     if (!alertId) throw new Error('Could not create alert.');
@@ -111,8 +119,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       alertId,
       active: true,
-      accountCreated: true,
-      signInEmailSent: true,
+      accountCreated: !currentUser,
+      signInEmailSent,
       offers,
       confirmationSent: !confirmationError,
       warning: confirmationError || searchError || undefined,
