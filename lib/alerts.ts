@@ -15,7 +15,8 @@ type AlertCriteria = {
   dateStart?: string;
   dateEnd?: string;
   frequency: 'Weekly' | 'Monthly';
-  cabin: 'economy' | 'premium_economy' | 'business';
+  cabin: 'economy' | 'premium_economy' | 'business' | 'first';
+  passengers?: number;
 };
 
 function tripDays(value: string): [number, number] {
@@ -38,7 +39,6 @@ function windowDays(value: string) {
 
 function dateRangeBounds(alert: AlertCriteria): [string, string] {
   if (alert.dateStart && alert.dateEnd) return [alert.dateStart, alert.dateEnd];
-
   const start = new Date();
   const end = new Date(start);
   end.setUTCDate(end.getUTCDate() + windowDays(alert.dateRange));
@@ -50,12 +50,9 @@ function nextDepartureDate(alert: AlertCriteria, salt = 0) {
   const start = new Date(`${startValue}T00:00:00Z`);
   const end = new Date(`${endValue}T00:00:00Z`);
   const spanDays = Math.max(0, Math.round((end.getTime() - start.getTime()) / 86_400_000));
-
-  // Google Flights searches exact departure dates. Sample several points
-  // across the requested window rather than collapsing a custom range to one day.
   const sampleCount = alert.destinationMode === 'airport' ? 4 : 2;
   const index = salt % sampleCount;
-  const offset = Math.round((spanDays * index) / (sampleCount - 1));
+  const offset = sampleCount === 1 ? 0 : Math.round((spanDays * index) / (sampleCount - 1));
   start.setUTCDate(start.getUTCDate() + offset);
   return start.toISOString().slice(0, 10);
 }
@@ -78,13 +75,13 @@ function buildCriteria(alert: AlertCriteria, salt = 0): FlightSearchCriteria {
     maxTripDays,
     departureStart,
     departureEnd: windowEnd,
-    passengers: 1,
+    passengers: alert.passengers ?? 1,
   };
 }
 
 export function summarizeAlert(alert: AlertCriteria) {
   const destination = alert.destinationMode === 'airport' ? alert.destination.toUpperCase() : alert.destination;
-  const cabin = alert.cabin === 'premium_economy' ? 'Premium economy' : alert.cabin === 'business' ? 'Business' : 'Economy';
+  const cabin = alert.cabin === 'premium_economy' ? 'Premium economy' : alert.cabin === 'business' ? 'Business' : alert.cabin === 'first' ? 'First class' : 'Economy';
   return `${alert.origin} → ${destination} · ${cabin} · under $${alert.maxPrice.toLocaleString()} · ${alert.dateRange} · ${alert.frequency}`;
 }
 
@@ -92,7 +89,6 @@ export async function runAlertSearch(alertId: string, email: string, criteria: A
   const provider = getFlightProvider();
   const searchCount = criteria.destinationMode === 'airport' ? 4 : 2;
   const results: FlightOffer[] = [];
-
   for (let i = 0; i < searchCount; i += 1) {
     const offers = await provider.search(buildCriteria(criteria, i));
     results.push(...offers);
@@ -106,28 +102,21 @@ export async function runAlertSearch(alertId: string, email: string, criteria: A
 
   const db = getDb();
   await db.query('update alerts set last_checked_at = now() where id = $1', [alertId]);
-
   if (qualifying.length === 0) return { offers: [], emailed: false };
 
   const ids = qualifying.map((offer) => offer.id);
-  const existing = await db.query<{ offer_id: string }>(
-    'select offer_id from signals where alert_id = $1 and offer_id = any($2::text[])',
-    [alertId, ids],
-  );
+  const existing = await db.query<{ offer_id: string }>('select offer_id from signals where alert_id = $1 and offer_id = any($2::text[])', [alertId, ids]);
   const sentIds = new Set(existing.rows.map((row) => row.offer_id));
   const newOffers = qualifying.filter((offer) => !sentIds.has(offer.id));
-
   if (newOffers.length === 0) return { offers: qualifying, emailed: false };
 
   await sendFareSignalEmail(email, newOffers, criteria);
-
   for (const offer of newOffers) {
     await db.query(
       'insert into signals (alert_id, offer_id, offer) values ($1, $2, $3::jsonb) on conflict (alert_id, offer_id) do nothing',
       [alertId, offer.id, JSON.stringify(offer)],
     );
   }
-
   return { offers: newOffers, emailed: true };
 }
 
@@ -156,6 +145,5 @@ export async function runDueAlerts() {
       console.error(`TripSignal alert ${alert.id} failed:`, error);
     }
   }
-
   return summary;
 }
