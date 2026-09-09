@@ -8,15 +8,24 @@ import worldAtlas from 'world-atlas/countries-110m.json';
 type DestinationMode = 'region' | 'airport';
 type Airport = { iata_code: string; name: string; municipality?: string; iso_country?: string };
 type Coordinate = [number, number];
+type Frequency = 'Weekly' | 'Monthly';
 
 const regions = ['Europe', 'North America', 'South America', 'Asia', 'Africa', 'Middle East', 'Oceania'];
 const cabinOptions = ['Economy', 'Premium economy', 'Business', 'First class'];
+const airlines = [
+  { code: 'all', name: 'All airlines' },
+  { code: 'DL', name: 'Delta Air Lines' }, { code: 'AF', name: 'Air France' }, { code: 'KL', name: 'KLM' },
+  { code: 'VS', name: 'Virgin Atlantic' }, { code: 'KE', name: 'Korean Air' }, { code: 'AM', name: 'Aeromexico' },
+  { code: 'AZ', name: 'ITA Airways' }, { code: 'LH', name: 'Lufthansa' }, { code: 'UA', name: 'United Airlines' },
+  { code: 'AA', name: 'American Airlines' }, { code: 'IB', name: 'Iberia' }, { code: 'TP', name: 'TAP Air Portugal' },
+  { code: 'SK', name: 'SAS' }, { code: 'AY', name: 'Finnair' }, { code: 'TK', name: 'Turkish Airlines' },
+];
 
-const benchmarks: Record<string, { excellent: number; good: number; typical: number; max: number }> = {
-  Economy: { excellent: 500, good: 650, typical: 800, max: 1500 },
-  'Premium economy': { excellent: 900, good: 1100, typical: 1350, max: 2500 },
-  Business: { excellent: 1600, good: 1900, typical: 2400, max: 4000 },
-  'First class': { excellent: 2500, good: 3200, typical: 4200, max: 6000 },
+const cabinMax: Record<string, number> = {
+  Economy: 1500,
+  'Premium economy': 2500,
+  Business: 4000,
+  'First class': 6000,
 };
 
 const airportCoordinates: Record<string, Coordinate> = {
@@ -47,6 +56,12 @@ function projectRoutePath(projection: ReturnType<typeof geoEqualEarth>, from: Co
   return geoPath(projection)({ type: 'LineString', coordinates } as any) ?? '';
 }
 
+function cabinParam(cabin: string) {
+  if (cabin === 'Premium economy') return 'premium_economy';
+  if (cabin === 'First class') return 'first';
+  return cabin.toLowerCase();
+}
+
 function AirportSearch({ label, value, code, onSelect, placeholder }: { label: string; value: string; code: string; onSelect: (airport: Airport) => void; placeholder: string }) {
   const [query, setQuery] = useState(value);
   const [results, setResults] = useState<Airport[]>([]);
@@ -61,7 +76,6 @@ function AirportSearch({ label, value, code, onSelect, placeholder }: { label: s
       setResults([]);
       return;
     }
-
     const timer = window.setTimeout(async () => {
       setLoading(true);
       try {
@@ -75,7 +89,6 @@ function AirportSearch({ label, value, code, onSelect, placeholder }: { label: s
         setLoading(false);
       }
     }, 160);
-
     return () => window.clearTimeout(timer);
   }, [query, value]);
 
@@ -85,10 +98,7 @@ function AirportSearch({ label, value, code, onSelect, placeholder }: { label: s
       <input
         id={`airport-${label.toLowerCase().replace(/\s+/g, '-')}`}
         value={query}
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setOpen(true);
-        }}
+        onChange={(event) => { setQuery(event.target.value); setOpen(true); }}
         onFocus={() => { if (query.trim().length >= 2) setOpen(true); }}
         placeholder={placeholder}
         autoComplete="off"
@@ -111,12 +121,6 @@ function AirportSearch({ label, value, code, onSelect, placeholder }: { label: s
   );
 }
 
-function cabinParam(cabin: string) {
-  if (cabin === 'Premium economy') return 'premium_economy';
-  if (cabin === 'First class') return 'first';
-  return cabin.toLowerCase();
-}
-
 export default function TripDiscovery() {
   const [origin, setOrigin] = useState('');
   const [originSearch, setOriginSearch] = useState('');
@@ -128,8 +132,13 @@ export default function TripDiscovery() {
   const [budget, setBudget] = useState('1000');
   const [passengers, setPassengers] = useState('1');
   const [specificDate, setSpecificDate] = useState('');
+  const [airlineMode, setAirlineMode] = useState('all');
+  const [stops, setStops] = useState('1');
+  const [tripLength, setTripLength] = useState('1–3 weeks');
+  const [dateRange, setDateRange] = useState('Next 12 months');
+  const [frequency, setFrequency] = useState<Frequency>('Weekly');
+  const [email, setEmail] = useState('');
 
-  const benchmark = benchmarks[cabin];
   const budgetValue = Number(budget) || 0;
   const destinationCoordinates = destinationAirport ? airportCoordinates[destinationAirport] : undefined;
   const originCoordinates = origin ? airportCoordinates[origin] : undefined;
@@ -138,12 +147,25 @@ export default function TripDiscovery() {
   const graticule = useMemo(() => geoGraticule().step([20, 20])(), []);
   const originPoint = originCoordinates ? projection(originCoordinates) : undefined;
   const destinationPoint = destinationCoordinates ? projection(destinationCoordinates) : undefined;
-  const fareSignal = budgetValue <= benchmark.excellent ? 'Excellent' : budgetValue <= benchmark.good ? 'Good' : budgetValue <= benchmark.typical ? 'Typical' : 'High';
-  const fareSignalText = fareSignal === 'Excellent' ? 'A strong target for this cabin.' : fareSignal === 'Good' ? 'A reasonable target for this cabin.' : fareSignal === 'Typical' ? 'Around the normal planning range.' : 'A higher target that should be easier to hit.';
 
   function buildWatch() {
-    if (!origin || (destinationMode === 'airport' && !destinationAirport)) return;
-    const params = new URLSearchParams({ origin, destinationMode, ...(destinationMode === 'region' ? { region } : { destinationAirport }), ...(budget ? { price: budget } : {}), passengers, cabin: cabinParam(cabin), ...(specificDate ? { dateRange: 'Custom dates', dateStart: specificDate, dateEnd: specificDate } : {}) });
+    if (!origin || (destinationMode === 'airport' && !destinationAirport) || !email.trim()) return;
+    const effectiveDateRange = specificDate ? 'Custom dates' : dateRange;
+    const params = new URLSearchParams({
+      origin,
+      destinationMode,
+      ...(destinationMode === 'region' ? { region } : { destinationAirport }),
+      ...(budget ? { price: budget } : {}),
+      passengers,
+      cabin: cabinParam(cabin),
+      airlineMode,
+      maxStops: stops,
+      tripLength,
+      dateRange: effectiveDateRange,
+      ...(specificDate ? { dateStart: specificDate, dateEnd: specificDate } : {}),
+      frequency,
+      email: email.trim(),
+    });
     window.location.href = `/alerts?${params.toString()}`;
   }
 
@@ -152,7 +174,7 @@ export default function TripDiscovery() {
       <div className="discovery-head">
         <div>
           <p className="section-kicker">Find a trip</p>
-          <h2>Search the map.<br /><em>Know what a good fare looks like.</em></h2>
+          <h2>Search the map.<br /><em>Set the fare you want.</em></h2>
         </div>
         <p>Tell TripSignal where you want to go and what matters. We’ll use those rules when you create the alert.</p>
       </div>
@@ -185,9 +207,38 @@ export default function TripDiscovery() {
 
           <div className="discovery-field">
             <div className="fare-target-head"><label htmlFor="discovery-budget">Fare target</label><strong>${budgetValue.toLocaleString()}</strong></div>
-            <input id="discovery-budget" className="fare-target-slider" type="range" min="300" max={benchmark.max} step="50" value={Math.min(Math.max(budgetValue || 300, 300), benchmark.max)} onChange={(event) => setBudget(event.target.value)} aria-label="Maximum fare target" />
-            <div className="fare-target-labels"><span>Lower</span><span className="fare-target-signal">{fareSignal}</span><span>Higher</span></div>
-            <p className="fare-target-note">{fareSignalText} Reference: excellent under ${benchmark.excellent.toLocaleString()}, good under ${benchmark.good.toLocaleString()}, typical around ${benchmark.typical.toLocaleString()}.</p>
+            <input id="discovery-budget" className="fare-target-slider" type="range" min="300" max={cabinMax[cabin]} step="50" value={Math.min(Math.max(budgetValue || 300, 300), cabinMax[cabin])} onChange={(event) => setBudget(event.target.value)} aria-label="Maximum fare target" />
+            <div className="fare-target-labels"><span>Lower</span><span>Higher</span></div>
+          </div>
+
+          <div className="discovery-field">
+            <label htmlFor="discovery-airline">Airline</label>
+            <select id="discovery-airline" value={airlineMode} onChange={(event) => setAirlineMode(event.target.value)}>{airlines.map((airline) => <option key={airline.code} value={airline.code}>{airline.name}</option>)}</select>
+          </div>
+
+          <div className="discovery-field">
+            <label htmlFor="discovery-stops">Maximum stops</label>
+            <select id="discovery-stops" value={stops} onChange={(event) => setStops(event.target.value)}><option value="0">Nonstop</option><option value="1">1 stop</option><option value="2">2 stops</option><option value="any">Any</option></select>
+          </div>
+
+          <div className="discovery-field">
+            <label htmlFor="discovery-trip-length">Trip length</label>
+            <select id="discovery-trip-length" value={tripLength} onChange={(event) => setTripLength(event.target.value)}><option>3–7 days</option><option>1–2 weeks</option><option>1–3 weeks</option><option>1–4 weeks</option></select>
+          </div>
+
+          <div className="discovery-field">
+            <label htmlFor="discovery-window">Travel window</label>
+            <select id="discovery-window" value={dateRange} onChange={(event) => setDateRange(event.target.value)}><option>Anytime</option><option>Next 3 months</option><option>Next 6 months</option><option>Next 12 months</option></select>
+          </div>
+
+          <div className="discovery-field">
+            <label htmlFor="discovery-date">Specific departure date <small>Optional</small></label>
+            <input id="discovery-date" type="date" value={specificDate} onChange={(event) => setSpecificDate(event.target.value)} min={new Date().toISOString().slice(0, 10)} />
+          </div>
+
+          <div className="discovery-field">
+            <label htmlFor="discovery-frequency">Search frequency</label>
+            <select id="discovery-frequency" value={frequency} onChange={(event) => setFrequency(event.target.value as Frequency)}><option>Weekly</option><option>Monthly</option></select>
           </div>
 
           <div className="discovery-field">
@@ -196,11 +247,11 @@ export default function TripDiscovery() {
           </div>
 
           <div className="discovery-field">
-            <label htmlFor="discovery-date">Departure date <small>Optional</small></label>
-            <input id="discovery-date" type="date" value={specificDate} onChange={(event) => setSpecificDate(event.target.value)} min={new Date().toISOString().slice(0, 10)} />
+            <label htmlFor="discovery-email">Alert email</label>
+            <input id="discovery-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" />
           </div>
 
-          <button type="button" className="button button-primary discovery-cta" onClick={buildWatch} disabled={!origin || (destinationMode === 'airport' && !destinationAirport)}>Create alert</button>
+          <button type="button" className="button button-primary discovery-cta" onClick={buildWatch} disabled={!origin || (destinationMode === 'airport' && !destinationAirport) || !email.trim()}>Create alert</button>
         </div>
 
         <div className="route-map" aria-label="TripSignal geographic trip map">
