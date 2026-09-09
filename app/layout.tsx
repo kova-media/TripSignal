@@ -10,7 +10,13 @@ import './ui-fixes.css';
 export const metadata: Metadata = {
   title: 'TripSignal | Travel intelligence, on your terms',
   description: 'Set the trip you want. TripSignal watches for qualifying fares and sends you the signal.',
-  icons: { icon: '/favicon.svg', shortcut: '/favicon.svg', apple: '/tripsignal-icon-daylight.svg' },
+  manifest: '/manifest.webmanifest',
+  themeColor: '#0E1112',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/tripsignal-icon-blue.svg',
+  },
 };
 
 const themeScript = `(() => { try { const saved = localStorage.getItem('tripsignal-theme-v2'); document.documentElement.dataset.theme = saved === 'daylight' ? 'daylight' : 'redeye'; } catch { document.documentElement.dataset.theme = 'redeye'; } })();`;
