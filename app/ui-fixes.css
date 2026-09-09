@@ -1,84 +1,16 @@
-/* Shared UI corrections: square controls and airport autocomplete. */
+/* Shared UI corrections: square controls, airport autocomplete, and fare target controls. */
 .button { border-radius: 8px !important; }
-
 .home-page .button-primary { border-radius: 8px !important; }
 
-.discovery-airport-search {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  min-width: 0;
-}
+.discovery-airport-search { position: relative; display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.discovery-airport-search > label, .discovery-field > label { font-size: 12px; font-weight: 600; }
+.discovery-airport-search input, .discovery-field select, .discovery-field > input, .discovery-price { width: 100%; min-width: 0; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.discovery-airport-search input, .discovery-field select, .discovery-field > input { padding: 14px 15px; outline: none; }
+.discovery-airport-search input:focus, .discovery-field select:focus, .discovery-field > input:focus, .discovery-price:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.discovery-airport-search small, .discovery-field > label small { color: var(--quiet); font-size: 10px; font-weight: 400; }
 
-.discovery-airport-search > label,
-.discovery-field > label {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.discovery-airport-search input,
-.discovery-field select,
-.discovery-field > input,
-.discovery-price {
-  width: 100%;
-  min-width: 0;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  background: var(--surface);
-  color: var(--ink);
-}
-
-.discovery-airport-search input,
-.discovery-field select,
-.discovery-field > input {
-  padding: 14px 15px;
-  outline: none;
-}
-
-.discovery-airport-search input:focus,
-.discovery-field select:focus,
-.discovery-field > input:focus,
-.discovery-price:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-}
-
-.discovery-airport-search small,
-.discovery-field > label small {
-  color: var(--quiet);
-  font-size: 10px;
-  font-weight: 400;
-}
-
-.discovery-airport-results {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 7px);
-  left: 0;
-  right: 0;
-  overflow: hidden;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-}
-
-.discovery-airport-result {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  padding: 13px 15px;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
-  background: transparent;
-  color: var(--ink);
-  text-align: left;
-}
-
+.discovery-airport-results { position: absolute; z-index: 20; top: calc(100% + 7px); left: 0; right: 0; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); }
+.discovery-airport-result { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 13px 15px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; color: var(--ink); text-align: left; }
 .discovery-airport-result:last-child { border-bottom: 0; }
 .discovery-airport-result:hover { background: var(--surface-2); }
 .discovery-airport-result strong { font-size: 13px; font-weight: 600; }
@@ -88,9 +20,35 @@
 .discovery-price span { padding-left: 15px; color: var(--muted); }
 .discovery-price input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); padding: 14px 15px 14px 7px; }
 
-.option,
-.discovery-options button { border-radius: 8px !important; }
+.fare-target-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.fare-target-head label { font-size: 12px; font-weight: 600; }
+.fare-target-head strong { font-family: 'Space Grotesk', sans-serif; font-size: 18px; letter-spacing: -.03em; }
+.fare-target-slider { width: 100%; height: 6px; margin: 13px 0 8px; padding: 0 !important; appearance: none; border: 0 !important; border-radius: 999px !important; background: var(--line-strong) !important; box-shadow: none !important; accent-color: var(--accent); }
+.fare-target-slider::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; border: 2px solid var(--surface); border-radius: 50%; background: var(--accent); box-shadow: 0 1px 5px rgba(0,0,0,.18); cursor: grab; }
+.fare-target-slider::-moz-range-thumb { width: 15px; height: 15px; border: 2px solid var(--surface); border-radius: 50%; background: var(--accent); cursor: grab; }
+.fare-target-labels { display: flex; justify-content: space-between; align-items: center; color: var(--quiet); font-size: 10px; }
+.fare-target-signal { color: var(--success); font-weight: 700; }
+.fare-target-note { margin: 8px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+
+.option, .discovery-options button { border-radius: 8px !important; }
 .discovery-cta:disabled { cursor: not-allowed; opacity: .45; transform: none; }
+
+.route-map { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); }
+.route-map-top { display: flex; justify-content: space-between; gap: 16px; padding: 15px 18px; border-bottom: 1px solid var(--line); color: var(--quiet); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.route-map-canvas { padding: 8px; background: var(--surface-2); }
+.route-map-canvas svg { display: block; width: 100%; height: auto; }
+.map-countries path { fill: var(--surface); stroke: var(--line-strong); stroke-width: .7; }
+.map-graticule { fill: none; stroke: var(--line); stroke-width: .6; opacity: .7; }
+.map-route { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 5 5; }
+.map-origin circle:first-child, .map-selected-destination circle { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.map-origin circle:nth-child(2) { fill: none; stroke: var(--accent); stroke-width: 1.5; opacity: .45; }
+.map-origin text, .map-selected-destination text { fill: var(--ink); font: 600 12px 'DM Sans', Arial, sans-serif; }
+.route-map-detail { padding: 18px; }
+.route-map-detail > div { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; }
+.route-map-detail > div span { font-size: 12px; color: var(--muted); }
+.route-map-detail > div strong { font-family: 'Space Grotesk', sans-serif; font-size: 20px; letter-spacing: -.03em; text-align: right; }
+.route-map-detail p { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+.route-map-detail small { display: block; margin-top: 7px; color: var(--quiet); font-size: 10px; }
 
 @media (max-width: 700px) {
   .discovery-airport-results { position: relative; top: auto; margin-top: -2px; }
