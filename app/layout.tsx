@@ -5,6 +5,7 @@ import './tech.css';
 import './color-fix.css';
 import './mobile.css';
 import './summary-fix.css';
+import './ui-fixes.css';
 
 export const metadata: Metadata = {
   title: 'TripSignal | Travel intelligence, on your terms',
