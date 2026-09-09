@@ -1,0 +1,97 @@
+/* Shared UI corrections: square controls and airport autocomplete. */
+.button { border-radius: 8px !important; }
+
+.home-page .button-primary { border-radius: 8px !important; }
+
+.discovery-airport-search {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.discovery-airport-search > label,
+.discovery-field > label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.discovery-airport-search input,
+.discovery-field select,
+.discovery-field > input,
+.discovery-price {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.discovery-airport-search input,
+.discovery-field select,
+.discovery-field > input {
+  padding: 14px 15px;
+  outline: none;
+}
+
+.discovery-airport-search input:focus,
+.discovery-field select:focus,
+.discovery-field > input:focus,
+.discovery-price:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.discovery-airport-search small,
+.discovery-field > label small {
+  color: var(--quiet);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.discovery-airport-results {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 7px);
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.discovery-airport-result {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 13px 15px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+}
+
+.discovery-airport-result:last-child { border-bottom: 0; }
+.discovery-airport-result:hover { background: var(--surface-2); }
+.discovery-airport-result strong { font-size: 13px; font-weight: 600; }
+.discovery-airport-result span { color: var(--muted); font-size: 10px; }
+
+.discovery-price { display: flex; align-items: center; overflow: hidden; }
+.discovery-price span { padding-left: 15px; color: var(--muted); }
+.discovery-price input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); padding: 14px 15px 14px 7px; }
+
+.option,
+.discovery-options button { border-radius: 8px !important; }
+.discovery-cta:disabled { cursor: not-allowed; opacity: .45; transform: none; }
+
+@media (max-width: 700px) {
+  .discovery-airport-results { position: relative; top: auto; margin-top: -2px; }
+}
