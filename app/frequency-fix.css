@@ -1,0 +1,27 @@
+.discovery-frequency-visible {
+  margin-top: 0;
+}
+
+.discovery-frequency-visible label {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.discovery-frequency-visible select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  border-radius: 11px;
+  padding: 14px 15px;
+  color: var(--ink);
+  outline: none;
+}
+
+.discovery-frequency-visible select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
