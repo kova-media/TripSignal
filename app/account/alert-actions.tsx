@@ -23,7 +23,7 @@ export default function AlertActions({ id }: { id: string }) {
   }
 
   if (!confirming) {
-    return <button type="button" className={styles.deleteButton} onClick={() => setConfirming(true)}>Delete</button>;
+    return <div className={styles.alertActions}><a className={styles.editButton} href={`/alerts/edit/${id}`}>Edit</a><button type="button" className={styles.deleteButton} onClick={() => setConfirming(true)}>Delete</button></div>;
   }
 
   return (
