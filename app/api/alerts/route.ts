@@ -16,7 +16,8 @@ type AlertInput = {
   dateStart?: string;
   dateEnd?: string;
   frequency: 'Weekly' | 'Monthly';
-  cabin: 'economy' | 'premium_economy' | 'business';
+  cabin: 'economy' | 'premium_economy' | 'business' | 'first';
+  passengers?: number;
   email: string;
 };
 
@@ -35,18 +36,22 @@ export async function POST(request: Request) {
     const destinationMode = body.destinationMode === 'airport' ? 'airport' : 'region';
     const destination = String(body.destination ?? '').trim();
     const maxPrice = Number(body.maxPrice);
+    const passengers = Number(body.passengers ?? 1);
     const email = String(body.email ?? '').trim().toLowerCase();
     const dateRange = String(body.dateRange ?? 'Next 12 months').trim();
     const dateStart = body.dateStart ? String(body.dateStart).trim() : undefined;
     const dateEnd = body.dateEnd ? String(body.dateEnd).trim() : undefined;
     const rawAirlineMode = String(body.airlineMode ?? 'all').trim();
     const airlineMode = rawAirlineMode.toLowerCase() === 'all' ? 'all' : rawAirlineMode.toUpperCase();
+    const cabin = body.cabin ?? 'premium_economy';
 
     if (!/^[A-Z]{3}$/.test(origin)) return NextResponse.json({ error: 'Origin must be a three-letter airport code.' }, { status: 400 });
     if (destinationMode === 'airport' && !/^[A-Za-z]{3}$/.test(destination)) return NextResponse.json({ error: 'Destination airport must be a three-letter airport code.' }, { status: 400 });
     if (!Number.isFinite(maxPrice) || maxPrice <= 0) return NextResponse.json({ error: 'Enter a valid maximum price.' }, { status: 400 });
+    if (!Number.isInteger(passengers) || passengers < 1 || passengers > 9) return NextResponse.json({ error: 'Choose between 1 and 9 passengers.' }, { status: 400 });
     if (!validEmail(email)) return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
     if (!['Weekly', 'Monthly'].includes(body.frequency)) return NextResponse.json({ error: 'Choose a valid search frequency.' }, { status: 400 });
+    if (!['economy', 'premium_economy', 'business', 'first'].includes(cabin)) return NextResponse.json({ error: 'Choose a valid cabin.' }, { status: 400 });
     if (dateRange === 'Custom dates') {
       if (!dateStart || !dateEnd || !validDate(dateStart) || !validDate(dateEnd)) return NextResponse.json({ error: 'Choose a valid custom start and end date.' }, { status: 400 });
       if (dateEnd < dateStart) return NextResponse.json({ error: 'The end date must be on or after the start date.' }, { status: 400 });
@@ -66,7 +71,8 @@ export async function POST(request: Request) {
       dateStart,
       dateEnd,
       frequency: body.frequency,
-      cabin: body.cabin ?? 'premium_economy',
+      cabin,
+      passengers,
     } as const;
 
     await ensureSchema();
