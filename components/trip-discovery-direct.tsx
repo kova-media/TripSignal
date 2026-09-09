@@ -3,6 +3,7 @@
 import { MouseEvent, ReactNode, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import TripDiscovery from '@/components/trip-discovery';
+import styles from './trip-discovery-direct.module.css';
 
 type DiscoveryDirectProps = {
   children?: ReactNode;
@@ -99,11 +100,11 @@ export default function TripDiscoveryDirect({ children }: DiscoveryDirectProps) 
   }
 
   return (
-    <div className="discovery-direct" onClickCapture={handleClick} aria-busy={submitting}>
+    <div className={styles.wrapper} onClickCapture={handleClick} aria-busy={submitting}>
       <TripDiscovery />
-      {success && <p className="discovery-direct-success" role="status">{success}</p>}
-      {error && <p className="discovery-direct-error" role="alert">{error}</p>}
-      {submitting && <p className="discovery-direct-status" role="status">Creating your alert…</p>}
+      {success && <p className={`${styles.message} discovery-direct-success`} role="status">{success}</p>}
+      {error && <p className={`${styles.message} ${styles.error} discovery-direct-error`} role="alert">{error}</p>}
+      {submitting && <p className={`${styles.message} ${styles.status} discovery-direct-status`} role="status">Creating your alert…</p>}
       {children}
     </div>
   );
