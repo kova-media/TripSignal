@@ -15,7 +15,11 @@ export default async function Home() {
   if (user) {
     const sql = getDb();
     await ensureSchema();
-    watches = await sql<Array<{ id: string; criteria: any; frequency: string }>>`select id, criteria, frequency from alerts where user_id = ${user.id} and active = true order by created_at desc limit 3`;
+    const result = await sql.query<{ id: string; criteria: any; frequency: string }>(
+      `select id, criteria, frequency from alerts where user_id = $1 and active = true order by created_at desc limit 3`,
+      [user.id],
+    );
+    watches = result.rows;
   }
   return (
     <main className="home-page">
