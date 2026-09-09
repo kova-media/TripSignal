@@ -25,7 +25,7 @@ export default function BillingButton({ active }: { active: boolean }) {
   return (
     <div>
       <button className="button button-primary" type="button" onClick={startCheckout} disabled={loading}>
-        {loading ? 'Opening checkout…' : 'Upgrade to Pro · $19.99/year'} <span>↗</span>
+        {loading ? 'Opening checkout…' : 'Upgrade to Pro · $19.99/year'}
       </button>
       {error ? <p className="billing-error">{error}</p> : null}
     </div>
