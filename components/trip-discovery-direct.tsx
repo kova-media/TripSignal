@@ -26,7 +26,7 @@ function selectedDestinationMode(root: HTMLElement) {
 }
 
 function airportCode(inputValue: string) {
-  const match = inputValue.match(/\(([A-Za-z]{3})\)\)??$/);
+  const match = inputValue.match(/\(([A-Za-z]{3})\)$/);
   return match?.[1]?.toUpperCase() ?? '';
 }
 
