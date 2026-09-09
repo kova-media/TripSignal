@@ -1,0 +1,36 @@
+.wrapper {
+  anchor-scope: --trip-create-alert;
+}
+
+.wrapper :global(.discovery-cta) {
+  anchor-name: --trip-create-alert;
+}
+
+.message {
+  margin: 12px 0 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@supports (position-anchor: --trip-create-alert) and (top: anchor(bottom)) {
+  .message {
+    position: absolute;
+    position-anchor: --trip-create-alert;
+    top: calc(anchor(bottom) + 12px);
+    left: anchor(left);
+    width: anchor-size(width);
+    max-width: 100%;
+    margin: 0;
+    z-index: 5;
+    pointer-events: none;
+  }
+}
+
+.error {
+  color: #d88a8a;
+}
+
+.status {
+  color: var(--muted);
+}
