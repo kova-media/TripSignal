@@ -2,7 +2,6 @@
 
 import { FormEvent, useState } from 'react';
 import Brand from '@/components/brand';
-import ThemeToggle from '@/components/theme-toggle';
 
 export default function SignUpPage() {
   const [name, setName] = useState('');
@@ -35,7 +34,6 @@ export default function SignUpPage() {
     <main className="auth-page">
       <header className="nav shell">
         <a className="brand-link" href="/" aria-label="TripSignal home"><Brand /></a>
-        <ThemeToggle />
       </header>
 
       <section className="auth-card shell">
@@ -49,7 +47,7 @@ export default function SignUpPage() {
                 <label><span>Full name</span><input type="text" value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" autoComplete="name" minLength={2} maxLength={100} required /></label>
                 <label><span>Email address</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" required /></label>
                 {error && <p className="auth-error">{error}</p>}
-                <button className="button button-primary auth-submit" type="submit" disabled={loading}>{loading ? 'Sending link…' : 'Send verification link'} <span>↗</span></button>
+                <button className="button button-primary auth-submit" type="submit" disabled={loading}>{loading ? 'Sending link…' : 'Send verification link'}</button>
               </form>
               <p className="auth-switch">Already have an account? <a href="/signin">Sign in</a></p>
               <p className="auth-note">Your verification link expires in 15 minutes and can only be used once.</p>
