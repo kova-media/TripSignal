@@ -1,11 +1,8 @@
 'use client';
 
-import { MouseEvent, ReactNode, useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { MouseEvent, ReactNode, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import TripDiscovery from '@/components/trip-discovery';
-import TripExtras from '@/components/trip-extras';
-import type { AffiliateContext } from '@/lib/affiliates';
 import styles from './trip-discovery-direct.module.css';
 
 type DiscoveryDirectProps = {
@@ -40,63 +37,15 @@ function cabinParam(cabin: string) {
   return cabin.toLowerCase();
 }
 
-function affiliateContextFrom(root: HTMLElement): AffiliateContext {
-  const destinationMode = selectedDestinationMode(root);
-  const destinationInput = valueOf(root, 'airport-destination');
-  const destination = destinationMode === 'airport' ? airportCode(destinationInput) : '';
-  const origin = airportCode(valueOf(root, 'airport-from'));
-  const specificDate = valueOf(root, 'discovery-date');
-
-  return {
-    ...(destination ? { destination } : {}),
-    ...(origin ? { origin } : {}),
-    ...(specificDate ? { departureDate: specificDate, returnDate: specificDate } : {}),
-  };
-}
-
 export default function TripDiscoveryDirect({ children }: DiscoveryDirectProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [affiliateContext, setAffiliateContext] = useState<AffiliateContext>({});
-  const [extrasMount, setExtrasMount] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const sync = () => {
-      const wrapper = document.querySelector<HTMLElement>('[data-trip-discovery-direct]');
-      const routeMap = wrapper?.querySelector<HTMLElement>('.route-map');
-      if (!wrapper || !routeMap) return;
-
-      const next = affiliateContextFrom(wrapper);
-      setAffiliateContext((current) => JSON.stringify(current) === JSON.stringify(next) ? current : next);
-
-      let mount = wrapper.querySelector<HTMLElement>('.trip-extras-mount');
-      if (!mount || mount.previousElementSibling !== routeMap) {
-        mount?.remove();
-        mount = document.createElement('div');
-        mount.className = 'trip-extras-mount';
-        routeMap.insertAdjacentElement('afterend', mount);
-      }
-      setExtrasMount((current) => current === mount ? current : mount);
-    };
-
-    sync();
-    const interval = window.setInterval(sync, 300);
-    return () => window.clearInterval(interval);
-  }, []);
 
   async function handleClick(event: MouseEvent<HTMLDivElement>) {
     const target = event.target as HTMLElement | null;
     const button = target?.closest<HTMLButtonElement>('button.discovery-cta');
-
-    if (target?.closest('.discovery-airport-result')) {
-      window.setTimeout(() => {
-        const wrapper = event.currentTarget;
-        setAffiliateContext(affiliateContextFrom(wrapper));
-      }, 0);
-    }
-
     if (!button) return;
 
     event.preventDefault();
@@ -153,7 +102,6 @@ export default function TripDiscoveryDirect({ children }: DiscoveryDirectProps) 
   return (
     <div className={styles.wrapper} data-trip-discovery-direct onClickCapture={handleClick} aria-busy={submitting}>
       <TripDiscovery />
-      {extrasMount && createPortal(<TripExtras context={affiliateContext} />, extrasMount)}
       {success && <p className={`${styles.message} discovery-direct-success`} role="status">{success}</p>}
       {error && <p className={`${styles.message} ${styles.error} discovery-direct-error`} role="alert">{error}</p>}
       {submitting && <p className={`${styles.message} ${styles.status} discovery-direct-status`} role="status">Creating your alert…</p>}
