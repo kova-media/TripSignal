@@ -19,11 +19,11 @@ interface AffiliateProvider {
 
 const providers: AffiliateProvider[] = [
   {
-    key: 'travelpayouts',
-    name: 'Travelpayouts',
-    verticals: ['hotels', 'activities', 'transfers', 'insurance'],
-    envKey: 'TRIPSIGNAL_AFFILIATE_TRAVELPAYOUTS_URL',
-    defaultDestination: 'https://www.travelpayouts.com/?marker=776063',
+    key: 'klook',
+    name: 'Klook',
+    verticals: ['hotels'],
+    envKey: 'TRIPSIGNAL_AFFILIATE_KLOOK_HOTELS_URL',
+    defaultDestination: 'https://klook.tpo.mx/O9U20LAg',
   },
   {
     key: 'discovercars',
@@ -32,7 +32,32 @@ const providers: AffiliateProvider[] = [
     envKey: 'TRIPSIGNAL_AFFILIATE_DISCOVERCARS_URL',
     defaultDestination: 'https://www.discovercars.com/?a_aid=Damian',
   },
-  { key: 'awin-parking', name: 'Airport Parking', verticals: ['parking'], envKey: 'TRIPSIGNAL_AFFILIATE_PARKING_URL' },
+  {
+    key: 'klook',
+    name: 'Klook',
+    verticals: ['activities'],
+    envKey: 'TRIPSIGNAL_AFFILIATE_KLOOK_ACTIVITIES_URL',
+    defaultDestination: 'https://klook.tpo.mx/zExsNd44',
+  },
+  {
+    key: 'kiwitaxi',
+    name: 'Kiwitaxi',
+    verticals: ['transfers'],
+    envKey: 'TRIPSIGNAL_AFFILIATE_KIWITAXI_URL',
+    defaultDestination: 'https://kiwitaxi.tpo.mx/b1AKHy0t',
+  },
+  {
+    key: 'awin-parking',
+    name: 'Airport Parking',
+    verticals: ['parking'],
+    envKey: 'TRIPSIGNAL_AFFILIATE_PARKING_URL',
+  },
+  {
+    key: 'travelpayouts',
+    name: 'Travelpayouts',
+    verticals: ['insurance'],
+    envKey: 'TRIPSIGNAL_AFFILIATE_INSURANCE_URL',
+  },
 ];
 
 const verticalLabels: Record<AffiliateVertical, string> = {
@@ -73,17 +98,20 @@ export function buildAffiliateUrl(vertical: AffiliateVertical, context: Affiliat
   if (!config?.destination) return null;
 
   const url = new URL(config.destination);
-  const params: Record<string, string> = {
-    destination: context.destination ?? '',
-    origin: context.origin ?? '',
-    departureDate: context.departureDate ?? '',
-    returnDate: context.returnDate ?? '',
-    alertId: context.alertId ?? '',
-    signalId: context.signalId ?? '',
-  };
 
-  for (const [key, value] of Object.entries(params)) {
-    if (value) url.searchParams.set(`ts_${key}`, value);
+  if (!url.hostname.endsWith('tpo.mx') && !url.hostname.endsWith('discovercars.com')) {
+    const params: Record<string, string> = {
+      destination: context.destination ?? '',
+      origin: context.origin ?? '',
+      departureDate: context.departureDate ?? '',
+      returnDate: context.returnDate ?? '',
+      alertId: context.alertId ?? '',
+      signalId: context.signalId ?? '',
+    };
+
+    for (const [key, value] of Object.entries(params)) {
+      if (value) url.searchParams.set(`ts_${key}`, value);
+    }
   }
 
   return url.toString();
