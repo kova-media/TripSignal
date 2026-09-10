@@ -3,6 +3,7 @@ import Link from 'next/link';
 import SiteHeader from '@/components/site-header';
 import { getDb, ensureSchema } from '@/lib/db';
 import { requireAdmin, isAdminError } from '@/lib/admin';
+import AdminUserActions from '../../admin-user-actions';
 import styles from '../../admin.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -67,7 +68,7 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
         </section>
 
         <section className={styles.section}>
-          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Subscription</p><h2>Billing state</h2></div><Link className="button button-secondary" href={`/admin/users/${user.id}/billing`}>Manage billing</Link></div>
+          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Subscription</p><h2>Billing state</h2></div><div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', justifyContent: 'flex-end' }}><Link className="button button-secondary" href={`/admin/users/${user.id}/billing`}>Manage billing</Link><AdminUserActions userId={user.id} plan={user.plan} subscriptionStatus={user.subscription_status} alertCount={alertsResult.rows.length} /></div></div>
           <div className={styles.detailCard}>
             <div><span>Status</span><strong>{user.subscription_status}</strong></div>
             <div><span>Stripe customer</span><strong>{user.stripe_customer_id || 'Not linked'}</strong></div>
