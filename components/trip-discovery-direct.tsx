@@ -137,12 +137,10 @@ export default function TripDiscoveryDirect({ children }: DiscoveryDirectProps) 
     }
   }
 
-  const hasDestination = Boolean(affiliateContext.destination);
-
   return (
     <div className={styles.wrapper} data-trip-discovery-direct onClickCapture={handleClick} aria-busy={submitting}>
       <TripDiscovery />
-      {hasDestination && <TripExtras context={affiliateContext} />}
+      <TripExtras context={affiliateContext} />
       {success && <p className={`${styles.message} discovery-direct-success`} role="status">{success}</p>}
       {error && <p className={`${styles.message} ${styles.error} discovery-direct-error`} role="alert">{error}</p>}
       {submitting && <p className={`${styles.message} ${styles.status} discovery-direct-status`} role="status">Creating your alert…</p>}
