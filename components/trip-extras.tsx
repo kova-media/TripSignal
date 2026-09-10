@@ -5,8 +5,9 @@ const extras: Array<{ vertical: AffiliateVertical; title: string; description: s
   { vertical: 'cars', title: 'Rental cars', description: 'Compare rental cars for your trip.' },
   { vertical: 'activities', title: 'Things to do', description: 'Find tours and activities at your destination.' },
   { vertical: 'transfers', title: 'Airport transfers', description: 'Arrange a ride between the airport and your stay.' },
-  { vertical: 'parking', title: 'Airport parking', description: 'Compare airport parking options before you fly.' },
   { vertical: 'insurance', title: 'Travel insurance', description: 'Review travel insurance options for your trip.' },
+  { vertical: 'sim', title: 'SIM cards', description: 'Get mobile data for your trip.' },
+  { vertical: 'trains_buses', title: 'Trains & buses', description: 'Book ground transportation at your destination.' },
 ];
 
 export default function TripExtras({ context }: { context: AffiliateContext }) {
