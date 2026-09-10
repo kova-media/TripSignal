@@ -1,6 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
+  "github": {
+    "autoJobCancelation": false
+  },
   "crons": [
     {
       "path": "/api/cron/alerts",
