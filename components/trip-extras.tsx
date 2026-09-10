@@ -41,22 +41,51 @@ export default function TripExtras({ context }: { context: AffiliateContext }) {
 
 function OutlineIcon({ type }: { type: string }) {
   const props = { viewBox: '0 0 48 48', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' };
-  const stroke = 'currentColor';
-  const common = { stroke, strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+  const common = { stroke: 'currentColor', strokeWidth: 1.9, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
 
-  if (type === 'hotel') return <svg {...props} {...common}><path d="M7 40V13H41V40M4 40H44M12 40V24H36V40M12 29H36M18 24V18H30V24"/><path d="M17 33H19M29 33H31" strokeWidth="2.1"/></svg>;
+  if (type === 'hotel') return <svg {...props} {...common}>
+    <path d="M6 40H42M9 40V16L24 8L39 16V40" />
+    <path d="M16 40V28H32V40M16 21H20M28 21H32M16 25H20M28 25H32" />
+  </svg>;
 
-  if (type === 'car') return <svg {...props} {...common}><path d="M7 32L10.5 20.5C11 18.9 12.2 18 13.8 18H34.2C35.8 18 37 18.9 37.5 20.5L41 32V38H7V32Z"/><path d="M11 20L14.5 12H33.5L37 20M14 28H34"/><circle cx="13" cy="38" r="3.5"/><circle cx="35" cy="38" r="3.5"/></svg>;
+  if (type === 'car') return <svg {...props} {...common}>
+    <path d="M7 30.5L10.5 20.5C11.1 18.8 12.5 17.7 14.3 17.7H33.7C35.5 17.7 36.9 18.8 37.5 20.5L41 30.5V37H7V30.5Z" />
+    <path d="M11 20L14.5 12.5H33.5L37 20M12 28H36" />
+    <circle cx="13.5" cy="37" r="3" />
+    <circle cx="34.5" cy="37" r="3" />
+  </svg>;
 
-  if (type === 'train') return <svg {...props} {...common}><path d="M12 9H36C38.2 9 40 10.8 40 13V30C40 33.3 37.3 36 34 36H14C10.7 36 8 33.3 8 30V13C8 10.8 9.8 9 12 9Z"/><path d="M8 25H40M16 18H32"/><circle cx="16" cy="23" r="2"/><circle cx="32" cy="23" r="2"/><path d="M14 36L10 41M34 36L38 41"/></svg>;
+  if (type === 'train') return <svg {...props} {...common}>
+    <rect x="9" y="8" width="30" height="29" rx="5" />
+    <path d="M9 25H39M15 18H33M14 37L10 41M34 37L38 41" />
+    <circle cx="16" cy="23" r="2" />
+    <circle cx="32" cy="23" r="2" />
+  </svg>;
 
-  if (type === 'transfer') return <svg {...props} {...common}><path d="M8 34V23C8 20.8 9.8 19 12 19H36C38.2 19 40 20.8 40 23V34H8Z"/><path d="M12 19L15 12H33L36 19M13 28H35"/><circle cx="14" cy="34" r="3"/><circle cx="34" cy="34" r="3"/><path d="M5 12H18M5 12L9 8M5 12L9 16M43 12H30M43 12L39 8M43 12L39 16"/></svg>;
+  if (type === 'transfer') return <svg {...props} {...common}>
+    <path d="M8 34V24C8 21.2 10.2 19 13 19H35C37.8 19 40 21.2 40 24V34H8Z" />
+    <path d="M12 19L15 12H33L36 19M13 28H35" />
+    <circle cx="14" cy="34" r="3" />
+    <circle cx="34" cy="34" r="3" />
+    <path d="M5 12H18M5 12L9 8M5 12L9 16M43 12H30M43 12L39 8M43 12L39 16" />
+  </svg>;
 
-  if (type === 'activity') return <svg {...props} {...common}><path d="M7 39L18 22L25 29L36 12L41 19"/><path d="M7 39H41"/><path d="M12 39V31M36 39V27"/><circle cx="36" cy="10" r="3.5"/></svg>;
+  if (type === 'activity') return <svg {...props} {...common}>
+    <path d="M6 39L18 23L25 30L36 13L42 21" />
+    <path d="M6 39H42M11 39V32M36 39V27" />
+    <circle cx="36" cy="10" r="3" />
+  </svg>;
 
-  if (type === 'insurance') return <svg {...props} {...common}><path d="M24 5L39 11V22C39 31 33 37 24 42C15 37 9 31 9 22V11L24 5Z"/><path d="M16 23L21 28L32 17" strokeWidth="2.2"/></svg>;
+  if (type === 'insurance') return <svg {...props} {...common}>
+    <path d="M24 5L39 11V22C39 31 33 37 24 42C15 37 9 31 9 22V11L24 5Z" />
+    <path d="M16 23L21.5 28.5L32 17.5" strokeWidth="2.3" />
+  </svg>;
 
-  return <svg {...props} {...common}><path d="M15 5H33C35.2 5 37 6.8 37 9V39C37 41.2 35.2 43 33 43H15C12.8 43 11 41.2 11 39V9C11 6.8 12.8 5 15 5Z"/><path d="M16 12H32V27H16V12ZM19 17H29M19 21H29M19 25H25"/><path d="M24 36V36.1" strokeWidth="3"/></svg>;
+  return <svg {...props} {...common}>
+    <rect x="11" y="5" width="26" height="38" rx="4" />
+    <path d="M16 12H32V27H16V12ZM19 17H29M19 21H29M19 25H25" />
+    <path d="M21 35H27M24 32V38" />
+  </svg>;
 }
 
 function buildHref(vertical: AffiliateVertical, context: AffiliateContext) {
