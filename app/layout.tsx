@@ -7,6 +7,7 @@ import './mobile.css';
 import './summary-fix.css';
 import './ui-fixes.css';
 import './frequency-fix.css';
+import './selection-fix.css';
 
 export const metadata: Metadata = {
   title: 'TripSignal | Travel intelligence, on your terms',
