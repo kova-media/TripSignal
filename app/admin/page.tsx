@@ -25,10 +25,7 @@ export default async function AdminPage() {
     const admin = await requireAdmin();
     const db = getDb();
 
-    const [users, userCounts, alertCounts, signalCounts, runCounts, recentUsers, recentAlerts, recentRuns, recentAudit] = await Promise.all([
-      db.query<{ id: string; email: string; name: string | null; plan: string; subscription_status: string; created_at: string }>(
-        `select id, email, name, plan, subscription_status, created_at from users order by created_at desc limit 100`,
-      ),
+    const [userCounts, alertCounts, signalCounts, runCounts, recentUsers, recentAlerts, recentRuns, recentAudit] = await Promise.all([
       db.query<{ total: string; free: string; pro: string; last_7d: string; last_30d: string }>(
         `select count(*)::text as total,
                 count(*) filter (where plan = 'free')::text as free,
@@ -64,8 +61,8 @@ export default async function AdminPage() {
          from alert_runs r join alerts a on a.id = r.alert_id
          order by r.started_at desc limit 20`,
       ),
-      db.query<{ admin_email: string; action: string; target_type: string | null; target_id: string | null; created_at: string }>(
-        `select admin_email, action, target_type, target_id, created_at from admin_audit_log order by created_at desc limit 15`,
+      db.query<{ id: string; admin_email: string; action: string; target_type: string | null; target_id: string | null; created_at: string }>(
+        `select id, admin_email, action, target_type, target_id, created_at from admin_audit_log order by created_at desc limit 15`,
       ),
     ]);
 
@@ -91,7 +88,7 @@ export default async function AdminPage() {
         </section>
 
         <section className={styles.section}>
-          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Users</p><h2>Recent accounts</h2></div><span className={styles.sectionNote}>Showing {users.rows.length}</span></div>
+          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Users</p><h2>Recent accounts</h2></div><span className={styles.sectionNote}>Showing {recentUsers.rows.length}</span></div>
           <div className={styles.table}>
             <div className={styles.tableHead}><span>Email</span><span>Plan</span><span>Status</span><span>Created</span></div>
             {recentUsers.rows.map((user) => <div className={styles.tableRow} key={user.email}><div><strong>{user.name || user.email.split('@')[0]}</strong><small>{user.email}</small></div><span>{user.plan === 'free' ? 'Free' : 'Pro'}</span><span>{user.subscription_status}</span><span>{formatDate(user.created_at)}</span></div>)}
