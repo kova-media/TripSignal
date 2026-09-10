@@ -5,6 +5,7 @@ import './home-next.css';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
 import TripDiscoveryDirect from '@/components/trip-discovery-direct';
+import TripExtras from '@/components/trip-extras';
 import BillingButton from '@/app/account/billing-button';
 import { getCurrentUser } from '@/lib/auth';
 import { getDb, ensureSchema } from '@/lib/db';
@@ -134,6 +135,8 @@ export default async function Home() {
           <a className="button button-primary" href="#explore">Start watching</a>
         </div>
       </section>
+
+      <TripExtras context={{}} />
 
       <section className="pricing-preview shell" aria-label="TripSignal pricing">
         <div className="pricing-preview-card">
