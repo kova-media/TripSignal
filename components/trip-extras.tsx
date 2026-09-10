@@ -42,14 +42,21 @@ export default function TripExtras({ context }: { context: AffiliateContext }) {
 function OutlineIcon({ type }: { type: string }) {
   const props = { viewBox: '0 0 48 48', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' };
   const stroke = 'currentColor';
+  const common = { stroke, strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
 
-  if (type === 'hotel') return <svg {...props}><path d="M7 40V18L24 8L41 18V40M4 40H44M12 40V25H21V40M27 40V25H36V40M17 18H31M24 8V15" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 30H19M29 30H32" stroke={stroke} strokeWidth="2.4" strokeLinecap="round"/></svg>;
-  if (type === 'car') return <svg {...props}><path d="M6 31L10 19C10.4 17.8 11.5 17 12.8 17H35.2C36.5 17 37.6 17.8 38 19L42 31V38H6V31Z" stroke={stroke} strokeWidth="1.8" strokeLinejoin="round"/><path d="M11 19L14.5 11H33.5L37 19M14 27H34" stroke={stroke} strokeWidth="1.8" strokeLinecap="round"/><circle cx="13" cy="38" r="3.5" stroke={stroke} strokeWidth="1.8"/><circle cx="35" cy="38" r="3.5" stroke={stroke} strokeWidth="1.8"/></svg>;
-  if (type === 'train') return <svg {...props}><rect x="9" y="8" width="30" height="28" rx="5" stroke={stroke} strokeWidth="1.8"/><path d="M9 25H39M15 36L11 41M33 36L37 41M16 16H32" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="17" cy="22" r="2" stroke={stroke} strokeWidth="1.5"/><circle cx="31" cy="22" r="2" stroke={stroke} strokeWidth="1.5"/></svg>;
-  if (type === 'transfer') return <svg {...props}><path d="M7 38V17H41V38M4 38H44M12 17L16 10H32L36 17" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M13 27H35M17 38V31M31 38V31M10 10H38" stroke={stroke} strokeWidth="1.7" strokeLinecap="round"/></svg>;
-  if (type === 'activity') return <svg {...props}><path d="M6 39L17 22L25 30L36 12L42 19" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M6 39H42" stroke={stroke} strokeWidth="1.8" strokeLinecap="round"/><circle cx="36" cy="10" r="3.5" stroke={stroke} strokeWidth="1.6"/></svg>;
-  if (type === 'insurance') return <svg {...props}><path d="M24 5L39 11V22C39 31 33 37 24 42C15 37 9 31 9 22V11L24 5Z" stroke={stroke} strokeWidth="1.8" strokeLinejoin="round"/><path d="M16 23L21 28L32 17" stroke={stroke} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-  return <svg {...props}><rect x="14" y="5" width="20" height="38" rx="4" stroke={stroke} strokeWidth="1.8"/><path d="M18 12H30V28H18V12ZM20 17H28M20 21H28M20 25H25" stroke={stroke} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><circle cx="24" cy="36" r="1.5" fill={stroke}/></svg>;
+  if (type === 'hotel') return <svg {...props} {...common}><path d="M7 40V13H41V40M4 40H44M12 40V24H36V40M12 29H36M18 24V18H30V24"/><path d="M17 33H19M29 33H31" strokeWidth="2.1"/></svg>;
+
+  if (type === 'car') return <svg {...props} {...common}><path d="M7 32L10.5 20.5C11 18.9 12.2 18 13.8 18H34.2C35.8 18 37 18.9 37.5 20.5L41 32V38H7V32Z"/><path d="M11 20L14.5 12H33.5L37 20M14 28H34"/><circle cx="13" cy="38" r="3.5"/><circle cx="35" cy="38" r="3.5"/></svg>;
+
+  if (type === 'train') return <svg {...props} {...common}><path d="M12 9H36C38.2 9 40 10.8 40 13V30C40 33.3 37.3 36 34 36H14C10.7 36 8 33.3 8 30V13C8 10.8 9.8 9 12 9Z"/><path d="M8 25H40M16 18H32"/><circle cx="16" cy="23" r="2"/><circle cx="32" cy="23" r="2"/><path d="M14 36L10 41M34 36L38 41"/></svg>;
+
+  if (type === 'transfer') return <svg {...props} {...common}><path d="M8 34V23C8 20.8 9.8 19 12 19H36C38.2 19 40 20.8 40 23V34H8Z"/><path d="M12 19L15 12H33L36 19M13 28H35"/><circle cx="14" cy="34" r="3"/><circle cx="34" cy="34" r="3"/><path d="M5 12H18M5 12L9 8M5 12L9 16M43 12H30M43 12L39 8M43 12L39 16"/></svg>;
+
+  if (type === 'activity') return <svg {...props} {...common}><path d="M7 39L18 22L25 29L36 12L41 19"/><path d="M7 39H41"/><path d="M12 39V31M36 39V27"/><circle cx="36" cy="10" r="3.5"/></svg>;
+
+  if (type === 'insurance') return <svg {...props} {...common}><path d="M24 5L39 11V22C39 31 33 37 24 42C15 37 9 31 9 22V11L24 5Z"/><path d="M16 23L21 28L32 17" strokeWidth="2.2"/></svg>;
+
+  return <svg {...props} {...common}><path d="M15 5H33C35.2 5 37 6.8 37 9V39C37 41.2 35.2 43 33 43H15C12.8 43 11 41.2 11 39V9C11 6.8 12.8 5 15 5Z"/><path d="M16 12H32V27H16V12ZM19 17H29M19 21H29M19 25H25"/><path d="M24 36V36.1" strokeWidth="3"/></svg>;
 }
 
 function buildHref(vertical: AffiliateVertical, context: AffiliateContext) {
