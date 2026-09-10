@@ -79,23 +79,23 @@ async function fetchPlaces(term: string, types: string[]) {
 
 function toAirportResult(place: TravelpayoutsPlace): AirportResult {
   const stateCode = place.state_code?.trim().toUpperCase() || undefined;
+  const city = place.city_name || place.name!;
+  const state = place.country_code === 'US' && stateCode
+    ? usStates[stateCode] || stateCode
+    : stateCode;
+  const location = state && place.country_name
+    ? `${city}, ${state}, ${place.country_name}`
+    : place.country_name
+      ? `${city}, ${place.country_name}`
+      : city;
+
   return {
     iata_code: place.code!,
     name: place.name!,
-    municipality: place.city_name || place.name!,
+    municipality: location,
     iso_country: place.country_code || '',
     country_name: place.country_name || '',
     state_code: stateCode,
     weight: place.weight ?? 0,
   };
-}
-
-export function formatLocation(airport: AirportResult) {
-  const state = airport.iso_country === 'US' && airport.state_code
-    ? usStates[airport.state_code] || airport.state_code
-    : airport.state_code;
-
-  if (state && airport.country_name) return `${airport.municipality}, ${state}, ${airport.country_name}`;
-  if (airport.country_name) return `${airport.municipality}, ${airport.country_name}`;
-  return airport.municipality;
 }
