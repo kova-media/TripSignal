@@ -1,4 +1,4 @@
-export type AffiliateVertical = 'hotels' | 'cars' | 'activities' | 'transfers' | 'parking' | 'insurance';
+export type AffiliateVertical = 'hotels' | 'cars' | 'activities' | 'transfers' | 'trains-buses' | 'parking' | 'insurance';
 
 export interface AffiliateContext {
   destination?: string;
@@ -47,6 +47,13 @@ const providers: AffiliateProvider[] = [
     defaultDestination: 'https://kiwitaxi.tpo.mx/b1AKHy0t',
   },
   {
+    key: 'klook',
+    name: 'Klook',
+    verticals: ['trains-buses'],
+    envKey: 'TRIPSIGNAL_AFFILIATE_KLOOK_TRAINS_BUSES_URL',
+    defaultDestination: 'https://klook.tpo.mx/UMVxCcwo',
+  },
+  {
     key: 'awin-parking',
     name: 'Airport Parking',
     verticals: ['parking'],
@@ -66,6 +73,7 @@ const verticalLabels: Record<AffiliateVertical, string> = {
   cars: 'Rental cars',
   activities: 'Things to do',
   transfers: 'Airport transfers',
+  'trains-buses': 'Trains & buses',
   parking: 'Airport parking',
   insurance: 'Travel insurance',
 };
