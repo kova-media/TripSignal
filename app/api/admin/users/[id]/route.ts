@@ -63,7 +63,7 @@ export async function POST(request: Request, context: RouteContext) {
 
         await client.query(
           `update users
-           set plan = 'pro', subscription_status = 'canceled', stripe_subscription_id = null,
+           set plan = 'pro', subscription_status = 'lifetime', stripe_subscription_id = null,
                subscription_current_period_end = null
            where id = $1`,
           [id],
@@ -73,6 +73,7 @@ export async function POST(request: Request, context: RouteContext) {
         await recordAdminAction(admin.email, 'grant_pro_free', 'user', id, {
           previousPlan: user.plan,
           previousSubscriptionStatus: user.subscription_status,
+          accessType: 'lifetime',
         });
 
         let emailSent = true;
@@ -83,7 +84,7 @@ export async function POST(request: Request, context: RouteContext) {
           console.error('TripSignal lifetime Pro email failed:', emailError);
         }
 
-        return NextResponse.json({ ok: true, plan: 'pro', emailSent });
+        return NextResponse.json({ ok: true, plan: 'pro', subscriptionStatus: 'lifetime', emailSent });
       }
 
       if (user.plan === 'free') {
