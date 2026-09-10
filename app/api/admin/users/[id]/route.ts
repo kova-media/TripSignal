@@ -22,8 +22,8 @@ export async function POST(request: Request, context: RouteContext) {
       await client.query('BEGIN');
       await client.query('select pg_advisory_xact_lock(hashtextextended($1, 0))', [id]);
 
-      const userResult = await client.query<{ id: string; plan: string; subscription_status: string }>(
-        'select id, plan, subscription_status from users where id = $1 limit 1',
+      const userResult = await client.query<{ id: string; email: string; plan: string; subscription_status: string }>(
+        'select id, email, plan, subscription_status from users where id = $1 limit 1',
         [id],
       );
       const user = userResult.rows[0];
@@ -43,14 +43,11 @@ export async function POST(request: Request, context: RouteContext) {
       }
 
       const alertsResult = await client.query<{ id: string }>(
-        'select id from alerts where user_id = $1 order by created_at asc, id asc',
-        [id],
+        `select id from alerts
+         where user_id = $1 or lower(email) = lower($2)
+         order by created_at asc, id asc`,
+        [id, user.email],
       );
-
-      if (alertsResult.rows.length <= 1) {
-        await client.query('ROLLBACK');
-        return NextResponse.json({ error: 'This account does not have multiple alerts.' }, { status: 400 });
-      }
 
       await client.query(
         `update users
@@ -61,10 +58,12 @@ export async function POST(request: Request, context: RouteContext) {
       );
 
       const extraAlertIds = alertsResult.rows.slice(1).map((row) => row.id);
-      await client.query(
-        'update alerts set active = false where id = any($1::uuid[])',
-        [extraAlertIds],
-      );
+      if (extraAlertIds.length) {
+        await client.query(
+          'update alerts set active = false where id = any($1)',
+          [extraAlertIds],
+        );
+      }
 
       await client.query('COMMIT');
       await recordAdminAction(admin.email, 'demote_user_to_free', 'user', id, {
