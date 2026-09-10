@@ -71,9 +71,13 @@
   transition: transform .18s ease, border-color .18s ease;
 }
 
-.trip-extra-card:nth-child(5) { grid-column: 2; }
-.trip-extra-card:nth-child(6) { grid-column: 3; }
-.trip-extra-card:nth-child(7) { grid-column: 4; }
+/* The desktop grid is four equal columns. Shift the three-card second row
+   left by half one track so the three-card group is centered under all four. */
+.trip-extra-card:nth-child(5),
+.trip-extra-card:nth-child(6),
+.trip-extra-card:nth-child(7) {
+  transform: translateX(calc((100% + 14px) / -2));
+}
 
 .trip-extra-card:hover,
 .home-page .trip-extra-card:hover {
@@ -158,7 +162,10 @@
   .trip-extras-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .trip-extra-card:nth-child(5),
   .trip-extra-card:nth-child(6),
-  .trip-extra-card:nth-child(7) { grid-column: auto; }
+  .trip-extra-card:nth-child(7) {
+    grid-column: auto;
+    transform: none;
+  }
   .trip-extra-card:nth-child(7) { grid-column: 1 / -1; justify-self: center; width: calc(50% - 7px); }
 }
 
@@ -177,7 +184,7 @@
   .trip-extra-card,
   .trip-extra-card:nth-child(5),
   .trip-extra-card:nth-child(6),
-  .trip-extra-card:nth-child(7) { grid-column: auto !important; width: 100% !important; }
+  .trip-extra-card:nth-child(7) { grid-column: auto !important; width: 100% !important; transform: none; }
   .trip-extra-media { height: 190px; }
   .trip-extra-copy { min-height: 112px; padding: 16px 17px 18px !important; }
 }
