@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { geoEqualEarth, geoGraticule, geoInterpolate, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import worldAtlas from 'world-atlas/countries-110m.json';
+import TripExtras from '@/components/trip-extras';
+import type { AffiliateContext } from '@/lib/affiliates';
 
 type DestinationMode = 'region' | 'airport';
 type Airport = { iata_code: string; name: string; municipality?: string; iso_country?: string };
@@ -148,6 +150,12 @@ export default function TripDiscovery() {
   const originPoint = originCoordinates ? projection(originCoordinates) : undefined;
   const destinationPoint = destinationCoordinates ? projection(destinationCoordinates) : undefined;
 
+  const affiliateContext: AffiliateContext = {
+    ...(destinationAirport ? { destination: destinationAirport } : {}),
+    ...(origin ? { origin } : {}),
+    ...(specificDate ? { departureDate: specificDate, returnDate: specificDate } : {}),
+  };
+
   function buildWatch() {
     if (!origin || (destinationMode === 'airport' && !destinationAirport) || !email.trim()) return;
     const effectiveDateRange = specificDate ? 'Custom dates' : dateRange;
@@ -272,6 +280,8 @@ export default function TripDiscovery() {
           </div>
           <div className="route-map-detail"><div><span>{destinationAirport && origin ? `${origin} → ${destinationAirport}` : 'Choose a route'}</span><strong>{destinationSearch || 'No destination selected'}</strong></div><p>{destinationAirport && origin ? 'Route selected for your alert' : 'Search for a city or airport to plot the route.'}</p><small>Map location only. Fare information is set by your target above.</small></div>
         </div>
+
+        <TripExtras context={affiliateContext} />
       </div>
     </section>
   );
