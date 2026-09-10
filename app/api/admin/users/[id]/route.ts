@@ -3,15 +3,16 @@ import { getDb, ensureSchema } from '@/lib/db';
 import { requireAdmin, isAdminError, recordAdminAction } from '@/lib/admin';
 
 type RouteContext = { params: Promise<{ id: string }> };
+type AdminAction = 'demote_to_free' | 'grant_pro';
 
 export async function POST(request: Request, context: RouteContext) {
   try {
     const admin = await requireAdmin();
     await ensureSchema();
     const { id } = await context.params;
-    const body = (await request.json().catch(() => ({}))) as { action?: string };
+    const body = (await request.json().catch(() => ({}))) as { action?: AdminAction };
 
-    if (body.action !== 'demote_to_free') {
+    if (!['demote_to_free', 'grant_pro'].includes(body.action ?? '')) {
       return NextResponse.json({ error: 'Invalid admin action.' }, { status: 400 });
     }
 
@@ -30,6 +31,29 @@ export async function POST(request: Request, context: RouteContext) {
       if (!user) {
         await client.query('ROLLBACK');
         return NextResponse.json({ error: 'User not found.' }, { status: 404 });
+      }
+
+      if (body.action === 'grant_pro') {
+        if (user.plan !== 'free') {
+          await client.query('ROLLBACK');
+          return NextResponse.json({ error: 'Account is already Pro.' }, { status: 400 });
+        }
+
+        await client.query(
+          `update users
+           set plan = 'pro', subscription_status = 'canceled', stripe_subscription_id = null,
+               subscription_current_period_end = null, updated_at = now()
+           where id = $1`,
+          [id],
+        );
+
+        await client.query('COMMIT');
+        await recordAdminAction(admin.email, 'grant_pro_free', 'user', id, {
+          previousPlan: user.plan,
+          previousSubscriptionStatus: user.subscription_status,
+        });
+
+        return NextResponse.json({ ok: true, plan: 'pro' });
       }
 
       if (user.plan === 'free') {
