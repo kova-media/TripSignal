@@ -43,7 +43,9 @@ export default async function AdminUserBillingPage({ params }: { params: Promise
     if (!user) notFound();
 
     const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
-    const stateMatches = (user.plan === 'pro' && ['active', 'trialing'].includes(user.subscription_status)) || (user.plan === 'free' && !['active', 'trialing'].includes(user.subscription_status));
+    const stateMatches = user.subscription_status === 'lifetime'
+      ? user.plan === 'pro' && !user.stripe_subscription_id && !user.subscription_current_period_end
+      : (user.plan === 'pro' && ['active', 'trialing'].includes(user.subscription_status)) || (user.plan === 'free' && !['active', 'trialing'].includes(user.subscription_status));
     const periodEnded = user.subscription_current_period_end ? new Date(user.subscription_current_period_end).getTime() < Date.now() : false;
 
     return <main className={styles.page}>
@@ -59,7 +61,7 @@ export default async function AdminUserBillingPage({ params }: { params: Promise
           <div className={styles.metric}><span>TripSignal plan</span><strong>{user.plan === 'free' ? 'Free' : 'Pro'}</strong><small>{user.subscription_status}</small></div>
           <div className={styles.metric}><span>Billing state</span><strong>{stateMatches ? 'In sync' : 'Mismatch'}</strong><small>{stripeConfigured ? 'Stripe configured' : 'Stripe key missing'}</small></div>
           <div className={styles.metric}><span>Customer</span><strong>{user.stripe_customer_id ? 'Linked' : 'Missing'}</strong><small>Stripe customer</small></div>
-          <div className={styles.metric}><span>Subscription</span><strong>{user.stripe_subscription_id ? 'Linked' : 'Missing'}</strong><small>{periodEnded ? 'Period ended' : 'Period current'}</small></div>
+          <div className={styles.metric}><span>Subscription</span><strong>{user.stripe_subscription_id ? 'Linked' : 'Missing'}</strong><small>{user.subscription_status === 'lifetime' ? 'Lifetime access' : periodEnded ? 'Period ended' : 'Period current'}</small></div>
           <div className={styles.metric}><span>Period ends</span><strong>{user.subscription_current_period_end ? new Date(user.subscription_current_period_end).toLocaleDateString() : 'None'}</strong><small>{formatDate(user.subscription_current_period_end)}</small></div>
         </section>
 
