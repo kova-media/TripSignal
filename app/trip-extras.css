@@ -1,0 +1,143 @@
+.trip-extras {
+  display: none;
+  grid-column: 2;
+  width: 100%;
+  margin: 6px 0 0;
+  padding: 28px 0 0;
+  border-top: 1px solid var(--line-strong);
+}
+
+.trip-extras.trip-extras-visible { display: block; }
+
+.trip-extras-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 22px;
+}
+
+.trip-extras-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.trip-extras-heading h2 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 550;
+  line-height: .98;
+  letter-spacing: -.055em;
+}
+
+.trip-extras-heading > p {
+  max-width: 270px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: right;
+}
+
+.trip-extras-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.trip-extra-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+
+.trip-extra-card:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.trip-extra-graphic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 112px;
+  padding: 14px 20px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.trip-extra-graphic svg {
+  width: min(100%, 170px);
+  height: 92px;
+  color: var(--accent);
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.trip-extra-copy {
+  display: grid;
+  gap: 7px;
+  padding: 15px 16px 17px;
+}
+
+.trip-extra-copy strong {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
+
+.trip-extra-copy span {
+  min-height: 34px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.trip-extra-copy b {
+  margin-top: 3px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.trip-extras-disclosure {
+  margin: 12px 0 0;
+  color: var(--quiet);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+@media (max-width: 820px) {
+  .trip-extras {
+    grid-column: 1;
+    margin-top: 28px;
+    padding-top: 24px;
+  }
+
+  .trip-extras-heading {
+    display: block;
+  }
+
+  .trip-extras-heading > p {
+    max-width: 340px;
+    margin-top: 10px;
+    text-align: left;
+  }
+
+  .trip-extras-grid {
+    grid-template-columns: 1fr;
+  }
+}
