@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { geoEqualEarth, geoGraticule, geoInterpolate, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import worldAtlas from 'world-atlas/countries-110m.json';
@@ -69,29 +69,41 @@ function AirportSearch({ label, value, code, onSelect, placeholder }: { label: s
   const [results, setResults] = useState<Airport[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const requestId = useRef(0);
 
   useEffect(() => setQuery(value), [value]);
 
   useEffect(() => {
     const trimmed = query.trim();
+    const currentRequestId = ++requestId.current;
+
     if (trimmed.length < 2 || trimmed === value.trim()) {
       setResults([]);
+      setLoading(false);
       return;
     }
+
+    const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       setLoading(true);
       try {
-        const response = await fetch(`/api/airports?q=${encodeURIComponent(trimmed)}`);
+        const response = await fetch(`/api/airports?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal });
         const data = await response.json();
+        if (requestId.current !== currentRequestId) return;
         setResults(Array.isArray(data.airports) ? data.airports : []);
         setOpen(true);
-      } catch {
+      } catch (error) {
+        if (controller.signal.aborted || requestId.current !== currentRequestId) return;
         setResults([]);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted && requestId.current === currentRequestId) setLoading(false);
       }
     }, 160);
-    return () => window.clearTimeout(timer);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, [query, value]);
 
   return (
