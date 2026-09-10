@@ -11,8 +11,10 @@ const extras: Array<{ vertical: AffiliateVertical; title: string; description: s
 ];
 
 export default function TripExtras({ context }: { context: AffiliateContext }) {
+  const visible = Boolean(context.destination);
+
   return (
-    <section className="trip-extras" aria-label="Complete your trip">
+    <section className={`trip-extras${visible ? ' trip-extras-visible' : ''}`} aria-label="Complete your trip">
       <div className="trip-extras-heading">
         <div>
           <span className="trip-extras-eyebrow">Complete your trip</span>
