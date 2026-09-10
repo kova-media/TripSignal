@@ -3,6 +3,15 @@ import { getDb, ensureSchema } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { buildAffiliateUrl, isAffiliateVertical } from '@/lib/affiliates';
 
+const AUTOCOMPLETE_URL = 'https://autocomplete.travelpayouts.com/places2';
+
+type DestinationLookup = {
+  type?: string;
+  code?: string;
+  city_name?: string;
+  country_code?: string;
+};
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ vertical: string }> }) {
   const { vertical } = await params;
 
@@ -17,8 +26,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const alertId = request.nextUrl.searchParams.get('alertId')?.trim() || undefined;
   const signalId = request.nextUrl.searchParams.get('signalId')?.trim() || undefined;
 
+  const metadata = destination ? await resolveDestination(destination) : null;
   const targetUrl = buildAffiliateUrl(vertical, {
     destination,
+    destinationCity: metadata?.city,
+    destinationCountryCode: metadata?.countryCode,
     origin,
     departureDate,
     returnDate,
@@ -54,6 +66,30 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   );
 
   return NextResponse.redirect(targetUrl, 302);
+}
+
+async function resolveDestination(destination: string) {
+  try {
+    const url = new URL(AUTOCOMPLETE_URL);
+    url.searchParams.set('term', destination);
+    url.searchParams.set('locale', 'en');
+    url.searchParams.append('types[]', 'airport');
+    url.searchParams.append('types[]', 'city');
+
+    const response = await fetch(url.toString(), {
+      headers: { Accept: 'application/json' },
+      next: { revalidate: 86400 },
+    });
+    if (!response.ok) return null;
+
+    const places = (await response.json()) as DestinationLookup[];
+    const match = places.find((place) => place.type === 'airport' && place.code?.toUpperCase() === destination.toUpperCase());
+    if (!match?.city_name || !match.country_code) return null;
+
+    return { city: match.city_name, countryCode: match.country_code };
+  } catch {
+    return null;
+  }
 }
 
 function getProviderKey(vertical: string) {
