@@ -52,54 +52,12 @@ const frequencyScript = `(() => {
   observer.observe(document.body, { childList: true, subtree: true });
 })();`;
 
-const tripExtrasScript = `(() => {
-  const sync = () => {
-    const extras = document.querySelector('.trip-extras');
-    const discoveryLayout = document.querySelector('.discovery-layout');
-    const routeMap = discoveryLayout?.querySelector('.route-map');
-    const destination = document.querySelector<HTMLInputElement>('#airport-destination');
-    if (!extras || !discoveryLayout || !routeMap || !destination) return;
-
-    const selected = destination.value.trim().match(/\\(([A-Za-z]{3})\\)$/);
-    const code = selected?.[1]?.toUpperCase() ?? '';
-    const originInput = document.querySelector<HTMLInputElement>('#airport-from');
-    const origin = originInput?.value.trim().match(/\\(([A-Za-z]{3})\\)$/)?.[1]?.toUpperCase() ?? '';
-
-    if (extras.parentElement !== discoveryLayout || extras.previousElementSibling !== routeMap) {
-      routeMap.insertAdjacentElement('afterend', extras);
-    }
-
-    extras.classList.toggle('trip-extras-visible', Boolean(code));
-
-    extras.querySelectorAll<HTMLAnchorElement>('[data-affiliate-vertical]').forEach((link) => {
-      const vertical = link.dataset.affiliateVertical;
-      if (!vertical) return;
-      const params = new URLSearchParams();
-      if (code) params.set('destination', code);
-      if (origin) params.set('origin', origin);
-      link.href = '/api/affiliate/' + vertical + (params.toString() ? '?' + params.toString() : '');
-    });
-  };
-
-  const start = () => {
-    sync();
-    const observer = new MutationObserver(sync);
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['value'] });
-    document.addEventListener('input', sync, true);
-    document.addEventListener('change', sync, true);
-  };
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
-  else start();
-})();`;
-
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: frequencyScript }} />
-        <script dangerouslySetInnerHTML={{ __html: tripExtrasScript }} />
         {children}
       </body>
     </html>
