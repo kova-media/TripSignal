@@ -65,8 +65,22 @@ const destinationMetadataByIata: Record<string, { city: string; countryCode: str
   SYD: { city: 'Sydney', countryCode: 'AU' }, MEL: { city: 'Melbourne', countryCode: 'AU' }, AKL: { city: 'Auckland', countryCode: 'NZ' },
 };
 
+const klookHotelCityIds: Record<string, number> = {
+  amsterdam: 90,
+  bangkok: 27,
+  budapest: 307,
+  london: 106,
+  paris: 107,
+  prague: 333,
+  rome: 92,
+  seoul: 13,
+  tokyo: 28,
+  vienna: 91,
+  warsaw: 351,
+};
+
 const kiwitaxiPromoId = '647';
-const travelpayoutsMarker = process.env.TRIPSIGNAL_TRAVELPAYOUTS_MARKER ?? '776063';
+const travelpayoutsMarker = process.env.TRIPSIGNAL_TRAVELPOUTS_MARKER ?? '776063';
 
 export const affiliateVerticals = Object.keys(verticalLabels) as AffiliateVertical[];
 
@@ -96,7 +110,7 @@ export function buildAffiliateUrl(vertical: AffiliateVertical, context: Affiliat
     ...(metadata && !context.destinationCountryCode ? { destinationCountryCode: metadata.countryCode } : {}),
   };
 
-  const deepLink = buildDestinationDeepLink(vertical, resolvedContext);
+  const deepLink = buildDestinationDeepLink(vertical, resolvedContext, config.destination);
   if (deepLink) return deepLink;
 
   const url = new URL(config.destination);
@@ -110,10 +124,18 @@ export function buildAffiliateUrl(vertical: AffiliateVertical, context: Affiliat
   return url.toString();
 }
 
-function buildDestinationDeepLink(vertical: AffiliateVertical, context: AffiliateContext) {
+function buildDestinationDeepLink(vertical: AffiliateVertical, context: AffiliateContext, affiliateDestination: string) {
   const city = context.destinationCity?.trim();
   const countryCode = context.destinationCountryCode?.trim().toUpperCase();
   if (!city || !countryCode) return null;
+
+  if (vertical === 'hotels') {
+    const cityId = klookHotelCityIds[city.toLowerCase()];
+    if (!cityId) return null;
+    const url = new URL(affiliateDestination);
+    url.searchParams.set('city_id', String(cityId));
+    return url.toString();
+  }
 
   if (vertical === 'cars') {
     const countrySlug = discoverCarsCountrySlugs[countryCode];
