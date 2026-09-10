@@ -122,6 +122,27 @@ export async function ensureSchema() {
       );
 
       create index if not exists admin_audit_log_created_idx on admin_audit_log (created_at desc);
+
+      create table if not exists affiliate_clicks (
+        id uuid primary key default gen_random_uuid(),
+        user_id uuid references users(id) on delete set null,
+        vertical text not null,
+        provider text not null,
+        destination text,
+        origin text,
+        departure_date date,
+        return_date date,
+        alert_id uuid references alerts(id) on delete set null,
+        signal_id uuid references signals(id) on delete set null,
+        referrer text,
+        user_agent text,
+        clicked_at timestamptz not null default now()
+      );
+
+      create index if not exists affiliate_clicks_clicked_idx on affiliate_clicks (clicked_at desc);
+      create index if not exists affiliate_clicks_vertical_idx on affiliate_clicks (vertical, clicked_at desc);
+      create index if not exists affiliate_clicks_provider_idx on affiliate_clicks (provider, clicked_at desc);
+      create index if not exists affiliate_clicks_user_idx on affiliate_clicks (user_id, clicked_at desc);
     `).then(() => undefined);
   }
 
