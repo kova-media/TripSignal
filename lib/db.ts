@@ -46,6 +46,17 @@ export async function ensureSchema() {
       alter table users add column if not exists stripe_subscription_id text;
       alter table users add column if not exists subscription_status text not null default 'inactive';
       alter table users add column if not exists subscription_current_period_end timestamptz;
+
+      -- Older Admin grants incorrectly stored lifetime Pro access as canceled.
+      -- Lifetime grants have no Stripe subscription or billing period, so repair
+      -- only that unambiguous legacy state.
+      update users
+      set subscription_status = 'lifetime'
+      where plan = 'pro'
+        and subscription_status = 'canceled'
+        and stripe_subscription_id is null
+        and subscription_current_period_end is null;
+
       create unique index if not exists users_stripe_customer_idx on users (stripe_customer_id) where stripe_customer_id is not null;
       create unique index if not exists users_stripe_subscription_idx on users (stripe_subscription_id) where stripe_subscription_id is not null;
 
