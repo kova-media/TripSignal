@@ -51,29 +51,20 @@ const frequencyScript = `(() => {
   observer.observe(document.body, { childList: true, subtree: true });
 })();`;
 
-const travelpayoutsScript = `(function () {
-  var script = document.createElement("script");
-  script.async = 1;
-  script.setAttribute("data-cmp-ab", "2");
-  script.src = 'https://tp-em.com/NTcyNTI3.js?t=572527';
-  document.head.appendChild(script);
-})();`;
+const travelpayoutsScript = `<script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1" data-cmp-ab="2">
+  (function () {
+      var script = document.createElement("script");
+      script.async = 1;
+      script.setAttribute("data-cmp-ab","2");
+      script.src = 'https://tp-em.com/NTcyNTI3.js?t=572527';
+      document.head.appendChild(script);
+  })();
+</script>`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script
-          nowprocket="true"
-          data-noptimize="1"
-          data-cfasync="false"
-          data-wpfc-render="false"
-          seraph-accel-crit="1"
-          data-no-defer="1"
-          data-cmp-ab="2"
-          dangerouslySetInnerHTML={{ __html: travelpayoutsScript }}
-        />
-      </head>
+      <head dangerouslySetInnerHTML={{ __html: travelpayoutsScript }} />
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: frequencyScript }} />
