@@ -10,13 +10,13 @@ const extras: Array<{ vertical: AffiliateVertical; title: string; description: s
   { vertical: 'sim', title: 'SIM cards', description: 'Get mobile data for your trip.', icon: 'sim' },
 ];
 
-const photoUrls: Record<AffiliateVertical, string> = {
+const photoUrls: Partial<Record<AffiliateVertical, string>> = {
   hotels: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=1200&q=85',
   cars: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=85',
   trains_buses: 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=1200&q=85',
   transfers: 'https://images.unsplash.com/photo-1551830820-330a71b99659?auto=format&fit=crop&w=1200&q=85',
   activities: 'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1200&q=85',
-  insurance: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=85',
+  insurance: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=85',
   sim: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1200&q=85',
 };
 
@@ -48,11 +48,15 @@ export default function TripExtras({ context }: { context: AffiliateContext }) {
 }
 
 function TripExtraCard({ extra, context }: { extra: (typeof extras)[number]; context: AffiliateContext }) {
+  const photoUrl = photoUrls[extra.vertical];
+
   return (
     <a className="trip-extra-card" data-affiliate-vertical={extra.vertical} href={buildHref(extra.vertical, context)}>
-      <div className="trip-extra-image" style={{ backgroundImage: `url("${photoUrls[extra.vertical]}")` }}>
-        <div className="trip-extra-icon" aria-hidden="true"><OutlineIcon type={extra.icon} /></div>
-      </div>
+      {photoUrl ? (
+        <div className="trip-extra-image" style={{ backgroundImage: `url("${photoUrl}")` }}>
+          <div className="trip-extra-icon" aria-hidden="true"><OutlineIcon type={extra.icon} /></div>
+        </div>
+      ) : null}
       <div className="trip-extra-copy">
         <strong>{extra.title}</strong>
         <span>{extra.description}</span>
