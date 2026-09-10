@@ -35,7 +35,6 @@ export default function TripExtras({ context }: { context: AffiliateContext }) {
           </a>
         ))}
       </div>
-      <p className="trip-extras-disclosure">TripSignal may earn a commission from some links.</p>
     </section>
   );
 }
