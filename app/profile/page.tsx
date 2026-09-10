@@ -30,7 +30,7 @@ export default async function ProfilePage() {
   const result = await db.query<{ id: string; criteria: Record<string, unknown>; frequency: string; active: boolean }>('select id, criteria, frequency, active from alerts where user_id = $1 order by created_at desc', [user.id]);
   const billingResult = await db.query<{ subscription_status: string; subscription_current_period_end: string | null }>('select subscription_status, subscription_current_period_end from users where id = $1 limit 1', [user.id]);
   const billing = billingResult.rows[0];
-  const subscriptionActive = billing?.subscription_status === 'active' || billing?.subscription_status === 'trialing';
+  const subscriptionActive = ['active', 'trialing', 'lifetime'].includes(billing?.subscription_status ?? '');
   const activeCount = result.rows.filter((row) => row.active).length;
 
   return <main className={styles.page}>
@@ -40,7 +40,7 @@ export default async function ProfilePage() {
 
       <section className={styles.section}>
         <div className={styles.billing}>
-          <div><p className={styles.eyebrow}>TripSignal plan</p><h2 className={styles.billingTitle}>{subscriptionActive ? 'Your subscription is active.' : 'Upgrade to TripSignal Pro.'}</h2><p className={styles.billingText}>{subscriptionActive && billing?.subscription_current_period_end ? `Renews ${new Date(billing.subscription_current_period_end).toLocaleDateString()}.` : 'Unlimited alerts, with weekly or monthly fare checks, for $19.99/year.'}</p></div>
+          <div><p className={styles.eyebrow}>TripSignal plan</p><h2 className={styles.billingTitle}>{billing?.subscription_status === 'lifetime' ? 'You have lifetime Pro access.' : subscriptionActive ? 'Your subscription is active.' : 'Upgrade to TripSignal Pro.'}</h2><p className={styles.billingText}>{billing?.subscription_status === 'lifetime' ? 'Unlimited alerts. No payment required. No expiration.' : subscriptionActive && billing?.subscription_current_period_end ? `Renews ${new Date(billing.subscription_current_period_end).toLocaleDateString()}.` : 'Unlimited alerts, with weekly or monthly fare checks, for $19.99/year.'}</p></div>
           <BillingButton active={subscriptionActive} />
         </div>
       </section>
