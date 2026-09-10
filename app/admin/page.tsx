@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import SiteHeader from '@/components/site-header';
 import { getDb, ensureSchema } from '@/lib/db';
 import { requireAdmin, isAdminError } from '@/lib/admin';
@@ -49,8 +50,8 @@ export default async function AdminPage() {
                 count(*) filter (where started_at >= now() - interval '24 hours')::text as last_24h
          from alert_runs`,
       ),
-      db.query<{ email: string; name: string | null; plan: string; subscription_status: string; created_at: string }>(
-        `select email, name, plan, subscription_status, created_at from users order by created_at desc limit 12`,
+      db.query<{ id: string; email: string; name: string | null; plan: string; subscription_status: string; created_at: string }>(
+        `select id, email, name, plan, subscription_status, created_at from users order by created_at desc limit 12`,
       ),
       db.query<{ id: string; email: string; criteria: Record<string, unknown>; frequency: string; active: boolean; last_checked_at: string | null; created_at: string }>(
         `select a.id, a.email, a.criteria, a.frequency, a.active, a.last_checked_at, a.created_at
@@ -90,8 +91,8 @@ export default async function AdminPage() {
         <section className={styles.section}>
           <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Users</p><h2>Recent accounts</h2></div><span className={styles.sectionNote}>Showing {recentUsers.rows.length}</span></div>
           <div className={styles.table}>
-            <div className={styles.tableHead}><span>Email</span><span>Plan</span><span>Status</span><span>Created</span></div>
-            {recentUsers.rows.map((user) => <div className={styles.tableRow} key={user.email}><div><strong>{user.name || user.email.split('@')[0]}</strong><small>{user.email}</small></div><span>{user.plan === 'free' ? 'Free' : 'Pro'}</span><span>{user.subscription_status}</span><span>{formatDate(user.created_at)}</span></div>)}
+            <div className={styles.tableHead}><span>Account</span><span>Plan</span><span>Status</span><span>Created</span></div>
+            {recentUsers.rows.map((user) => <Link href={`/admin/users/${user.id}`} className={styles.tableRowLink} key={user.id}><div className={styles.tableRow}><div><strong>{user.name || user.email.split('@')[0]}</strong><small>{user.email}</small></div><span>{user.plan === 'free' ? 'Free' : 'Pro'}</span><span>{user.subscription_status}</span><span>{formatDate(user.created_at)}</span></div></Link>)}
           </div>
         </section>
 
