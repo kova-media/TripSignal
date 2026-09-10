@@ -100,7 +100,7 @@ export default async function AdminPage() {
           <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Alerts</p><h2>Active monitoring</h2></div><span className={styles.sectionNote}>{a?.total ?? 0} total · {a?.due ?? 0} due</span></div>
           <div className={styles.table}>
             <div className={styles.tableHead}><span>Alert</span><span>Frequency</span><span>Last checked</span><span>Action</span></div>
-            {recentAlerts.rows.map((alert) => <div className={styles.tableRow} key={alert.id}><div><strong>{formatCriteria(alert.criteria)}</strong><small>{alert.email}</small></div><span>{alert.frequency}</span><span>{formatDate(alert.last_checked_at)}</span><AdminAlertActions id={alert.id} active={alert.active} /></div>)}
+            {recentAlerts.rows.map((alert) => <Link href={`/admin/alerts/${alert.id}`} className={styles.tableRowLink} key={alert.id}><div className={styles.tableRow}><div><strong>{formatCriteria(alert.criteria)}</strong><small>{alert.email}</small></div><span>{alert.frequency}</span><span>{formatDate(alert.last_checked_at)}</span><span><AdminAlertActions id={alert.id} active={alert.active} /></span></div></Link>)}
           </div>
         </section>
 
