@@ -40,31 +40,10 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
     const db = getDb();
 
     const [userResult, alertsResult, runsResult, signalsResult] = await Promise.all([
-      db.query<User>(
-        `select id, email, name, plan, subscription_status, stripe_customer_id, stripe_subscription_id, subscription_current_period_end, created_at
-         from users where id = $1 limit 1`,
-        [id],
-      ),
-      db.query<{ id: string; criteria: Record<string, unknown>; frequency: string; active: boolean; last_checked_at: string | null; created_at: string }>(
-        `select id, criteria, frequency, active, last_checked_at, created_at
-         from alerts where user_id = $1 or lower(email) = lower((select email from users where id = $1))
-         order by created_at desc`,
-        [id],
-      ),
-      db.query<{ id: string; alert_id: string; status: string; started_at: string; finished_at: string | null; offers_found: number; email_sent: boolean; error_message: string | null }>(
-        `select r.id, r.alert_id, r.status, r.started_at, r.finished_at, r.offers_found, r.email_sent, r.error_message
-         from alert_runs r join alerts a on a.id = r.alert_id
-         where a.user_id = $1 or lower(a.email) = lower((select email from users where id = $1))
-         order by r.started_at desc limit 30`,
-        [id],
-      ),
-      db.query<{ id: string; alert_id: string; offer_id: string; sent_at: string }>(
-        `select s.id, s.alert_id, s.offer_id, s.sent_at
-         from signals s join alerts a on a.id = s.alert_id
-         where a.user_id = $1 or lower(a.email) = lower((select email from users where id = $1))
-         order by s.sent_at desc limit 30`,
-        [id],
-      ),
+      db.query<User>(`select id, email, name, plan, subscription_status, stripe_customer_id, stripe_subscription_id, subscription_current_period_end, created_at from users where id = $1 limit 1`, [id]),
+      db.query<{ id: string; criteria: Record<string, unknown>; frequency: string; active: boolean; last_checked_at: string | null; created_at: string }>(`select id, criteria, frequency, active, last_checked_at, created_at from alerts where user_id = $1 or lower(email) = lower((select email from users where id = $1)) order by created_at desc`, [id]),
+      db.query<{ id: string; alert_id: string; status: string; started_at: string; finished_at: string | null; offers_found: number; email_sent: boolean; error_message: string | null }>(`select r.id, r.alert_id, r.status, r.started_at, r.finished_at, r.offers_found, r.email_sent, r.error_message from alert_runs r join alerts a on a.id = r.alert_id where a.user_id = $1 or lower(a.email) = lower((select email from users where id = $1)) order by r.started_at desc limit 30`, [id]),
+      db.query<{ id: string; alert_id: string; offer_id: string; sent_at: string }>(`select s.id, s.alert_id, s.offer_id, s.sent_at from signals s join alerts a on a.id = s.alert_id where a.user_id = $1 or lower(a.email) = lower((select email from users where id = $1)) order by s.sent_at desc limit 30`, [id]),
     ]);
 
     const user = userResult.rows[0];
@@ -88,7 +67,7 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
         </section>
 
         <section className={styles.section}>
-          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Subscription</p><h2>Billing state</h2></div></div>
+          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Subscription</p><h2>Billing state</h2></div><Link className="button button-secondary" href={`/admin/users/${user.id}/billing`}>Manage billing</Link></div>
           <div className={styles.detailCard}>
             <div><span>Status</span><strong>{user.subscription_status}</strong></div>
             <div><span>Stripe customer</span><strong>{user.stripe_customer_id || 'Not linked'}</strong></div>
@@ -101,7 +80,7 @@ export default async function AdminUserPage({ params }: { params: Promise<{ id: 
           <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Monitoring</p><h2>Alerts</h2></div><span className={styles.sectionNote}>{alertsResult.rows.length} total</span></div>
           <div className={styles.table}>
             <div className={styles.tableHead}><span>Criteria</span><span>Frequency</span><span>Status</span><span>Last checked</span></div>
-            {alertsResult.rows.map((alert) => <div className={styles.tableRow} key={alert.id}><div><strong>{formatCriteria(alert.criteria)}</strong><small>{alert.id}</small></div><span>{alert.frequency}</span><span className={alert.active ? styles.success : ''}>{alert.active ? 'Active' : 'Paused'}</span><span>{formatDate(alert.last_checked_at)}</span></div>)}
+            {alertsResult.rows.map((alert) => <Link href={`/admin/alerts/${alert.id}`} className={styles.tableRowLink} key={alert.id}><div className={styles.tableRow}><div><strong>{formatCriteria(alert.criteria)}</strong><small>{alert.id}</small></div><span>{alert.frequency}</span><span className={alert.active ? styles.success : ''}>{alert.active ? 'Active' : 'Paused'}</span><span>{formatDate(alert.last_checked_at)}</span></div></Link>)}
             {!alertsResult.rows.length && <div className={styles.empty}>No alerts found for this account.</div>}
           </div>
         </section>
