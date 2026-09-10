@@ -1,18 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-type TravelpayoutsPlace = {
-  type?: string;
-  code?: string;
-  name?: string;
-  country_code?: string;
-  country_name?: string;
-  city_code?: string;
-  city_name?: string;
-  state_code?: string | null;
-  coordinates?: { lat?: number; lon?: number };
-  weight?: number;
-};
-
 type AirportResult = {
   iata_code: string;
   name: string;
@@ -23,21 +10,22 @@ type AirportResult = {
   weight: number;
 };
 
-type OurAirport = {
-  type?: string;
-  name?: string;
-  latitude_deg?: string;
-  longitude_deg?: string;
-  iso_country?: string;
-  iso_region?: string;
-  municipality?: string;
-  scheduled_service?: string;
-  iata_code?: string;
+type AirportRecord = {
+  type: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  iso_country: string;
+  iso_region: string;
+  municipality: string;
+  scheduled_service: string;
+  iata_code: string;
+  keywords: string;
 };
 
-const AUTOCOMPLETE_URL = 'https://autocomplete.travelpayouts.com/places2';
 const OUR_AIRPORTS_URL = 'https://davidmegginson.github.io/ourairports-data/airports.csv';
 const NEARBY_RADIUS_KM = 150;
+const AIRPORT_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 const usStates: Record<string, string> = {
   AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware',
@@ -54,30 +42,35 @@ const airportTypeRank: Record<string, number> = {
   small_airport: 1,
 };
 
+let airportDataPromise: Promise<AirportRecord[]> | null = null;
+let airportDataLoadedAt = 0;
+
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get('q')?.trim();
   if (!query || query.length < 2) return NextResponse.json({ airports: [] });
 
   try {
-    const places = await fetchPlaces(query, ['airport', 'city']);
-    const directAirports = places.filter((place) => place.type === 'airport');
-    const matchingCity = places
-      .filter((place) => place.type === 'city' && place.coordinates?.lat != null && place.coordinates?.lon != null)
-      .sort((a, b) => (b.weight ?? 0) - (a.weight ?? 0))[0];
+    const airports = await loadAirports();
+    const normalizedQuery = normalize(query);
+    const queryTokens = normalizedQuery.split(' ').filter(Boolean);
 
-    const center = matchingCity?.coordinates
-      ? { lat: matchingCity.coordinates.lat!, lon: matchingCity.coordinates.lon! }
-      : directAirports[0]?.coordinates
-        ? { lat: directAirports[0].coordinates.lat!, lon: directAirports[0].coordinates.lon! }
-        : null;
+    const matches = airports
+      .map((airport) => ({ airport, score: searchScore(airport, normalizedQuery, queryTokens) }))
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20);
 
-    const nearbyAirports = center ? await findNearbyAirports(center.lat, center.lon) : [];
+    if (matches.length === 0) return NextResponse.json({ airports: [] });
 
-    const directResults = directAirports
-      .filter((place) => place.code && place.name)
-      .map(toAirportResult);
+    const directResults = matches.map(({ airport, score }) => toAirportResult(airport, score));
+    const centers = matches
+      .filter(({ airport }) => Number.isFinite(airport.latitude) && Number.isFinite(airport.longitude))
+      .slice(0, 5)
+      .map(({ airport }) => ({ lat: airport.latitude, lon: airport.longitude }));
 
-    const merged = [...directResults, ...nearbyAirports]
+    const nearby = findNearbyAirports(airports, centers, new Set(directResults.map((airport) => airport.iata_code)));
+
+    const merged = [...directResults, ...nearby]
       .filter((airport, index, list) => list.findIndex((item) => item.iata_code === airport.iata_code) === index)
       .sort((a, b) => b.weight - a.weight);
 
@@ -87,102 +80,152 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function fetchPlaces(term: string, types: string[]) {
-  const url = new URL(AUTOCOMPLETE_URL);
-  url.searchParams.set('term', term);
-  url.searchParams.set('locale', 'en');
-  for (const type of types) url.searchParams.append('types[]', type);
+async function loadAirports() {
+  const now = Date.now();
+  if (airportDataPromise && now - airportDataLoadedAt < AIRPORT_CACHE_TTL_MS) return airportDataPromise;
 
-  const response = await fetch(url.toString(), {
-    headers: { Accept: 'application/json' },
-    next: { revalidate: 3600 },
-  });
-
-  if (!response.ok) throw new Error(`Airport autocomplete returned ${response.status}`);
-  return (await response.json()) as TravelpayoutsPlace[];
-}
-
-async function findNearbyAirports(lat: number, lon: number) {
-  const response = await fetch(OUR_AIRPORTS_URL, {
+  airportDataLoadedAt = now;
+  airportDataPromise = fetch(OUR_AIRPORTS_URL, {
     headers: { Accept: 'text/csv' },
     next: { revalidate: 86400 },
-  });
+  })
+    .then(async (response) => {
+      if (!response.ok) throw new Error(`Airport database returned ${response.status}`);
+      return parseAirports(await response.text());
+    })
+    .catch((error) => {
+      airportDataPromise = null;
+      airportDataLoadedAt = 0;
+      throw error;
+    });
 
-  if (!response.ok) throw new Error(`Airport database returned ${response.status}`);
+  return airportDataPromise;
+}
 
-  const csv = await response.text();
+function parseAirports(csv: string): AirportRecord[] {
   const rows = parseCsv(csv);
   if (rows.length < 2) return [];
 
   const headers = rows[0];
   const index = new Map(headers.map((header, position) => [header, position]));
-  const results: Array<AirportResult & { distanceKm: number; typeRank: number }> = [];
+  const get = (row: string[], key: string) => row[index.get(key) ?? -1] || '';
 
+  const airports: AirportRecord[] = [];
   for (let rowIndex = 1; rowIndex < rows.length; rowIndex += 1) {
     const row = rows[rowIndex];
-    const type = row[index.get('type') ?? -1] || '';
-    const iata = row[index.get('iata_code') ?? -1] || '';
-    const scheduled = row[index.get('scheduled_service') ?? -1] || '';
-    const latitude = Number(row[index.get('latitude_deg') ?? -1]);
-    const longitude = Number(row[index.get('longitude_deg') ?? -1]);
+    const type = get(row, 'type');
+    const iata = get(row, 'iata_code').trim().toUpperCase();
+    const scheduled = get(row, 'scheduled_service').toLowerCase();
+    const latitude = Number(get(row, 'latitude_deg'));
+    const longitude = Number(get(row, 'longitude_deg'));
 
-    if (!iata || !airportTypeRank[type] || scheduled !== 'yes' || !Number.isFinite(latitude) || !Number.isFinite(longitude)) continue;
+    if (!airportTypeRank[type] || !iata || scheduled !== 'yes' || !Number.isFinite(latitude) || !Number.isFinite(longitude)) continue;
 
-    const distanceKm = haversineKm(lat, lon, latitude, longitude);
-    if (distanceKm > NEARBY_RADIUS_KM) continue;
-
-    const countryCode = row[index.get('iso_country') ?? -1] || '';
-    const regionCode = row[index.get('iso_region') ?? -1] || '';
-    const municipality = row[index.get('municipality') ?? -1] || '';
-    const name = row[index.get('name') ?? -1] || `${iata} Airport`;
-    const countryName = countryNameFromCode(countryCode);
-    const stateCode = regionCode.startsWith(`${countryCode}-`) ? regionCode.slice(3) : undefined;
-    const state = countryCode === 'US' && stateCode ? usStates[stateCode] || stateCode : stateCode;
-    const location = state && countryName
-      ? `${municipality || 'Nearby'}, ${state}, ${countryName}`
-      : countryName
-        ? `${municipality || 'Nearby'}, ${countryName}`
-        : municipality || 'Nearby';
-
-    results.push({
+    airports.push({
+      type,
+      name: get(row, 'name'),
+      latitude,
+      longitude,
+      iso_country: get(row, 'iso_country').trim().toUpperCase(),
+      iso_region: get(row, 'iso_region').trim().toUpperCase(),
+      municipality: get(row, 'municipality'),
+      scheduled_service: scheduled,
       iata_code: iata,
-      name,
-      municipality: location,
-      iso_country: countryCode,
-      country_name: countryName,
-      state_code: stateCode,
-      weight: airportTypeRank[type] * 100000 - distanceKm,
-      distanceKm,
-      typeRank: airportTypeRank[type],
+      keywords: get(row, 'keywords'),
     });
   }
 
-  return results
+  return airports;
+}
+
+function searchScore(airport: AirportRecord, query: string, tokens: string[]) {
+  const iata = normalize(airport.iata_code);
+  const name = normalize(airport.name);
+  const municipality = normalize(airport.municipality);
+  const region = normalize(airport.iso_region.replace(`${airport.iso_country}-`, ''));
+  const keywords = normalize(airport.keywords);
+  const country = normalize(airport.iso_country);
+  const searchable = `${name} ${municipality} ${iata} ${region} ${country} ${keywords}`;
+
+  if (iata === query) return 5000;
+  if (municipality === query) return 4500;
+  if (name === query) return 4400;
+  if (municipality.startsWith(query)) return 4000;
+  if (name.startsWith(query)) return 3900;
+
+  const allTokensMatch = tokens.length > 0 && tokens.every((token) => searchable.includes(token));
+  if (!allTokensMatch) return 0;
+
+  let score = 1000;
+  if (municipality.includes(query)) score += 900;
+  if (name.includes(query)) score += 700;
+  if (keywords.includes(query)) score += 500;
+  if (iata.includes(query)) score += 400;
+  if (region === query || country === query) score += 300;
+  return score + airportTypeRank[airport.type] * 10;
+}
+
+function findNearbyAirports(airports: AirportRecord[], centers: Array<{ lat: number; lon: number }>, directCodes: Set<string>) {
+  const results = new Map<string, AirportResult & { distanceKm: number; typeRank: number }>();
+
+  for (const airport of airports) {
+    if (directCodes.has(airport.iata_code)) continue;
+
+    const typeRank = airportTypeRank[airport.type] || 0;
+    let nearestDistance = Infinity;
+    for (const center of centers) {
+      const distance = haversineKm(center.lat, center.lon, airport.latitude, airport.longitude);
+      if (distance < nearestDistance) nearestDistance = distance;
+    }
+
+    if (nearestDistance > NEARBY_RADIUS_KM) continue;
+
+    const result = toAirportResult(airport, 0);
+    results.set(airport.iata_code, {
+      ...result,
+      distanceKm: nearestDistance,
+      typeRank,
+      weight: typeRank * 100000 - nearestDistance,
+    });
+  }
+
+  return Array.from(results.values())
     .sort((a, b) => b.typeRank - a.typeRank || a.distanceKm - b.distanceKm)
     .map(({ distanceKm: _distanceKm, typeRank: _typeRank, ...airport }) => airport);
 }
 
-function toAirportResult(place: TravelpayoutsPlace): AirportResult {
-  const stateCode = place.state_code?.trim().toUpperCase() || undefined;
-  const city = place.city_name || place.name!;
-  const state = place.country_code === 'US' && stateCode
-    ? usStates[stateCode] || stateCode
-    : stateCode;
-  const location = state && place.country_name
-    ? `${city}, ${state}, ${place.country_name}`
-    : place.country_name
-      ? `${city}, ${place.country_name}`
+function toAirportResult(airport: AirportRecord, searchScoreValue: number): AirportResult {
+  const stateCode = airport.iso_country === 'US' && airport.iso_region.startsWith('US-')
+    ? airport.iso_region.slice(3)
+    : undefined;
+  const state = stateCode ? usStates[stateCode] || stateCode : undefined;
+  const countryName = countryNameFromCode(airport.iso_country);
+  const city = airport.municipality || airport.name;
+  const location = state && countryName
+    ? `${city}, ${state}, ${countryName}`
+    : countryName
+      ? `${city}, ${countryName}`
       : city;
 
   return {
-    iata_code: place.code!,
-    name: place.name!,
+    iata_code: airport.iata_code,
+    name: airport.name,
     municipality: location,
-    iso_country: place.country_code || '',
-    country_name: place.country_name || '',
+    iso_country: airport.iso_country,
+    country_name: countryName,
     state_code: stateCode,
-    weight: (place.weight ?? 0) + 1000000,
+    weight: searchScoreValue + airportTypeRank[airport.type] * 10,
   };
+}
+
+function normalize(value: string) {
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
 }
 
 function countryNameFromCode(code: string) {
