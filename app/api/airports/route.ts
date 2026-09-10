@@ -185,7 +185,7 @@ function findNearbyAirports(airports: AirportRecord[], centers: Array<{ lat: num
       ...result,
       distanceKm: nearestDistance,
       typeRank,
-      weight: typeRank * 100000 - nearestDistance,
+      weight: 1000 + typeRank * 10 - nearestDistance,
     });
   }
 
