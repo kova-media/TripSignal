@@ -8,7 +8,7 @@ import TripExtras from '@/components/trip-extras';
 import type { AffiliateContext } from '@/lib/affiliates';
 
 type DestinationMode = 'region' | 'airport';
-type Airport = { iata_code: string; name: string; municipality?: string; iso_country?: string };
+type Airport = { iata_code: string; name: string; municipality?: string; iso_country?: string; latitude?: number; longitude?: number };
 type Coordinate = [number, number];
 type Frequency = 'Weekly' | 'Monthly';
 
@@ -138,10 +138,12 @@ function AirportSearch({ label, value, code, onSelect, placeholder }: { label: s
 export default function TripDiscovery() {
   const [origin, setOrigin] = useState('');
   const [originSearch, setOriginSearch] = useState('');
+  const [originCoordinate, setOriginCoordinate] = useState<Coordinate | undefined>();
   const [destinationMode, setDestinationMode] = useState<DestinationMode>('airport');
   const [region, setRegion] = useState('Europe');
   const [destinationAirport, setDestinationAirport] = useState('');
   const [destinationSearch, setDestinationSearch] = useState('');
+  const [destinationCoordinate, setDestinationCoordinate] = useState<Coordinate | undefined>();
   const [cabin, setCabin] = useState('Premium economy');
   const [budget, setBudget] = useState('1000');
   const [passengers, setPassengers] = useState('1');
@@ -154,8 +156,8 @@ export default function TripDiscovery() {
   const [email, setEmail] = useState('');
 
   const budgetValue = Number(budget) || 0;
-  const destinationCoordinates = destinationAirport ? airportCoordinates[destinationAirport] : undefined;
-  const originCoordinates = origin ? airportCoordinates[origin] : undefined;
+  const destinationCoordinates = destinationCoordinate ?? (destinationAirport ? airportCoordinates[destinationAirport] : undefined);
+  const originCoordinates = originCoordinate ?? (origin ? airportCoordinates[origin] : undefined);
   const projection = useMemo(() => geoEqualEarth().fitExtent([[34, 34], [966, 470]], worldFeatures), []);
   const path = useMemo(() => geoPath(projection), [projection]);
   const graticule = useMemo(() => geoGraticule().step([20, 20])(), []);
@@ -201,7 +203,7 @@ export default function TripDiscovery() {
 
       <div className="discovery-layout">
         <div className="discovery-controls">
-          <AirportSearch label="From" value={originSearch} code={origin} onSelect={(airport) => { setOrigin(airport.iata_code); setOriginSearch(`${airport.municipality || airport.name} (${airport.iata_code})`); }} placeholder="Search city or airport" />
+          <AirportSearch label="From" value={originSearch} code={origin} onSelect={(airport) => { setOrigin(airport.iata_code); setOriginSearch(`${airport.municipality || airport.name} (${airport.iata_code})`); setOriginCoordinate(airport.latitude != null && airport.longitude != null ? [airport.longitude, airport.latitude] : undefined); }} placeholder="Search city or airport" />
 
           <div className="discovery-field">
             <label>Where</label>
@@ -217,7 +219,7 @@ export default function TripDiscovery() {
               <select id="discovery-region" value={region} onChange={(event) => setRegion(event.target.value)}>{regions.map((item) => <option key={item}>{item}</option>)}</select>
             </div>
           ) : (
-            <AirportSearch label="Destination" value={destinationSearch} code={destinationAirport} onSelect={(airport) => { setDestinationAirport(airport.iata_code); setDestinationSearch(`${airport.municipality || airport.name} (${airport.iata_code})`); }} placeholder="Search a city or airport" />
+            <AirportSearch label="Destination" value={destinationSearch} code={destinationAirport} onSelect={(airport) => { setDestinationAirport(airport.iata_code); setDestinationSearch(`${airport.municipality || airport.name} (${airport.iata_code})`); setDestinationCoordinate(airport.latitude != null && airport.longitude != null ? [airport.longitude, airport.latitude] : undefined); }} placeholder="Search a city or airport" />
           )}
 
           <div className="discovery-field">
