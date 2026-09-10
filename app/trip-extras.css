@@ -52,7 +52,9 @@
 }
 
 .trip-extra-card {
-  display: block;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
   min-width: 0;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -65,28 +67,29 @@
 
 .trip-extra-card:hover {
   border-color: var(--line-strong);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow: var(--shadow);
 }
 
-.trip-extra-visual {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 2.18 / 1;
+.trip-extra-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  min-height: 112px;
+  border-right: 1px solid var(--line);
   background: var(--surface-2);
-  border-bottom: 1px solid var(--line);
 }
 
-.trip-extra-visual svg {
-  display: block;
-  width: 100%;
-  height: 100%;
+.trip-extra-icon svg {
+  width: 42px;
+  height: 42px;
   color: var(--accent);
 }
 
 .trip-extra-copy {
   display: grid;
-  gap: 7px;
+  gap: 6px;
   padding: 15px 16px 17px;
 }
 
@@ -137,9 +140,5 @@
 
   .trip-extras-grid {
     grid-template-columns: 1fr;
-  }
-
-  .trip-extra-visual {
-    aspect-ratio: 2.15 / 1;
   }
 }
