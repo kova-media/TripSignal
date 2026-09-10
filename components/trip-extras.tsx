@@ -12,8 +12,6 @@ const extras: Array<{ vertical: AffiliateVertical; title: string; description: s
 
 export default function TripExtras({ context }: { context: AffiliateContext }) {
   const visible = Boolean(context.destination);
-  const firstRow = extras.slice(0, 4);
-  const secondRow = extras.slice(4);
 
   return (
     <section className={`trip-extras${visible ? ' trip-extras-visible' : ''}`} aria-label="Complete your trip">
@@ -26,29 +24,18 @@ export default function TripExtras({ context }: { context: AffiliateContext }) {
       </div>
 
       <div className="trip-extras-grid">
-        <div className="trip-extras-row trip-extras-row-top">
-          {firstRow.map((extra) => <TripExtraCard key={extra.vertical} extra={extra} context={context} />)}
-        </div>
-        <div className="trip-extras-row trip-extras-row-bottom">
-          {secondRow.map((extra) => <TripExtraCard key={extra.vertical} extra={extra} context={context} />)}
-        </div>
+        {extras.map((extra) => (
+          <a key={extra.vertical} className="trip-extra-card" data-affiliate-vertical={extra.vertical} href={buildHref(extra.vertical, context)}>
+            <div className="trip-extra-icon" aria-hidden="true"><OutlineIcon type={extra.icon} /></div>
+            <div className="trip-extra-copy">
+              <strong>{extra.title}</strong>
+              <span>{extra.description}</span>
+              <b>View options</b>
+            </div>
+          </a>
+        ))}
       </div>
     </section>
-  );
-}
-
-function TripExtraCard({ extra, context }: { extra: (typeof extras)[number]; context: AffiliateContext }) {
-  return (
-    <a className="trip-extra-card" data-affiliate-vertical={extra.vertical} href={buildHref(extra.vertical, context)}>
-      <div className="trip-extra-image" data-trip-extra-image={extra.vertical}>
-        <div className="trip-extra-icon" aria-hidden="true"><OutlineIcon type={extra.icon} /></div>
-      </div>
-      <div className="trip-extra-copy">
-        <strong>{extra.title}</strong>
-        <span>{extra.description}</span>
-        <b>View options</b>
-      </div>
-    </a>
   );
 }
 
