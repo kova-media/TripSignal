@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { geoEqualEarth, geoGraticule, geoInterpolate, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import worldAtlas from 'world-atlas/countries-110m.json';
