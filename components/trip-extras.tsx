@@ -51,7 +51,13 @@ function TripExtraCard({ extra, context }: { extra: (typeof extras)[number]; con
   const photoUrl = photoUrls[extra.vertical];
 
   return (
-    <a className="trip-extra-card" data-affiliate-vertical={extra.vertical} href={buildHref(extra.vertical, context)}>
+    <a
+      className="trip-extra-card"
+      data-affiliate-vertical={extra.vertical}
+      href={buildHref(extra.vertical, context)}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
       {photoUrl ? (
         <div className="trip-extra-image" style={{ backgroundImage: `url("${photoUrl}")` }}>
           <div className="trip-extra-icon" aria-hidden="true"><OutlineIcon type={extra.icon} /></div>
