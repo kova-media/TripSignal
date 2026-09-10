@@ -6,5 +6,6 @@
       "path": "/api/cron/alerts",
       "schedule": "0 8 * * *"
     }
-  ]
+  ],
+  "buildCommand": "npm run build"
 }
