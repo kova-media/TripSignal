@@ -9,7 +9,7 @@ type AdminAction = 'demote_to_free' | 'grant_pro';
 const ALERT_FROM_EMAIL = 'TripSignal Alerts <alerts@tripsignal.travel>';
 
 function escapeHtml(value: string) {
-  return value.replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character] ?? character));
+  return value.replace(/[&<>'\"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '\"': '&quot;' }[character] ?? character));
 }
 
 async function sendLifetimeProEmail(email: string) {
@@ -64,7 +64,7 @@ export async function POST(request: Request, context: RouteContext) {
         await client.query(
           `update users
            set plan = 'pro', subscription_status = 'canceled', stripe_subscription_id = null,
-               subscription_current_period_end = null, updated_at = now()
+               subscription_current_period_end = null
            where id = $1`,
           [id],
         );
@@ -106,7 +106,7 @@ export async function POST(request: Request, context: RouteContext) {
       await client.query(
         `update users
          set plan = 'free', subscription_status = 'canceled', stripe_subscription_id = null,
-             subscription_current_period_end = null, updated_at = now()
+             subscription_current_period_end = null
          where id = $1`,
         [id],
       );
