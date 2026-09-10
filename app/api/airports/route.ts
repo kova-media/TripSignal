@@ -7,6 +7,8 @@ type AirportResult = {
   iso_country: string;
   country_name: string;
   state_code?: string;
+  latitude: number;
+  longitude: number;
   weight: number;
 };
 
@@ -214,6 +216,8 @@ function toAirportResult(airport: AirportRecord, searchScoreValue: number): Airp
     iso_country: airport.iso_country,
     country_name: countryName,
     state_code: stateCode,
+    latitude: airport.latitude,
+    longitude: airport.longitude,
     weight: searchScoreValue + airportTypeRank[airport.type] * 10,
   };
 }
