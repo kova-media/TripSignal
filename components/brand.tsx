@@ -4,9 +4,18 @@ type BrandProps = {
 };
 
 export default function Brand({ compact = false, showWordmark = true }: BrandProps) {
+  const symbolSize = compact ? 22 : 30;
+
   return (
     <span className={compact ? 'brand brand-compact' : 'brand'}>
-      <svg className="brand-symbol" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+      <svg
+        className="brand-symbol"
+        viewBox="0 0 100 100"
+        width={symbolSize}
+        height={symbolSize}
+        aria-hidden="true"
+        focusable="false"
+      >
         <g className="brand-signal" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round">
           <path d="M28 25C16 33 11 44 11 56" />
           <path d="M21 17C7 27 2 41 2 56" />
