@@ -86,38 +86,59 @@ export function summarizeAlert(alert: AlertCriteria) {
 }
 
 export async function runAlertSearch(alertId: string, email: string, criteria: AlertCriteria) {
-  const provider = getFlightProvider();
-  const searchCount = criteria.destinationMode === 'airport' ? 4 : 2;
-  const results: FlightOffer[] = [];
-  for (let i = 0; i < searchCount; i += 1) {
-    const offers = await provider.search(buildCriteria(criteria, i));
-    results.push(...offers);
-  }
-
-  const qualifying = results
-    .filter((offer) => offer.price < criteria.maxPrice)
-    .sort((a, b) => a.price - b.price)
-    .filter((offer, index, array) => index === array.findIndex((candidate) => candidate.id === offer.id))
-    .slice(0, 10);
-
   const db = getDb();
-  await db.query('update alerts set last_checked_at = now() where id = $1', [alertId]);
-  if (qualifying.length === 0) return { offers: [], emailed: false };
+  const runInserted = await db.query<{ id: string }>(
+    'insert into alert_runs (alert_id, status) values ($1, $2) returning id',
+    [alertId, 'running'],
+  );
+  const runId = runInserted.rows[0]?.id;
 
-  const ids = qualifying.map((offer) => offer.id);
-  const existing = await db.query<{ offer_id: string }>('select offer_id from signals where alert_id = $1 and offer_id = any($2::text[])', [alertId, ids]);
-  const sentIds = new Set(existing.rows.map((row) => row.offer_id));
-  const newOffers = qualifying.filter((offer) => !sentIds.has(offer.id));
-  if (newOffers.length === 0) return { offers: qualifying, emailed: false };
+  try {
+    const provider = getFlightProvider();
+    const searchCount = criteria.destinationMode === 'airport' ? 4 : 2;
+    const results: FlightOffer[] = [];
+    for (let i = 0; i < searchCount; i += 1) {
+      const offers = await provider.search(buildCriteria(criteria, i));
+      results.push(...offers);
+    }
 
-  await sendFareSignalEmail(email, newOffers, criteria as Parameters<typeof sendFareSignalEmail>[2]);
-  for (const offer of newOffers) {
-    await db.query(
-      'insert into signals (alert_id, offer_id, offer) values ($1, $2, $3::jsonb) on conflict (alert_id, offer_id) do nothing',
-      [alertId, offer.id, JSON.stringify(offer)],
-    );
+    const qualifying = results
+      .filter((offer) => offer.price < criteria.maxPrice)
+      .sort((a, b) => a.price - b.price)
+      .filter((offer, index, array) => index === array.findIndex((candidate) => candidate.id === offer.id))
+      .slice(0, 10);
+
+    await db.query('update alerts set last_checked_at = now() where id = $1', [alertId]);
+    if (qualifying.length === 0) {
+      if (runId) await db.query('update alert_runs set status = $1, finished_at = now(), offers_found = $2 where id = $3', ['success', 0, runId]);
+      return { offers: [], emailed: false };
+    }
+
+    const ids = qualifying.map((offer) => offer.id);
+    const existing = await db.query<{ offer_id: string }>('select offer_id from signals where alert_id = $1 and offer_id = any($2::text[])', [alertId, ids]);
+    const sentIds = new Set(existing.rows.map((row) => row.offer_id));
+    const newOffers = qualifying.filter((offer) => !sentIds.has(offer.id));
+    if (newOffers.length === 0) {
+      if (runId) await db.query('update alert_runs set status = $1, finished_at = now(), offers_found = $2 where id = $3', ['success', qualifying.length, runId]);
+      return { offers: qualifying, emailed: false };
+    }
+
+    await sendFareSignalEmail(email, newOffers, criteria as Parameters<typeof sendFareSignalEmail>[2]);
+    for (const offer of newOffers) {
+      await db.query(
+        'insert into signals (alert_id, offer_id, offer) values ($1, $2, $3::jsonb) on conflict (alert_id, offer_id) do nothing',
+        [alertId, offer.id, JSON.stringify(offer)],
+      );
+    }
+    if (runId) await db.query('update alert_runs set status = $1, finished_at = now(), offers_found = $2, email_sent = true where id = $3', ['success', newOffers.length, runId]);
+    return { offers: newOffers, emailed: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Alert search failed.';
+    if (runId) {
+      await db.query('update alert_runs set status = $1, finished_at = now(), error_message = $2 where id = $3', ['error', message.slice(0, 2000), runId]).catch(() => undefined);
+    }
+    throw error;
   }
-  return { offers: newOffers, emailed: true };
 }
 
 export async function runDueAlerts() {
