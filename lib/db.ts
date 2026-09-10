@@ -96,6 +96,32 @@ export async function ensureSchema() {
       );
 
       create index if not exists signals_alert_idx on signals (alert_id, sent_at desc);
+
+      create table if not exists alert_runs (
+        id uuid primary key default gen_random_uuid(),
+        alert_id uuid not null references alerts(id) on delete cascade,
+        status text not null check (status in ('running', 'success', 'error')),
+        started_at timestamptz not null default now(),
+        finished_at timestamptz,
+        offers_found integer not null default 0,
+        email_sent boolean not null default false,
+        error_message text
+      );
+
+      create index if not exists alert_runs_alert_idx on alert_runs (alert_id, started_at desc);
+      create index if not exists alert_runs_status_idx on alert_runs (status, started_at desc);
+
+      create table if not exists admin_audit_log (
+        id uuid primary key default gen_random_uuid(),
+        admin_email text not null,
+        action text not null,
+        target_type text,
+        target_id text,
+        details jsonb,
+        created_at timestamptz not null default now()
+      );
+
+      create index if not exists admin_audit_log_created_idx on admin_audit_log (created_at desc);
     `).then(() => undefined);
   }
 
