@@ -35,11 +35,11 @@ export default function AdminUserActions({ userId, plan, subscriptionStatus, ale
       if (!response.ok) throw new Error(data.error || 'Action failed.');
 
       if (action === 'grant_pro') {
-        setMessage('Pro granted for free.');
+        setMessage(data.emailSent === false ? 'Pro granted, but the email could not be sent.' : 'Pro granted for free. Lifetime access email sent.');
       } else {
         setMessage(`Demoted to Free. ${data.pausedAlerts ?? 0} extra alert${data.pausedAlerts === 1 ? '' : 's'} paused.`);
       }
-      setTimeout(() => window.location.reload(), 900);
+      setTimeout(() => window.location.reload(), 1800);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Action failed.');
       setBusy(null);
