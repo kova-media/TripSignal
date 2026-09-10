@@ -1,0 +1,132 @@
+import { notFound, redirect } from 'next/navigation';
+import Link from 'next/link';
+import SiteHeader from '@/components/site-header';
+import { getDb, ensureSchema } from '@/lib/db';
+import { requireAdmin, isAdminError } from '@/lib/admin';
+import styles from '../../admin.module.css';
+
+export const dynamic = 'force-dynamic';
+
+type User = {
+  id: string;
+  email: string;
+  name: string | null;
+  plan: string;
+  subscription_status: string;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  subscription_current_period_end: string | null;
+  created_at: string;
+};
+
+function formatDate(value: string | Date | null) {
+  if (!value) return 'Never';
+  return new Date(value).toLocaleString();
+}
+
+function formatCriteria(criteria: Record<string, unknown>) {
+  const origin = String(criteria.origin ?? '?');
+  const destination = String(criteria.destination ?? 'Anywhere');
+  const cabin = criteria.cabin === 'premium_economy' ? 'Premium economy' : criteria.cabin === 'business' ? 'Business' : criteria.cabin === 'first' ? 'First' : 'Economy';
+  const maxPrice = Number(criteria.maxPrice ?? 0);
+  return `${origin} → ${destination} · ${cabin}${maxPrice ? ` · $${maxPrice.toLocaleString()}` : ''}`;
+}
+
+export default async function AdminUserPage({ params }: { params: Promise<{ id: string }> }) {
+  try {
+    await ensureSchema();
+    await requireAdmin();
+    const { id } = await params;
+    const db = getDb();
+
+    const [userResult, alertsResult, runsResult, signalsResult] = await Promise.all([
+      db.query<User>(
+        `select id, email, name, plan, subscription_status, stripe_customer_id, stripe_subscription_id, subscription_current_period_end, created_at
+         from users where id = $1 limit 1`,
+        [id],
+      ),
+      db.query<{ id: string; criteria: Record<string, unknown>; frequency: string; active: boolean; last_checked_at: string | null; created_at: string }>(
+        `select id, criteria, frequency, active, last_checked_at, created_at
+         from alerts where user_id = $1 or lower(email) = lower((select email from users where id = $1))
+         order by created_at desc`,
+        [id],
+      ),
+      db.query<{ id: string; alert_id: string; status: string; started_at: string; finished_at: string | null; offers_found: number; email_sent: boolean; error_message: string | null }>(
+        `select r.id, r.alert_id, r.status, r.started_at, r.finished_at, r.offers_found, r.email_sent, r.error_message
+         from alert_runs r join alerts a on a.id = r.alert_id
+         where a.user_id = $1 or lower(a.email) = lower((select email from users where id = $1))
+         order by r.started_at desc limit 30`,
+        [id],
+      ),
+      db.query<{ id: string; alert_id: string; offer_id: string; sent_at: string }>(
+        `select s.id, s.alert_id, s.offer_id, s.sent_at
+         from signals s join alerts a on a.id = s.alert_id
+         where a.user_id = $1 or lower(a.email) = lower((select email from users where id = $1))
+         order by s.sent_at desc limit 30`,
+        [id],
+      ),
+    ]);
+
+    const user = userResult.rows[0];
+    if (!user) notFound();
+
+    return <main className={styles.page}>
+      <SiteHeader authenticated primaryHref="/profile" primaryLabel="Profile" />
+      <section className="shell"><div className={styles.main}>
+        <div className={styles.detailBack}><Link href="/admin">← Back to Operations</Link></div>
+        <div className={styles.masthead}>
+          <div><p className={styles.eyebrow}>User account</p><h1 className={styles.title}>{user.name || user.email.split('@')[0]}</h1><p className={styles.subhead}>{user.email}</p></div>
+          <span className={styles.adminBadge}>{user.plan === 'free' ? 'FREE' : 'PRO'}</span>
+        </div>
+
+        <section className={styles.grid}>
+          <div className={styles.metric}><span>Plan</span><strong>{user.plan === 'free' ? 'Free' : 'Pro'}</strong><small>{user.subscription_status}</small></div>
+          <div className={styles.metric}><span>Alerts</span><strong>{alertsResult.rows.length}</strong><small>{alertsResult.rows.filter((a) => a.active).length} active</small></div>
+          <div className={styles.metric}><span>Search runs</span><strong>{runsResult.rows.length}</strong><small>{runsResult.rows.filter((r) => r.status === 'error').length} errors shown</small></div>
+          <div className={styles.metric}><span>Signals</span><strong>{signalsResult.rows.length}</strong><small>Recent notifications</small></div>
+          <div className={styles.metric}><span>Joined</span><strong>{new Date(user.created_at).toLocaleDateString()}</strong><small>{formatDate(user.created_at)}</small></div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Subscription</p><h2>Billing state</h2></div></div>
+          <div className={styles.detailCard}>
+            <div><span>Status</span><strong>{user.subscription_status}</strong></div>
+            <div><span>Stripe customer</span><strong>{user.stripe_customer_id || 'Not linked'}</strong></div>
+            <div><span>Stripe subscription</span><strong>{user.stripe_subscription_id || 'Not linked'}</strong></div>
+            <div><span>Current period ends</span><strong>{formatDate(user.subscription_current_period_end)}</strong></div>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Monitoring</p><h2>Alerts</h2></div><span className={styles.sectionNote}>{alertsResult.rows.length} total</span></div>
+          <div className={styles.table}>
+            <div className={styles.tableHead}><span>Criteria</span><span>Frequency</span><span>Status</span><span>Last checked</span></div>
+            {alertsResult.rows.map((alert) => <div className={styles.tableRow} key={alert.id}><div><strong>{formatCriteria(alert.criteria)}</strong><small>{alert.id}</small></div><span>{alert.frequency}</span><span className={alert.active ? styles.success : ''}>{alert.active ? 'Active' : 'Paused'}</span><span>{formatDate(alert.last_checked_at)}</span></div>)}
+            {!alertsResult.rows.length && <div className={styles.empty}>No alerts found for this account.</div>}
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Diagnostics</p><h2>Recent search runs</h2></div><span className={styles.sectionNote}>Last {runsResult.rows.length}</span></div>
+          <div className={styles.table}>
+            <div className={styles.tableHead}><span>Run</span><span>Result</span><span>Started</span><span>Details</span></div>
+            {runsResult.rows.map((run) => <div className={styles.tableRow} key={run.id}><div><strong>{run.alert_id}</strong><small>{run.id}</small></div><span className={run.status === 'error' ? styles.error : run.status === 'success' ? styles.success : ''}>{run.status}</span><span>{formatDate(run.started_at)}</span><span>{run.status === 'error' ? (run.error_message || 'Unknown error') : `${run.offers_found} offers${run.email_sent ? ' · email sent' : ''}`}</span></div>)}
+            {!runsResult.rows.length && <div className={styles.empty}>No search runs recorded for this account.</div>}
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Signals</p><h2>Recent fare signals</h2></div><span className={styles.sectionNote}>Last {signalsResult.rows.length}</span></div>
+          <div className={styles.table}>
+            <div className={styles.tableHead}><span>Alert</span><span>Offer ID</span><span>Sent</span><span>Record</span></div>
+            {signalsResult.rows.map((signal) => <div className={styles.tableRow} key={signal.id}><div><strong>{signal.alert_id}</strong></div><span>{signal.offer_id}</span><span>{formatDate(signal.sent_at)}</span><span>{signal.id}</span></div>)}
+            {!signalsResult.rows.length && <div className={styles.empty}>No fare signals recorded for this account.</div>}
+          </div>
+        </section>
+      </div></section>
+    </main>;
+  } catch (error) {
+    if (isAdminError(error)) redirect('/signin');
+    throw error;
+  }
+}
