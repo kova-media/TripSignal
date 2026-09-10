@@ -4,3 +4,4 @@ node_modules/
 .env.local
 .env.*.local
 
+# Force a clean production rebuild after the homepage rollback.
