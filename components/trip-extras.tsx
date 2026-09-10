@@ -10,8 +10,20 @@ const extras: Array<{ vertical: AffiliateVertical; title: string; description: s
   { vertical: 'sim', title: 'SIM cards', description: 'Get mobile data for your trip.', icon: 'sim' },
 ];
 
+const photoUrls: Record<AffiliateVertical, string> = {
+  hotels: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=85',
+  cars: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=85',
+  trains_buses: 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=1200&q=85',
+  transfers: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=85',
+  activities: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=85',
+  insurance: 'https://images.unsplash.com/photo-1521292270410-a8c4d716d518?auto=format&fit=crop&w=1200&q=85',
+  sim: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1200&q=85',
+};
+
 export default function TripExtras({ context }: { context: AffiliateContext }) {
   const visible = Boolean(context.destination);
+  const firstRow = extras.slice(0, 4);
+  const secondRow = extras.slice(4);
 
   return (
     <section className={`trip-extras${visible ? ' trip-extras-visible' : ''}`} aria-label="Complete your trip">
@@ -24,18 +36,29 @@ export default function TripExtras({ context }: { context: AffiliateContext }) {
       </div>
 
       <div className="trip-extras-grid">
-        {extras.map((extra) => (
-          <a key={extra.vertical} className="trip-extra-card" data-affiliate-vertical={extra.vertical} href={buildHref(extra.vertical, context)}>
-            <div className="trip-extra-icon" aria-hidden="true"><OutlineIcon type={extra.icon} /></div>
-            <div className="trip-extra-copy">
-              <strong>{extra.title}</strong>
-              <span>{extra.description}</span>
-              <b>View options</b>
-            </div>
-          </a>
-        ))}
+        <div className="trip-extras-row">
+          {firstRow.map((extra) => <TripExtraCard key={extra.vertical} extra={extra} context={context} />)}
+        </div>
+        <div className="trip-extras-row trip-extras-row-bottom">
+          {secondRow.map((extra) => <TripExtraCard key={extra.vertical} extra={extra} context={context} />)}
+        </div>
       </div>
     </section>
+  );
+}
+
+function TripExtraCard({ extra, context }: { extra: (typeof extras)[number]; context: AffiliateContext }) {
+  return (
+    <a className="trip-extra-card" data-affiliate-vertical={extra.vertical} href={buildHref(extra.vertical, context)}>
+      <div className="trip-extra-image" style={{ backgroundImage: `url("${photoUrls[extra.vertical]}")` }}>
+        <div className="trip-extra-icon" aria-hidden="true"><OutlineIcon type={extra.icon} /></div>
+      </div>
+      <div className="trip-extra-copy">
+        <strong>{extra.title}</strong>
+        <span>{extra.description}</span>
+        <b>View options</b>
+      </div>
+    </a>
   );
 }
 
