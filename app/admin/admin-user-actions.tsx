@@ -6,11 +6,14 @@ export default function AdminUserActions({ userId, plan, subscriptionStatus, ale
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
 
-  const canDemote = plan !== 'free' && alertCount > 1 && !['active', 'trialing'].includes(subscriptionStatus);
+  const canDemote = plan !== 'free' && !['active', 'trialing'].includes(subscriptionStatus);
 
   async function demote() {
     if (!canDemote || busy) return;
-    if (!window.confirm('Demote this account to Free and pause all but its oldest alert?')) return;
+    const alertMessage = alertCount > 1
+      ? 'Demote this account to Free and pause all but its oldest alert?'
+      : 'Demote this account to Free?';
+    if (!window.confirm(alertMessage)) return;
 
     setBusy(true);
     setMessage('');
