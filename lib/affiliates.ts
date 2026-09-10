@@ -53,10 +53,11 @@ const providers: AffiliateProvider[] = [
     envKey: 'TRIPSIGNAL_AFFILIATE_PARKING_URL',
   },
   {
-    key: 'travelpayouts',
-    name: 'Travelpayouts',
+    key: 'ekta',
+    name: 'EKTA',
     verticals: ['insurance'],
     envKey: 'TRIPSIGNAL_AFFILIATE_INSURANCE_URL',
+    defaultDestination: 'https://ektatraveling.tpo.mx/EXezz7j8',
   },
 ];
 
