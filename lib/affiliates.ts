@@ -14,11 +14,24 @@ interface AffiliateProvider {
   name: string;
   verticals: AffiliateVertical[];
   envKey: string;
+  defaultDestination?: string;
 }
 
 const providers: AffiliateProvider[] = [
-  { key: 'travelpayouts', name: 'Travelpayouts', verticals: ['hotels', 'activities', 'transfers', 'insurance'], envKey: 'TRIPSIGNAL_AFFILIATE_TRAVELPAYOUTS_URL' },
-  { key: 'discovercars', name: 'Discover Cars', verticals: ['cars'], envKey: 'TRIPSIGNAL_AFFILIATE_DISCOVERCARS_URL' },
+  {
+    key: 'travelpayouts',
+    name: 'Travelpayouts',
+    verticals: ['hotels', 'activities', 'transfers', 'insurance'],
+    envKey: 'TRIPSIGNAL_AFFILIATE_TRAVELPAYOUTS_URL',
+    defaultDestination: 'https://www.travelpayouts.com/?marker=776063',
+  },
+  {
+    key: 'discovercars',
+    name: 'Discover Cars',
+    verticals: ['cars'],
+    envKey: 'TRIPSIGNAL_AFFILIATE_DISCOVERCARS_URL',
+    defaultDestination: 'https://www.discovercars.com/?a_aid=Damian',
+  },
   { key: 'awin-parking', name: 'Airport Parking', verticals: ['parking'], envKey: 'TRIPSIGNAL_AFFILIATE_PARKING_URL' },
 ];
 
@@ -45,7 +58,7 @@ export function getAffiliateConfig(vertical: AffiliateVertical) {
   const provider = getAffiliateProvider(vertical);
   if (!provider) return null;
 
-  const destination = process.env[provider.envKey];
+  const destination = process.env[provider.envKey] ?? provider.defaultDestination;
   return {
     vertical,
     label: verticalLabels[vertical],
@@ -81,6 +94,6 @@ export function getAffiliateProviders() {
     key: provider.key,
     name: provider.name,
     verticals: provider.verticals,
-    configured: Boolean(process.env[provider.envKey]),
+    configured: Boolean(process.env[provider.envKey] ?? provider.defaultDestination),
   }));
 }
