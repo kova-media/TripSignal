@@ -4,6 +4,7 @@
   "private": true,
   "scripts": { "dev": "next dev", "build": "next build", "start": "next start" },
   "dependencies": {
+    "@types/topojson-client": "^3.1.0",
     "d3-geo": "^3.1.1",
     "fast-flights-ts": "^4.1.0",
     "next": "^15.5.0",
@@ -21,7 +22,6 @@
     "@types/pg": "^8.15.5",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
-    "@types/topojson-client": "^3.1.0",
     "eslint": "^9.34.0",
     "eslint-config-next": "^15.5.0",
     "typescript": "^5.9.2"
