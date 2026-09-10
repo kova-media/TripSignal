@@ -89,14 +89,55 @@ export async function POST(request: Request) {
     }
 
     const db = getDb();
-    const inserted = await db.query<{ id: string }>(
-      `insert into alerts (email, user_id, criteria, frequency)
-       values ($1, $2, $3::jsonb, $4)
-       returning id`,
-      [email, userId, JSON.stringify(criteria), criteria.frequency],
-    );
-    const alertId = inserted.rows[0]?.id;
-    if (!alertId) throw new Error('Could not create alert.');
+    const client = await db.connect();
+    let alertId = '';
+
+    try {
+      await client.query('BEGIN');
+      await client.query('select pg_advisory_xact_lock(hashtextextended($1, 0))', [userId]);
+
+      const accountResult = await client.query<{ plan: string }>(
+        'select plan from users where id = $1 limit 1',
+        [userId],
+      );
+      const plan = accountResult.rows[0]?.plan ?? 'free';
+
+      if (plan !== 'pro') {
+        const alertCountResult = await client.query<{ count: string }>(
+          'select count(*)::text as count from alerts where user_id = $1',
+          [userId],
+        );
+        const alertCount = Number(alertCountResult.rows[0]?.count ?? 0);
+
+        if (alertCount >= 1) {
+          await client.query('ROLLBACK');
+          return NextResponse.json(
+            {
+              error: 'Free accounts can have one alert. Upgrade to TripSignal Pro to create unlimited alerts.',
+              code: 'FREE_ALERT_LIMIT',
+              limit: 1,
+            },
+            { status: 403 },
+          );
+        }
+      }
+
+      const inserted = await client.query<{ id: string }>(
+        `insert into alerts (email, user_id, criteria, frequency)
+         values ($1, $2, $3::jsonb, $4)
+         returning id`,
+        [email, userId, JSON.stringify(criteria), criteria.frequency],
+      );
+      alertId = inserted.rows[0]?.id ?? '';
+      if (!alertId) throw new Error('Could not create alert.');
+
+      await client.query('COMMIT');
+    } catch (error) {
+      try { await client.query('ROLLBACK'); } catch {}
+      throw error;
+    } finally {
+      client.release();
+    }
 
     let confirmationError = '';
     try {
