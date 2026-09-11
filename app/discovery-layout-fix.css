@@ -1,0 +1,52 @@
+/* Final discovery layout correction. Keep controls visible and prevent the route map from stretching vertically. */
+.discovery-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr) !important;
+  gap: 48px !important;
+  align-items: start !important;
+}
+
+.discovery-controls {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 22px !important;
+  min-width: 0 !important;
+  align-self: start !important;
+}
+
+.route-map {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  align-self: start !important;
+}
+
+.route-map-canvas {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: 1000 / 520 !important;
+}
+
+.route-map-canvas svg {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: 1000 / 520 !important;
+}
+
+@media (max-width: 900px) {
+  .discovery-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 34px !important;
+  }
+
+  .discovery-controls,
+  .route-map {
+    width: 100% !important;
+  }
+}
