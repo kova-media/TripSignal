@@ -122,21 +122,6 @@ export default async function Home() {
         )}
       </section>
 
-      {user && (
-        <section className="fare-example shell" aria-label="Fare match example">
-          <div className="fare-example-heading">
-            <p className="section-kicker">When we find a match</p>
-            <h2>We found<br /><em>your fare.</em></h2>
-          </div>
-          <div className="fare-example-card">
-            <div className="fare-example-route"><strong>Kansas City</strong><span>→</span><strong>Rome</strong></div>
-            <div className="fare-example-price"><strong>$684</strong><span>$116 below your target</span></div>
-            <div className="fare-example-meta"><span>May 12–26</span><span>Economy</span><span>1 stop</span></div>
-            <a className="button button-primary" href="#explore">Start watching</a>
-          </div>
-        </section>
-      )}
-
       <section className="pricing-preview shell" aria-label="TripSignal pricing">
         <div className="pricing-preview-card">
           <div className="pricing-tier">
