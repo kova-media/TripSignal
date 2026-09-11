@@ -1,4 +1,4 @@
-/* Keep the discovery builder centered and force the route map to use the full intended aspect ratio. */
+/* Keep the discovery builder centered and give the route map a stable, responsive drawing area. */
 .discovery {
   width: min(1240px, calc(100% - 56px)) !important;
   max-width: 1240px !important;
@@ -50,10 +50,10 @@
   position: relative !important;
   display: block !important;
   width: 100% !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  aspect-ratio: 1000 / 520 !important;
+  height: clamp(180px, 26vw, 300px) !important;
+  min-height: 180px !important;
+  max-height: 300px !important;
+  aspect-ratio: auto !important;
   overflow: hidden !important;
 }
 
@@ -79,10 +79,22 @@
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 34px !important;
   }
+
+  .route-map-canvas {
+    height: clamp(200px, 52vw, 300px) !important;
+    min-height: 200px !important;
+    max-height: 300px !important;
+  }
 }
 
 @media (max-width: 640px) {
   .discovery {
     width: min(100% - 30px, 1240px) !important;
+  }
+
+  .route-map-canvas {
+    height: 220px !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
   }
 }
