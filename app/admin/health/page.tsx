@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import SiteHeader from '@/components/site-header';
+import RunButton from './run-button';
 import { getDb, ensureSchema } from '@/lib/db';
 import { requireAdmin, isAdminError } from '@/lib/admin';
-import { runAlertsNow } from './actions';
 import styles from '../admin.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -76,7 +76,7 @@ export default async function AdminHealthPage() {
         </section>
 
         <section className={styles.section}>
-          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Diagnostics</p><h2>Service checks</h2></div><div style={{ display: 'flex', alignItems: 'center', gap: 14 }}><span className={styles.sectionNote}>No secret values are displayed</span><form action={runAlertsNow}><button type="submit" style={{ border: '1px solid var(--accent-line)', background: 'transparent', color: 'var(--accent)', padding: '9px 12px', fontSize: 10, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer' }}>Run alerts now</button></form></div></div>
+          <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Diagnostics</p><h2>Service checks</h2></div><div style={{ display: 'flex', alignItems: 'center', gap: 14 }}><span className={styles.sectionNote}>No secret values are displayed</span><RunButton /></div></div>
           <div className={styles.table}>
             <div className={styles.tableHead}><span>Service</span><span>Status</span><span>Check</span><span>Details</span></div>
             {checks.map((check) => <div className={styles.tableRow} key={check.name}><div><strong>{check.name}</strong></div><span className={check.status === 'error' ? styles.error : check.status === 'ok' ? styles.success : ''}>{check.status}</span><span>{check.status === 'ok' ? 'Healthy' : check.status === 'warning' ? 'Review' : 'Action required'}</span><span>{check.detail}</span></div>)}
