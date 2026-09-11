@@ -205,8 +205,8 @@ export default function TripDiscovery() {
 
         <div className="route-map" aria-label="TripSignal geographic trip map">
           <div className="route-map-top"><span>TRIP MAP</span><span>{destinationAirport && origin ? `${origin} → ${destinationAirport}` : 'Select a route'}</span></div>
-          <div className="route-map-canvas" style={{ aspectRatio: '1000 / 520', height: 'auto', minHeight: 0 }}>
-            <svg viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet" role="img" aria-label={`World map${origin ? ` showing a route from ${origin}` : ''}${destinationAirport ? ` to ${destinationAirport}` : ''}`} style={{ display: 'block', width: '100%', height: 'auto' }}>
+          <div className="route-map-canvas">
+            <svg viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet" role="img" aria-label={`World map${origin ? ` showing a route from ${origin}` : ''}${destinationAirport ? ` to ${destinationAirport}` : ''}`}>
               <path d={path(graticule) ?? ''} className="map-graticule" />
               <g className="map-countries">{worldFeatures.features.map((country: any) => <path key={country.id ?? country.properties?.name} d={path(country) ?? ''} />)}</g>
               {originCoordinates && destinationCoordinates && <g className="map-routes"><path d={projectRoutePath(projection, originCoordinates, destinationCoordinates)} className="map-route active" /></g>}
