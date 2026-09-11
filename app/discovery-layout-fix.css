@@ -1,16 +1,39 @@
-/* Final discovery layout correction. Keep controls visible and prevent the route map from stretching vertically. */
+/* Final discovery layout correction. Keep the builder centered and prevent route map stretching or horizontal displacement. */
+.discovery {
+  width: min(1240px, calc(100% - 56px)) !important;
+  max-width: 1240px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  transform: none !important;
+}
+
+.discovery-head {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 .discovery-layout {
   display: grid !important;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.25fr) !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr) !important;
   gap: 48px !important;
   align-items: start !important;
 }
 
 .discovery-controls {
+  width: 100% !important;
+  min-width: 0 !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 22px !important;
-  min-width: 0 !important;
   align-self: start !important;
 }
 
@@ -20,6 +43,7 @@
   height: auto !important;
   min-height: 0 !important;
   align-self: start !important;
+  overflow: hidden !important;
 }
 
 .route-map-canvas {
@@ -40,13 +64,18 @@
 }
 
 @media (max-width: 900px) {
+  .discovery {
+    width: min(100% - 40px, 720px) !important;
+  }
+
   .discovery-layout {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 34px !important;
   }
+}
 
-  .discovery-controls,
-  .route-map {
-    width: 100% !important;
+@media (max-width: 640px) {
+  .discovery {
+    width: min(100% - 30px, 1240px) !important;
   }
 }
