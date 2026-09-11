@@ -2,6 +2,7 @@ import './home-refine.css';
 import './home-align.css';
 import './home-product.css';
 import './home-next.css';
+import './home-final.css';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
 import TripDiscoveryDirect from '@/components/trip-discovery-direct';
@@ -60,7 +61,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <TripDiscoveryDirect />
+      <TripDiscoveryDirect accountEmail={user?.email ?? null} />
 
       <section className="home-difference shell" id="how-it-works">
         <div className="home-difference-copy">
