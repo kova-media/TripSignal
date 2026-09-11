@@ -1,4 +1,4 @@
-/* Final discovery layout correction. Keep the builder centered and keep the route map in a stable two-column desktop layout. */
+/* Keep the discovery builder full-width and the route map stable. */
 .discovery {
   width: min(1240px, calc(100% - 56px)) !important;
   max-width: 1240px !important;
@@ -28,7 +28,7 @@
   align-items: start !important;
 }
 
-/* Do not collapse a desktop Retina viewport into the mobile layout. */
+/* Do not collapse the desktop layout prematurely on a Retina display. */
 html .home-page .discovery-layout {
   grid-template-columns: minmax(320px, 1.05fr) minmax(360px, 0.95fr) !important;
   gap: 48px !important;
@@ -73,8 +73,10 @@ html .home-page .account-bound .discovery-field:has(#discovery-email) {
 }
 
 @media (max-width: 700px) {
+  /* Keep the builder at the available viewport width. Do not cap it at 720px. */
   .discovery {
-    width: min(100% - 40px, 720px) !important;
+    width: calc(100% - 40px) !important;
+    max-width: 1240px !important;
   }
 
   html .home-page .discovery-layout,
@@ -85,14 +87,15 @@ html .home-page .account-bound .discovery-field:has(#discovery-email) {
 
   html .home-page .route-map {
     width: 100% !important;
-    max-width: 760px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 }
 
 @media (max-width: 640px) {
   .discovery {
-    width: min(100% - 30px, 1240px) !important;
+    width: calc(100% - 30px) !important;
+    max-width: 1240px !important;
   }
 }
