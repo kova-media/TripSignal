@@ -1,4 +1,4 @@
-/* Keep the discovery builder centered and give the route map a stable, responsive drawing area. */
+/* Stable responsive map sizing. The SVG and canvas share the same 1000:520 ratio. */
 .discovery {
   width: min(1240px, calc(100% - 56px)) !important;
   max-width: 1240px !important;
@@ -47,27 +47,23 @@
 }
 
 .route-map-canvas {
-  position: relative !important;
   display: block !important;
   width: 100% !important;
-  height: clamp(280px, 31vw, 520px) !important;
-  min-height: 280px !important;
-  max-height: 520px !important;
-  aspect-ratio: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: 1000 / 520 !important;
   overflow: hidden !important;
 }
 
 .route-map-canvas svg {
-  position: absolute !important;
-  inset: 0 !important;
   display: block !important;
   width: 100% !important;
   height: 100% !important;
   min-width: 0 !important;
   min-height: 0 !important;
-  max-width: none !important;
-  max-height: none !important;
-  aspect-ratio: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  aspect-ratio: 1000 / 520 !important;
 }
 
 @media (max-width: 900px) {
@@ -78,12 +74,6 @@
   .discovery-layout {
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 34px !important;
-  }
-
-  .route-map-canvas {
-    height: clamp(260px, 60vw, 420px) !important;
-    min-height: 260px !important;
-    max-height: 420px !important;
   }
 }
 
@@ -100,8 +90,9 @@
   }
 
   .route-map-canvas {
-    height: 260px !important;
-    min-height: 260px !important;
-    max-height: 260px !important;
+    aspect-ratio: 1000 / 520 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
   }
 }
