@@ -10,7 +10,7 @@ import type { AffiliateContext } from '@/lib/affiliates';
 type DestinationMode = 'region' | 'airport';
 type Airport = { iata_code: string; name: string; municipality?: string; iso_country?: string; latitude?: number; longitude?: number };
 type Coordinate = [number, number];
-type Frequency = 'Weekly' | 'Monthly';
+type Frequency = 'Daily' | 'Weekly' | 'Monthly';
 
 const regions = ['Europe', 'North America', 'South America', 'Asia', 'Africa', 'Middle East', 'Oceania'];
 const cabinOptions = ['Economy', 'Premium economy', 'Business', 'First class'];
@@ -158,36 +158,7 @@ export default function TripDiscovery() {
   const budgetValue = Number(budget) || 0;
   const destinationCoordinates = destinationCoordinate ?? (destinationAirport ? airportCoordinates[destinationAirport] : undefined);
   const originCoordinates = originCoordinate ?? (origin ? airportCoordinates[origin] : undefined);
-  const projection = useMemo(() => {
-    if (!originCoordinates || !destinationCoordinates) return geoEqualEarth().fitExtent([[34, 34], [966, 470]], worldFeatures);
-
-    const [fromLon, fromLat] = originCoordinates;
-    const [toLon, toLat] = destinationCoordinates;
-    const minLon = Math.min(fromLon, toLon);
-    const maxLon = Math.max(fromLon, toLon);
-    const minLat = Math.min(fromLat, toLat);
-    const maxLat = Math.max(fromLat, toLat);
-    const lonSpan = maxLon - minLon;
-    const latSpan = maxLat - minLat;
-    const lonPadding = Math.max(6, lonSpan * 0.6);
-    const latPadding = Math.max(5, latSpan * 0.6);
-    const focus = {
-      type: 'Feature',
-      properties: {},
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [minLon - lonPadding, minLat - latPadding],
-          [maxLon + lonPadding, minLat - latPadding],
-          [maxLon + lonPadding, maxLat + latPadding],
-          [minLon - lonPadding, maxLat + latPadding],
-          [minLon - lonPadding, minLat - latPadding],
-        ]],
-      },
-    };
-
-    return geoEqualEarth().fitExtent([[34, 34], [966, 470]], focus as any);
-  }, [originCoordinates, destinationCoordinates]);
+  const projection = useMemo(() => geoEqualEarth().fitExtent([[34, 34], [966, 470]], worldFeatures), []);
   const path = useMemo(() => geoPath(projection), [projection]);
   const graticule = useMemo(() => geoGraticule().step([20, 20])(), []);
   const originPoint = originCoordinates ? projection(originCoordinates) : undefined;
@@ -262,8 +233,8 @@ export default function TripDiscovery() {
             <div className="fare-target-labels"><span>Lower</span><span>Higher</span></div>
           </div>
 
-          <details className="discovery-advanced">
-            <summary>Advanced options</summary>
+          <div className="discovery-advanced">
+            <div className="discovery-advanced-title">Advanced options</div>
             <div className="discovery-advanced-fields">
               <div className="discovery-field">
                 <label>Cabin</label>
@@ -292,7 +263,7 @@ export default function TripDiscovery() {
 
               <div className="discovery-field">
                 <label htmlFor="discovery-frequency">Search frequency</label>
-                <select id="discovery-frequency" value={frequency} onChange={(event) => setFrequency(event.target.value as Frequency)}><option>Weekly</option><option>Monthly</option></select>
+                <select id="discovery-frequency" value={frequency} onChange={(event) => setFrequency(event.target.value as Frequency)}><option>Daily</option><option>Weekly</option><option>Monthly</option></select>
               </div>
 
               <div className="discovery-field">
@@ -300,7 +271,7 @@ export default function TripDiscovery() {
                 <select id="discovery-passengers" value={passengers} onChange={(event) => setPassengers(event.target.value)}>{Array.from({ length: 9 }, (_, index) => index + 1).map((count) => <option key={count} value={count}>{count} passenger{count === 1 ? '' : 's'}</option>)}</select>
               </div>
             </div>
-          </details>
+          </div>
 
           <div className="discovery-field">
             <label htmlFor="discovery-email">Alert email</label>
