@@ -1,4 +1,4 @@
-/* Final discovery layout correction. Keep the builder centered and prevent route map stretching or horizontal displacement. */
+/* Keep the discovery builder centered and force the route map to use the full intended aspect ratio. */
 .discovery {
   width: min(1240px, calc(100% - 56px)) !important;
   max-width: 1240px !important;
@@ -47,20 +47,27 @@
 }
 
 .route-map-canvas {
-  width: 100% !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  aspect-ratio: 1000 / 520 !important;
-}
-
-.route-map-canvas svg {
+  position: relative !important;
   display: block !important;
   width: 100% !important;
   height: auto !important;
   min-height: 0 !important;
   max-height: none !important;
   aspect-ratio: 1000 / 520 !important;
+  overflow: hidden !important;
+}
+
+.route-map-canvas svg {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
 }
 
 @media (max-width: 900px) {
