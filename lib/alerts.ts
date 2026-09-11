@@ -14,7 +14,7 @@ type AlertCriteria = {
   dateRange: string;
   dateStart?: string;
   dateEnd?: string;
-  frequency: 'Weekly' | 'Monthly';
+  frequency: 'Daily' | 'Weekly' | 'Monthly';
   cabin: 'economy' | 'premium_economy' | 'business' | 'first';
   passengers?: number;
 };
@@ -148,10 +148,10 @@ export async function runDueAlerts() {
      from alerts
      where active = true
        and (last_checked_at is null
+         or (frequency = 'Daily' and last_checked_at <= now() - interval '24 hours')
          or (frequency = 'Weekly' and last_checked_at <= now() - interval '7 days')
          or (frequency = 'Monthly' and last_checked_at <= now() - interval '30 days'))
-     order by created_at asc
-     limit 20`,
+     order by created_at asc`,
   );
 
   const summary = { checked: 0, signals: 0, emails: 0, errors: 0 };
