@@ -76,13 +76,11 @@ function AirportSearch({ label, value, code, onSelect, placeholder }: { label: s
   useEffect(() => {
     const trimmed = query.trim();
     const currentRequestId = ++requestId.current;
-
     if (trimmed.length < 2 || trimmed === value.trim()) {
       setResults([]);
       setLoading(false);
       return;
     }
-
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       setLoading(true);
@@ -99,7 +97,6 @@ function AirportSearch({ label, value, code, onSelect, placeholder }: { label: s
         if (!controller.signal.aborted && requestId.current === currentRequestId) setLoading(false);
       }
     }, 160);
-
     return () => {
       window.clearTimeout(timer);
       controller.abort();
@@ -158,7 +155,29 @@ export default function TripDiscovery() {
   const budgetValue = Number(budget) || 0;
   const destinationCoordinates = destinationCoordinate ?? (destinationAirport ? airportCoordinates[destinationAirport] : undefined);
   const originCoordinates = originCoordinate ?? (origin ? airportCoordinates[origin] : undefined);
-  const projection = useMemo(() => geoEqualEarth().fitExtent([[34, 34], [966, 470]], worldFeatures), []);
+  const projection = useMemo(() => {
+    const base = geoEqualEarth();
+    if (!originCoordinates || !destinationCoordinates) return base.fitExtent([[34, 34], [966, 470]], worldFeatures);
+
+    const [fromLon, fromLat] = originCoordinates;
+    const [toLon, toLat] = destinationCoordinates;
+    const minLon = Math.min(fromLon, toLon);
+    const maxLon = Math.max(fromLon, toLon);
+    const minLat = Math.min(fromLat, toLat);
+    const maxLat = Math.max(fromLat, toLat);
+    const lonSpan = Math.max(maxLon - minLon, 1);
+    const latSpan = Math.max(maxLat - minLat, 1);
+    const lonPadding = Math.max(8, lonSpan * 0.65);
+    const latPadding = Math.max(6, latSpan * 0.9);
+    const focus = {
+      type: 'FeatureCollection',
+      features: [
+        { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [minLon - lonPadding, minLat - latPadding] } },
+        { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [maxLon + lonPadding, maxLat + latPadding] } },
+      ],
+    };
+    return base.fitExtent([[150, 70], [850, 450]], focus as any);
+  }, [originCoordinates, destinationCoordinates]);
   const path = useMemo(() => geoPath(projection), [projection]);
   const graticule = useMemo(() => geoGraticule().step([20, 20])(), []);
   const originPoint = originCoordinates ? projection(originCoordinates) : undefined;
@@ -233,43 +252,40 @@ export default function TripDiscovery() {
             <div className="fare-target-labels"><span>Lower</span><span>Higher</span></div>
           </div>
 
-          <div className="discovery-advanced">
-            <div className="discovery-advanced-title">Advanced options</div>
-            <div className="discovery-advanced-fields">
-              <div className="discovery-field">
-                <label>Cabin</label>
-                <div className="discovery-options discovery-cabin-options">{cabinOptions.map((item) => <button type="button" key={item} className={cabin === item ? 'active' : ''} onClick={() => setCabin(item)}>{item}</button>)}</div>
-              </div>
+          <div className="discovery-advanced-fields">
+            <div className="discovery-field">
+              <label>Cabin</label>
+              <div className="discovery-options discovery-cabin-options">{cabinOptions.map((item) => <button type="button" key={item} className={cabin === item ? 'active' : ''} onClick={() => setCabin(item)}>{item}</button>)}</div>
+            </div>
 
-              <div className="discovery-field">
-                <label htmlFor="discovery-airline">Airline</label>
-                <select id="discovery-airline" value={airlineMode} onChange={(event) => setAirlineMode(event.target.value)}>{airlines.map((airline) => <option key={airline.code} value={airline.code}>{airline.name}</option>)}</select>
-              </div>
+            <div className="discovery-field">
+              <label htmlFor="discovery-airline">Airline</label>
+              <select id="discovery-airline" value={airlineMode} onChange={(event) => setAirlineMode(event.target.value)}>{airlines.map((airline) => <option key={airline.code} value={airline.code}>{airline.name}</option>)}</select>
+            </div>
 
-              <div className="discovery-field">
-                <label htmlFor="discovery-stops">Maximum stops</label>
-                <select id="discovery-stops" value={stops} onChange={(event) => setStops(event.target.value)}><option value="0">Nonstop</option><option value="1">1 stop</option><option value="2">2 stops</option><option value="any">Any</option></select>
-              </div>
+            <div className="discovery-field">
+              <label htmlFor="discovery-stops">Maximum stops</label>
+              <select id="discovery-stops" value={stops} onChange={(event) => setStops(event.target.value)}><option value="0">Nonstop</option><option value="1">1 stop</option><option value="2">2 stops</option><option value="any">Any</option></select>
+            </div>
 
-              <div className="discovery-field">
-                <label htmlFor="discovery-trip-length">Trip length</label>
-                <select id="discovery-trip-length" value={tripLength} onChange={(event) => setTripLength(event.target.value)}><option>3–7 days</option><option>1–2 weeks</option><option>1–3 weeks</option><option>1–4 weeks</option></select>
-              </div>
+            <div className="discovery-field">
+              <label htmlFor="discovery-trip-length">Trip length</label>
+              <select id="discovery-trip-length" value={tripLength} onChange={(event) => setTripLength(event.target.value)}><option>3–7 days</option><option>1–2 weeks</option><option>1–3 weeks</option><option>1–4 weeks</option></select>
+            </div>
 
-              <div className="discovery-field">
-                <label htmlFor="discovery-date">Specific departure date <small>Optional</small></label>
-                <input id="discovery-date" type="date" value={specificDate} onChange={(event) => setSpecificDate(event.target.value)} min={new Date().toISOString().slice(0, 10)} />
-              </div>
+            <div className="discovery-field">
+              <label htmlFor="discovery-date">Specific departure date <small>Optional</small></label>
+              <input id="discovery-date" type="date" value={specificDate} onChange={(event) => setSpecificDate(event.target.value)} min={new Date().toISOString().slice(0, 10)} />
+            </div>
 
-              <div className="discovery-field">
-                <label htmlFor="discovery-frequency">Search frequency</label>
-                <select id="discovery-frequency" value={frequency} onChange={(event) => setFrequency(event.target.value as Frequency)}><option>Daily</option><option>Weekly</option><option>Monthly</option></select>
-              </div>
+            <div className="discovery-field">
+              <label htmlFor="discovery-frequency">Search frequency</label>
+              <select id="discovery-frequency" value={frequency} onChange={(event) => setFrequency(event.target.value as Frequency)}><option>Daily</option><option>Weekly</option><option>Monthly</option></select>
+            </div>
 
-              <div className="discovery-field">
-                <label htmlFor="discovery-passengers">Passengers</label>
-                <select id="discovery-passengers" value={passengers} onChange={(event) => setPassengers(event.target.value)}>{Array.from({ length: 9 }, (_, index) => index + 1).map((count) => <option key={count} value={count}>{count} passenger{count === 1 ? '' : 's'}</option>)}</select>
-              </div>
+            <div className="discovery-field">
+              <label htmlFor="discovery-passengers">Passengers</label>
+              <select id="discovery-passengers" value={passengers} onChange={(event) => setPassengers(event.target.value)}>{Array.from({ length: 9 }, (_, index) => index + 1).map((count) => <option key={count} value={count}>{count} passenger{count === 1 ? '' : 's'}</option>)}</select>
             </div>
           </div>
 
