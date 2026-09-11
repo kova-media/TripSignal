@@ -102,18 +102,35 @@ async function searchOne(
     max_stops: criteria.maxStops,
   });
 
-  const results = await getFlights(query, {
-    timeout: 15000,
-    maxRetries: 2,
-    retryDelay: 1500,
-  });
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const results = await getFlights(query, {
+        timeout: 15000,
+        maxRetries: 2,
+        retryDelay: 1500,
+      });
 
-  return results
-    .filter((result) => result.price < criteria.maxPrice)
-    .filter((result) => criteria.airlines.length === 0 || result.airlines.some((airline) => criteria.airlines.includes(airline)))
-    .map((result) => itineraryToOffer(result, origin, destination, departureDate, returnDate))
-    .filter((offer): offer is FlightOffer => Boolean(offer))
-    .filter((offer) => criteria.maxStops === null || offer.stops <= criteria.maxStops);
+      return results
+        .filter((result) => result.price < criteria.maxPrice)
+        .filter((result) => criteria.airlines.length === 0 || result.airlines.some((airline) => criteria.airlines.includes(airline)))
+        .map((result) => itineraryToOffer(result, origin, destination, departureDate, returnDate))
+        .filter((offer): offer is FlightOffer => Boolean(offer))
+        .filter((offer) => criteria.maxStops === null || offer.stops <= criteria.maxStops);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const malformedRpcResponse = message.includes('RPC response missing flight data');
+      if (!malformedRpcResponse || attempt === 1) {
+        if (malformedRpcResponse) {
+          console.warn(`TripSignal Google Flights returned malformed RPC data for ${origin}-${destination} on ${departureDate}; skipping this sample.`);
+          return [];
+        }
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 750));
+    }
+  }
+
+  return [];
 }
 
 class GoogleFlightsProvider implements FlightProvider {
