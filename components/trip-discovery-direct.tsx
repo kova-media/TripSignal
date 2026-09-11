@@ -1,12 +1,13 @@
 'use client';
 
-import { MouseEvent, ReactNode, useState } from 'react';
+import { MouseEvent, ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import TripDiscovery from '@/components/trip-discovery';
 import styles from './trip-discovery-direct.module.css';
 
 type DiscoveryDirectProps = {
   children?: ReactNode;
+  accountEmail?: string | null;
 };
 
 function valueOf(root: HTMLElement, id: string) {
@@ -37,11 +38,31 @@ function cabinParam(cabin: string) {
   return cabin.toLowerCase();
 }
 
-export default function TripDiscoveryDirect({ children }: DiscoveryDirectProps) {
+export default function TripDiscoveryDirect({ children, accountEmail }: DiscoveryDirectProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!accountEmail) return;
+    const syncAccountEmail = () => {
+      const input = document.querySelector<HTMLInputElement>('#discovery-email');
+      const button = document.querySelector<HTMLButtonElement>('.discovery-cta');
+      if (!input) return;
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+      setter?.call(input, accountEmail);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      if (button) button.disabled = false;
+    };
+    const firstFrame = requestAnimationFrame(syncAccountEmail);
+    const timer = window.setTimeout(syncAccountEmail, 100);
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      window.clearTimeout(timer);
+    };
+  }, [accountEmail]);
 
   async function handleClick(event: MouseEvent<HTMLDivElement>) {
     const target = event.target as HTMLElement | null;
@@ -59,7 +80,7 @@ export default function TripDiscoveryDirect({ children }: DiscoveryDirectProps) 
     const destination = destinationMode === 'region' ? valueOf(root, 'discovery-region') : airportCode(destinationInput);
     const specificDate = valueOf(root, 'discovery-date');
     const dateRange = specificDate ? 'Custom dates' : valueOf(root, 'discovery-window');
-    const email = valueOf(root, 'discovery-email');
+    const email = accountEmail ?? valueOf(root, 'discovery-email');
     const cabin = selectedCabin(root);
     const payload = {
       origin,
@@ -100,7 +121,7 @@ export default function TripDiscoveryDirect({ children }: DiscoveryDirectProps) 
   }
 
   return (
-    <div className={styles.wrapper} data-trip-discovery-direct onClickCapture={handleClick} aria-busy={submitting}>
+    <div className={`${styles.wrapper}${accountEmail ? ' account-bound' : ''}`} data-trip-discovery-direct onClickCapture={handleClick} aria-busy={submitting}>
       <TripDiscovery />
       {success && <p className={`${styles.message} discovery-direct-success`} role="status">{success}</p>}
       {error && <p className={`${styles.message} ${styles.error} discovery-direct-error`} role="alert">{error}</p>}
