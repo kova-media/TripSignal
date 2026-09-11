@@ -50,9 +50,9 @@
   position: relative !important;
   display: block !important;
   width: 100% !important;
-  height: clamp(180px, 26vw, 300px) !important;
-  min-height: 180px !important;
-  max-height: 300px !important;
+  height: clamp(280px, 31vw, 520px) !important;
+  min-height: 280px !important;
+  max-height: 520px !important;
   aspect-ratio: auto !important;
   overflow: hidden !important;
 }
@@ -81,9 +81,9 @@
   }
 
   .route-map-canvas {
-    height: clamp(200px, 52vw, 300px) !important;
-    min-height: 200px !important;
-    max-height: 300px !important;
+    height: clamp(260px, 60vw, 420px) !important;
+    min-height: 260px !important;
+    max-height: 420px !important;
   }
 }
 
@@ -92,9 +92,16 @@
     width: min(100% - 30px, 1240px) !important;
   }
 
+  .route-map,
+  .route-map-canvas,
+  .route-map-canvas svg {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
   .route-map-canvas {
-    height: 220px !important;
-    min-height: 220px !important;
-    max-height: 220px !important;
+    height: 260px !important;
+    min-height: 260px !important;
+    max-height: 260px !important;
   }
 }
