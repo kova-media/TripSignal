@@ -28,18 +28,17 @@
   align-items: start !important;
 }
 
-/* Do not collapse the desktop layout prematurely on a Retina display. */
 html .home-page .discovery-layout {
-  grid-template-columns: minmax(320px, 1.05fr) minmax(360px, 0.95fr) !important;
+  grid-template-columns: minmax(280px, 0.62fr) minmax(0, 1.38fr) !important;
   gap: 48px !important;
 }
 
 html .home-page .route-map {
   width: 100% !important;
   min-width: 0 !important;
+  max-width: none !important;
   height: auto !important;
   min-height: 0 !important;
-  max-width: none !important;
   align-self: start !important;
   overflow: hidden !important;
   transform: none !important;
@@ -67,16 +66,14 @@ html .home-page .route-map-canvas svg,
   max-height: 100% !important;
 }
 
-/* Signed-in users use their account email automatically. */
 html .home-page .account-bound .discovery-field:has(#discovery-email) {
   display: none !important;
 }
 
-@media (max-width: 700px) {
-  /* Keep the builder at the available viewport width. Do not cap it at 720px. */
+@media (max-width: 900px) {
   .discovery {
-    width: calc(100% - 40px) !important;
-    max-width: 1240px !important;
+    width: min(100% - 40px, 760px) !important;
+    max-width: 760px !important;
   }
 
   html .home-page .discovery-layout,
