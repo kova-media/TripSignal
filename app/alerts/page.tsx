@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { getCurrentUser } from '@/lib/auth';
 import AlertBuilder from './alert-builder';
 
 export const metadata = {
@@ -6,10 +7,12 @@ export const metadata = {
   description: 'Set the criteria TripSignal should watch for.',
 };
 
-export default function AlertsPage() {
+export default async function AlertsPage() {
+  const currentUser = await getCurrentUser();
+
   return (
     <Suspense fallback={null}>
-      <AlertBuilder />
+      <AlertBuilder accountEmail={currentUser?.email ?? null} />
     </Suspense>
   );
 }
