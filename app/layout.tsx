@@ -6,7 +6,6 @@ import './color-fix.css';
 import './mobile.css';
 import './summary-fix.css';
 import './ui-fixes.css';
-import './frequency-fix.css';
 import './selection-fix.css';
 import './trip-extras.css';
 
@@ -24,40 +23,11 @@ export const metadata: Metadata = {
 
 const themeScript = `(() => { try { const saved = localStorage.getItem('tripsignal-theme-v2'); document.documentElement.dataset.theme = saved === 'daylight' ? 'daylight' : 'redeye'; } catch { document.documentElement.dataset.theme = 'redeye'; } })();`;
 
-const frequencyScript = `(() => {
-  const mount = () => {
-    const original = document.querySelector('#discovery-frequency');
-    const advanced = original?.closest('.discovery-advanced');
-    const summary = advanced?.querySelector('summary');
-    if (!original || !advanced || !summary || advanced.querySelector('.discovery-frequency-visible')) return;
-
-    const field = document.createElement('div');
-    field.className = 'discovery-field discovery-frequency-visible';
-    field.innerHTML = '<label for="discovery-frequency-visible">Scan frequency</label><select id="discovery-frequency-visible"><option value="Weekly">Weekly</option><option value="Monthly">Monthly</option></select>';
-    const visible = field.querySelector('select');
-    if (!visible) return;
-
-    visible.value = original.value;
-    visible.addEventListener('change', () => {
-      const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set;
-      setter?.call(original, visible.value);
-      original.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-    summary.insertAdjacentElement('afterend', field);
-  };
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, { once: true });
-  else mount();
-  const observer = new MutationObserver(mount);
-  observer.observe(document.body, { childList: true, subtree: true });
-})();`;
-
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <script dangerouslySetInnerHTML={{ __html: frequencyScript }} />
         {children}
       </body>
     </html>
