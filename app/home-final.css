@@ -1,0 +1,23 @@
+/* Final homepage corrections. Keep the first watch flow compact and account-bound. */
+.home-page .home-hero {
+  min-height: 0;
+  padding: 92px 0 84px;
+}
+
+.home-page .account-bound .discovery-field:has(#discovery-email) {
+  display: none;
+}
+
+.home-page .account-bound .discovery-cta {
+  margin-top: 0;
+}
+
+@media (max-width: 820px) {
+  .home-page .route-map {
+    width: 100% !important;
+    max-width: 760px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    transform: none !important;
+  }
+}
