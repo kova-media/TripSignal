@@ -158,7 +158,36 @@ export default function TripDiscovery() {
   const budgetValue = Number(budget) || 0;
   const destinationCoordinates = destinationCoordinate ?? (destinationAirport ? airportCoordinates[destinationAirport] : undefined);
   const originCoordinates = originCoordinate ?? (origin ? airportCoordinates[origin] : undefined);
-  const projection = useMemo(() => geoEqualEarth().fitExtent([[34, 34], [966, 470]], worldFeatures), []);
+  const projection = useMemo(() => {
+    if (!originCoordinates || !destinationCoordinates) return geoEqualEarth().fitExtent([[34, 34], [966, 470]], worldFeatures);
+
+    const [fromLon, fromLat] = originCoordinates;
+    const [toLon, toLat] = destinationCoordinates;
+    const minLon = Math.min(fromLon, toLon);
+    const maxLon = Math.max(fromLon, toLon);
+    const minLat = Math.min(fromLat, toLat);
+    const maxLat = Math.max(fromLat, toLat);
+    const lonSpan = maxLon - minLon;
+    const latSpan = maxLat - minLat;
+    const lonPadding = Math.max(6, lonSpan * 0.6);
+    const latPadding = Math.max(5, latSpan * 0.6);
+    const focus = {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[
+          [minLon - lonPadding, minLat - latPadding],
+          [maxLon + lonPadding, minLat - latPadding],
+          [maxLon + lonPadding, maxLat + latPadding],
+          [minLon - lonPadding, maxLat + latPadding],
+          [minLon - lonPadding, minLat - latPadding],
+        ]],
+      },
+    };
+
+    return geoEqualEarth().fitExtent([[34, 34], [966, 470]], focus as any);
+  }, [originCoordinates, destinationCoordinates]);
   const path = useMemo(() => geoPath(projection), [projection]);
   const graticule = useMemo(() => geoGraticule().step([20, 20])(), []);
   const originPoint = originCoordinates ? projection(originCoordinates) : undefined;
