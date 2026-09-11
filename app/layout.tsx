@@ -8,6 +8,7 @@ import './summary-fix.css';
 import './ui-fixes.css';
 import './selection-fix.css';
 import './trip-extras.css';
+import './discovery-layout-fix.css';
 
 export const metadata: Metadata = {
   title: 'TripSignal | Travel intelligence, on your terms',
