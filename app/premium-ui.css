@@ -1,0 +1,293 @@
+:root {
+  --ts-premium-blue: #0071e3;
+  --ts-premium-blue-soft: rgba(0, 113, 227, .10);
+  --ts-premium-bg: #f5f7fa;
+  --ts-premium-surface: rgba(255,255,255,.78);
+  --ts-premium-ink: #111318;
+  --ts-premium-muted: #68707c;
+  --ts-premium-line: rgba(17,19,24,.10);
+}
+
+html[data-theme="daylight"] {
+  --bg: #f5f7fa;
+  --surface: rgba(255,255,255,.82);
+  --surface-2: #eef2f7;
+  --ink: #111318;
+  --muted: #68707c;
+  --quiet: #8d95a1;
+  --line: rgba(17,19,24,.10);
+  --line-strong: rgba(17,19,24,.16);
+  --accent: #0071e3;
+  --accent-soft: rgba(0,113,227,.10);
+  --success: #16834a;
+  --shadow: 0 24px 70px rgba(23,39,61,.08);
+}
+
+html[data-theme="redeye"] {
+  --bg: #0b0e12;
+  --surface: rgba(22,27,34,.78);
+  --surface-2: #171d25;
+  --ink: #f5f7fa;
+  --muted: #9aa3af;
+  --quiet: #697381;
+  --line: rgba(255,255,255,.09);
+  --line-strong: rgba(255,255,255,.14);
+  --accent: #4da3ff;
+  --accent-soft: rgba(77,163,255,.12);
+  --success: #55c98a;
+  --shadow: 0 28px 80px rgba(0,0,0,.34);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, Arial, sans-serif;
+  background:
+    radial-gradient(circle at 78% 8%, rgba(0,113,227,.09), transparent 30rem),
+    radial-gradient(circle at 8% 34%, rgba(90,150,255,.055), transparent 26rem),
+    var(--bg);
+}
+
+html[data-theme="redeye"] body {
+  background:
+    radial-gradient(circle at 76% 6%, rgba(56,137,255,.12), transparent 34rem),
+    radial-gradient(circle at 15% 38%, rgba(48,88,145,.08), transparent 28rem),
+    var(--bg);
+}
+
+h1, h2, h3, .hero h1, .builder-intro h1, .discovery-head h2, .preview-price, .pricing-preview-card>strong, .route-map-detail span, .route-map-detail strong, .route-row strong, .route-row b {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, Arial, sans-serif !important;
+}
+
+.button {
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-size: 13px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+}
+
+.button-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(0,113,227,.18);
+}
+
+.button-primary:hover { filter: brightness(.97); }
+.button-dark { background: var(--ink); color: var(--bg); }
+.button-light { background: var(--surface-2); color: var(--ink); }
+
+.site-header {
+  min-height: 76px;
+  position: relative;
+  z-index: 20;
+}
+
+.brand { letter-spacing: -.04em; }
+.nav-actions { gap: 14px; }
+
+.home-page .home-hero {
+  position: relative;
+  padding: 118px 0 112px;
+}
+
+.home-page .home-hero::before {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  right: 5%;
+  top: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,113,227,.12), rgba(0,113,227,0) 68%);
+  pointer-events: none;
+  filter: blur(4px);
+}
+
+.home-page .home-hero-copy { position: relative; z-index: 1; }
+.home-page .hero-kicker, .home-page .section-kicker {
+  color: var(--accent);
+  letter-spacing: .11em;
+  font-weight: 700;
+}
+
+.home-page .home-hero h1 {
+  font-size: clamp(54px, 7vw, 88px);
+  letter-spacing: -.065em;
+  line-height: .94;
+}
+
+.home-page .home-hero h1 em,
+.home-page .home-difference h2 em,
+.home-page .preview-heading h2 em,
+.home-page .home-cta h2 em {
+  color: var(--muted);
+}
+
+.home-page .lede { color: var(--muted); max-width: 580px; }
+
+.home-page .discovery {
+  padding-bottom: 132px;
+}
+
+.home-page .discovery-head {
+  margin-bottom: 34px;
+}
+
+.home-page .discovery-head h2 {
+  font-size: clamp(45px, 5.4vw, 70px);
+}
+
+.home-page .discovery-layout {
+  border: 1px solid var(--line) !important;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+}
+
+.home-page .discovery-controls {
+  padding: 32px;
+  border-right: 1px solid var(--line);
+}
+
+.home-page .discovery-field,
+.home-page .discovery-airport-search {
+  margin-bottom: 24px;
+}
+
+.home-page .discovery-field>label,
+.home-page .discovery-airport-search>label {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .04em;
+  text-transform: none;
+}
+
+.home-page .discovery-field input,
+.home-page .discovery-field select,
+.home-page .discovery-airport-search input,
+.home-page .discovery-price {
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: rgba(255,255,255,.62);
+  padding: 13px 14px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+}
+
+html[data-theme="redeye"] .home-page .discovery-field input,
+html[data-theme="redeye"] .home-page .discovery-field select,
+html[data-theme="redeye"] .home-page .discovery-airport-search input,
+html[data-theme="redeye"] .home-page .discovery-price {
+  background: rgba(255,255,255,.035);
+}
+
+.home-page .discovery-options { gap: 7px; }
+.home-page .discovery-options button {
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: var(--surface-2);
+  border-color: transparent;
+}
+.home-page .discovery-options button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.home-page .discovery-cta {
+  border-radius: 12px;
+  padding: 15px 18px;
+  font-size: 14px;
+}
+
+.home-page .route-map {
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 58% 44%, rgba(42,111,185,.20), transparent 42%),
+    radial-gradient(circle at 20% 78%, rgba(44,77,112,.20), transparent 35%),
+    #0b1118;
+}
+
+.home-page .route-map-top {
+  color: rgba(255,255,255,.48);
+}
+.home-page .route-map-top span:last-child { color: #69b2ff; }
+.home-page .map-land path { fill: #111a24; stroke: #263443; }
+.home-page .map-grid path { stroke: #243342; opacity: .45; }
+.home-page .map-route path,
+.home-page .map-route-preview { stroke: #69b2ff; }
+.home-page .map-route circle,
+.home-page .map-origin,
+.home-page .map-destination { fill: #69b2ff; }
+.home-page .route-map-detail {
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 16px;
+  background: rgba(8,13,19,.72);
+  box-shadow: 0 18px 50px rgba(0,0,0,.28);
+}
+
+.home-page .discovery-routes { margin-top: 0; padding: 0 32px 20px; border-top: 0; }
+.home-page .route-row { border-color: var(--line); padding: 17px 0; }
+.home-page .route-row:hover,
+.home-page .route-row.active { background: rgba(0,113,227,.055); }
+
+.home-page .home-difference {
+  padding: 34px 0 132px;
+}
+
+.home-page .home-steps article {
+  padding: 28px 0 0;
+  border-top: 1px solid var(--line);
+}
+
+.home-page .home-steps article span {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.home-page .product-preview {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+}
+
+.home-page .pricing-preview-card {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(20px);
+}
+
+.home-page .home-cta {
+  padding: 90px 0 112px;
+  border-top: 1px solid var(--line);
+}
+
+.home-page .footer {
+  border-top-color: var(--line);
+}
+
+@media (max-width: 900px) {
+  .home-page .discovery-controls { border-right: 0; }
+}
+
+@media (max-width: 640px) {
+  .home-page .home-hero { padding: 82px 0 78px; }
+  .home-page .home-hero h1 { font-size: 52px; }
+  .home-page .discovery-layout,
+  .home-page .product-preview,
+  .home-page .pricing-preview-card { border-radius: 20px; }
+  .home-page .discovery-controls { padding: 24px 20px; }
+  .home-page .discovery-routes { padding-inline: 20px; }
+}
