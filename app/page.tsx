@@ -4,6 +4,7 @@ import './home-product.css';
 import './home-next.css';
 import './home-final.css';
 import './premium-ui.css';
+import './flighty-ui.css';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
 import TripDiscoveryDirect from '@/components/trip-discovery-direct';
@@ -42,7 +43,7 @@ export default async function Home() {
       [user.id],
     );
     const status = billingResult.rows[0]?.subscription_status;
-    subscriptionActive = status === 'active' || status === 'trialing';
+    subscriptionActive = status === 'active' || status === 'trialing' || status === 'lifetime';
   }
 
   return (
@@ -55,16 +56,6 @@ export default async function Home() {
           <p className="lede">Tell TripSignal where you want to go and what you want to pay. We’ll watch the fares for you and alert you when we find a match.</p>
           <div className="hero-actions"><a className="button button-primary" href="#explore">Start watching</a><a className="text-link" href="#how-it-works">How it works</a></div>
           <p className="hero-note">You decide when to book. TripSignal keeps watching.</p>
-        </div>
-        <div className="home-hero-visual" aria-hidden="true">
-          <div className="hero-glow hero-glow-one" /><div className="hero-glow hero-glow-two" />
-          <div className="hero-signal-card">
-            <div className="hero-signal-top"><span>TRIPSIGNAL</span><span className="hero-live"><i /> WATCHING</span></div>
-            <div className="hero-route-stage"><div className="hero-airport hero-airport-from"><strong>FROM</strong><b>•••</b></div><div className="hero-route-line"><span /><span /><span /></div><div className="hero-airport hero-airport-to"><strong>TO</strong><b>•••</b></div></div>
-            <div className="hero-signal-footer"><span>FARE SIGNAL</span><strong>Searching for your match</strong></div>
-          </div>
-          <div className="hero-float hero-float-top"><span>SCAN</span><strong>Every 12–24h</strong></div>
-          <div className="hero-float hero-float-bottom"><span>ALERT</span><strong>Only when it matches</strong></div>
         </div>
       </section>
       <TripDiscoveryDirect accountEmail={user?.email ?? null} />
