@@ -64,11 +64,48 @@
 .home-page .pricing-tier .button { width: 100%; margin-top: 28px; }
 .home-page .home-cta { padding: 88px 0 104px !important; }
 .home-page .footer { padding-bottom: 34px !important; }
-html[data-theme="redeye"] { --ts-red-bg: #0d1218; --ts-red-surface: #171e26; --ts-red-muted: #a7b1bc; --ts-red-line: rgba(255,255,255,.11); }
-html[data-theme="redeye"] body { background: #0d1218; }
-html[data-theme="redeye"] .home-page { background: radial-gradient(900px 520px at 82% 7%, rgba(68,112,154,.18), transparent 68%), radial-gradient(760px 560px at 12% 46%, rgba(35,75,105,.12), transparent 72%), linear-gradient(135deg, #0a1016 0%, #111923 48%, #0b1118 100%) !important; background-attachment: fixed !important; }
-html[data-theme="redeye"] .home-page .discovery-layout, html[data-theme="redeye"] .home-page .watch-dashboard, html[data-theme="redeye"] .home-page .pricing-preview-card { background: #171e26 !important; }
-html[data-theme="redeye"] .home-page .route-map { background: #101821 !important; }
+
+/* Richer page atmosphere without decorative panels. */
+html[data-theme="daylight"] body {
+  background:
+    radial-gradient(900px 620px at 86% 4%, rgba(76,142,220,.14), transparent 67%),
+    radial-gradient(760px 560px at 8% 38%, rgba(125,188,190,.10), transparent 70%),
+    linear-gradient(145deg, #f7f8fa 0%, #eef3f8 48%, #f7f7f5 100%);
+  background-attachment: fixed;
+}
+html[data-theme="daylight"] .home-page {
+  background:
+    radial-gradient(1000px 700px at 90% 2%, rgba(74,140,220,.12), transparent 68%),
+    radial-gradient(900px 650px at 2% 34%, rgba(89,168,168,.09), transparent 70%),
+    linear-gradient(145deg, #f8f9fb 0%, #eef3f8 50%, #f8f8f6 100%) !important;
+  background-attachment: fixed !important;
+}
+
+html[data-theme="redeye"] {
+  --ts-red-bg: #10161d;
+  --ts-red-surface: #18212b;
+  --ts-red-muted: #a7b1bc;
+  --ts-red-line: rgba(255,255,255,.11);
+}
+html[data-theme="redeye"] body {
+  background:
+    radial-gradient(1050px 700px at 88% -4%, rgba(74,132,190,.24), transparent 65%),
+    radial-gradient(900px 680px at 4% 42%, rgba(43,91,125,.18), transparent 68%),
+    linear-gradient(145deg, #0b1117 0%, #141e28 48%, #0d141b 100%);
+  background-attachment: fixed;
+}
+html[data-theme="redeye"] .home-page {
+  background:
+    radial-gradient(1100px 720px at 88% -3%, rgba(76,140,201,.22), transparent 65%),
+    radial-gradient(900px 700px at 2% 38%, rgba(40,91,126,.18), transparent 68%),
+    linear-gradient(145deg, #0b1117 0%, #15212c 50%, #0c141c 100%) !important;
+  background-attachment: fixed !important;
+}
+html[data-theme="redeye"] .home-page .discovery-layout,
+html[data-theme="redeye"] .home-page .watch-dashboard,
+html[data-theme="redeye"] .home-page .pricing-preview-card { background: rgba(24,33,43,.88) !important; }
+html[data-theme="redeye"] .home-page .route-map { background: #111b24 !important; }
+
 @media (max-width: 1000px) {
   .home-page .discovery-head { grid-template-columns: 1fr !important; gap: 18px !important; }
   .home-page .discovery-layout { grid-template-columns: 1fr !important; grid-template-rows: auto auto auto !important; }
