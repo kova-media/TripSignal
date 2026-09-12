@@ -81,6 +81,66 @@ html[data-theme="daylight"] .home-page {
   background-attachment: fixed !important;
 }
 
+/* Daylight map: the map should belong to the light interface, not Redeye. */
+html[data-theme="daylight"] .home-page .route-map {
+  background: #f4f7fa !important;
+  color: #182431;
+  border-left: 1px solid rgba(30,55,80,.08);
+}
+html[data-theme="daylight"] .home-page .route-map-top {
+  color: #667585 !important;
+  border-bottom-color: #dbe3ea !important;
+}
+html[data-theme="daylight"] .home-page .route-map-top span:last-child {
+  color: #1769c2 !important;
+}
+html[data-theme="daylight"] .home-page .route-map .map-graticule {
+  fill: none;
+  stroke: #dbe4ec !important;
+  stroke-width: 1;
+}
+html[data-theme="daylight"] .home-page .route-map .map-countries path {
+  fill: #e4ebf2 !important;
+  stroke: #c7d3df !important;
+  stroke-width: .8;
+}
+html[data-theme="daylight"] .home-page .route-map .map-route {
+  fill: none;
+  stroke: #1478e6 !important;
+  stroke-width: 3.5;
+}
+html[data-theme="daylight"] .home-page .route-map .map-origin circle:first-child {
+  fill: #1478e6 !important;
+  stroke: #fff !important;
+}
+html[data-theme="daylight"] .home-page .route-map .map-origin circle:nth-child(2) {
+  fill: none;
+  stroke: rgba(20,120,230,.28) !important;
+}
+html[data-theme="daylight"] .home-page .route-map .map-selected-destination circle {
+  fill: #fff !important;
+  stroke: #1478e6 !important;
+  stroke-width: 3;
+}
+html[data-theme="daylight"] .home-page .route-map text {
+  fill: #334455 !important;
+}
+html[data-theme="daylight"] .home-page .route-map-detail {
+  background: #fff !important;
+  border-color: #dbe3ea !important;
+  color: #1a2633 !important;
+}
+html[data-theme="daylight"] .home-page .route-map-detail span,
+html[data-theme="daylight"] .home-page .route-map-detail small {
+  color: #1769c2 !important;
+}
+html[data-theme="daylight"] .home-page .route-map-detail strong {
+  color: #111820 !important;
+}
+html[data-theme="daylight"] .home-page .route-map-detail p {
+  color: #667585 !important;
+}
+
 html[data-theme="redeye"] {
   --ts-red-bg: #10161d;
   --ts-red-surface: #18212b;
