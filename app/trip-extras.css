@@ -54,21 +54,16 @@
   width: 100%;
 }
 
-.trip-extras-row {
+.trip-extras-row,
+.trip-extras-row-bottom {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
   width: 100% !important;
   margin: 0 !important;
 }
 
-.trip-extras-row-bottom {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  width: 75% !important;
-  margin: 10px auto 0 !important;
-}
+.trip-extras-row-bottom { margin-top: 14px !important; }
 
 .trip-extra-card,
 .home-page .trip-extra-card {
@@ -79,13 +74,15 @@
   overflow: hidden;
   padding: 0 !important;
   border: 1px solid var(--line-strong) !important;
-  border-radius: 12px !important;
+  border-radius: 14px !important;
   background: var(--surface) !important;
   color: var(--ink) !important;
   text-decoration: none;
   box-shadow: none !important;
   transition: transform .18s ease, border-color .18s ease;
 }
+
+.trip-extra-card[data-affiliate-vertical="transfers"] { display: none !important; }
 
 .trip-extra-card:hover,
 .home-page .trip-extra-card:hover {
@@ -96,7 +93,7 @@
 
 .trip-extra-image {
   position: relative;
-  height: 112px;
+  height: 150px;
   flex: none;
   overflow: hidden;
   background-position: center;
@@ -118,23 +115,23 @@
 .trip-extra-icon {
   position: absolute;
   z-index: 1;
-  left: 12px;
-  bottom: 11px;
+  left: 14px;
+  bottom: 13px;
   display: flex !important;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: 1px solid rgba(255,255,255,.38) !important;
-  border-radius: 9px !important;
+  border-radius: 10px !important;
   background: rgba(12,17,20,.42) !important;
   color: #fff !important;
   backdrop-filter: blur(8px);
 }
 
 .trip-extra-icon svg {
-  width: 19px !important;
-  height: 19px !important;
+  width: 20px !important;
+  height: 20px !important;
   color: #fff !important;
   stroke-width: 1.8;
 }
@@ -142,32 +139,31 @@
 .trip-extra-copy {
   display: grid !important;
   align-content: start;
-  gap: 5px !important;
-  min-width: 0;
-  min-height: 104px;
-  padding: 13px 13px 14px !important;
+  gap: 6px !important;
+  min-height: 118px;
+  padding: 16px 16px 17px !important;
 }
 
 .trip-extra-copy strong,
 .home-page .trip-extra-card strong {
   color: var(--ink) !important;
-  font-size: 13px !important;
+  font-size: 15px !important;
   font-weight: 650 !important;
-  letter-spacing: -.02em;
+  letter-spacing: -.025em;
 }
 
 .trip-extra-copy span,
 .home-page .trip-extra-card span {
   color: var(--muted) !important;
-  font-size: 10px !important;
-  line-height: 1.42 !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
 }
 
 .trip-extra-copy b,
 .home-page .trip-extra-card b {
   margin-top: auto;
   color: var(--accent) !important;
-  font-size: 10px !important;
+  font-size: 11px !important;
   font-weight: 650 !important;
 }
 
