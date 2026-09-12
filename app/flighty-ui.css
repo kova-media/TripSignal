@@ -1,395 +1,81 @@
 /* TripSignal product UI. Flighty-inspired principles: calm hierarchy, strong typography, useful density, restrained chrome. */
-.home-page {
-  background: var(--bg);
-  color: var(--ink);
-}
-
-.home-page .shell {
-  width: min(1320px, calc(100% - 64px));
-  margin-inline: auto;
-}
-
-.home-page .home-hero {
-  display: block !important;
-  min-height: 0 !important;
-  padding: 104px 0 92px !important;
-}
-
-.home-page .home-hero-copy {
-  max-width: 880px !important;
-}
-
-.home-page .home-hero h1 {
-  max-width: 900px !important;
-  font-size: clamp(64px, 8vw, 112px) !important;
-  line-height: .91 !important;
-  letter-spacing: -.075em !important;
-}
-
-.home-page .home-hero h1 em {
-  color: var(--muted);
-}
-
-.home-page .lede {
-  max-width: 650px !important;
-  margin-top: 30px !important;
-  font-size: 20px !important;
-  line-height: 1.55 !important;
-}
-
-.home-page .hero-actions {
-  margin-top: 34px !important;
-}
-
-.home-page .button,
-.home-page .button-primary {
-  min-height: 50px !important;
-  padding: 0 22px !important;
-  border-radius: 14px !important;
-  font-size: 15px !important;
-  font-weight: 650 !important;
-}
-
-.home-page .text-link {
-  font-size: 15px !important;
-}
-
-/* The old synthetic dashboard card added visual noise without helping the product story. */
-.home-page .home-hero-visual {
-  display: none !important;
-}
-
-.home-page .hero-note {
-  margin-top: 18px !important;
-  font-size: 13px !important;
-}
-
-.home-page .discovery {
-  padding: 22px 0 112px !important;
-}
-
-.home-page .discovery-head {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 420px) !important;
-  align-items: end !important;
-  gap: 60px !important;
-  margin-bottom: 34px !important;
-}
-
-.home-page .discovery-head h2 {
-  font-size: clamp(48px, 5.6vw, 76px) !important;
-  line-height: .94 !important;
-}
-
-.home-page .discovery-head > p {
-  margin: 0 !important;
-  font-size: 16px !important;
-  line-height: 1.55 !important;
-}
-
-.home-page .discovery-layout {
-  display: grid !important;
-  grid-template-columns: minmax(390px, .78fr) minmax(0, 1.22fr) !important;
-  align-items: stretch !important;
-  border: 1px solid var(--line-strong) !important;
-  border-radius: 24px !important;
-  background: var(--surface) !important;
-  box-shadow: var(--shadow) !important;
-  overflow: hidden !important;
-}
-
-.home-page .discovery-controls {
-  padding: 34px !important;
-  border-right: 1px solid var(--line) !important;
-}
-
-.home-page .discovery-field,
-.home-page .discovery-airport-search {
-  margin-bottom: 20px !important;
-}
-
-.home-page .discovery-field > label,
-.home-page .discovery-airport-search > label {
-  display: block;
-  margin-bottom: 8px !important;
-  color: var(--muted) !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-}
-
-.home-page .discovery-field input,
-.home-page .discovery-field select,
-.home-page .discovery-airport-search input,
-.home-page .discovery-price {
-  min-height: 54px !important;
-  border-radius: 14px !important;
-  font-size: 16px !important;
-}
-
-.home-page .discovery-airport-search small {
-  font-size: 12px !important;
-}
-
-.home-page .discovery-options {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 8px !important;
-}
-
-.home-page .discovery-options button {
-  min-height: 48px !important;
-  border-radius: 12px !important;
-  font-size: 14px !important;
-}
-
-.home-page .fare-target-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 10px;
-}
-
-.home-page .fare-target-head strong {
-  color: var(--ink);
-  font-size: 24px !important;
-  letter-spacing: -.04em;
-}
-
-.home-page .fare-target-slider {
-  display: none !important;
-}
-
-.home-page .fare-target-labels {
-  display: none !important;
-}
-
-.home-page .route-map {
-  min-width: 0 !important;
-  min-height: 620px !important;
-  background: var(--surface-2) !important;
-  border-radius: 0 !important;
-}
-
-.home-page .route-map-canvas {
-  min-height: 520px !important;
-}
-
-.home-page .route-map svg {
-  width: 100% !important;
-  height: 100% !important;
-  aspect-ratio: 1 / 1 !important;
-}
-
-.home-page .route-map-detail {
-  margin: 0 22px 22px !important;
-}
-
-.home-page .home-difference {
-  padding: 0 0 112px !important;
-  grid-template-columns: minmax(300px, .75fr) minmax(0, 1.25fr) !important;
-  gap: 84px !important;
-}
-
-.home-page .home-difference-copy {
-  position: static !important;
-}
-
-.home-page .home-difference h2,
-.home-page .preview-heading h2,
-.home-page .home-cta h2 {
-  font-size: clamp(48px, 5.4vw, 76px) !important;
-  line-height: .94 !important;
-}
-
-.home-page .home-steps article {
-  padding: 28px 0 32px 52px !important;
-}
-
-.home-page .home-steps article h3 {
-  font-size: 19px !important;
-}
-
-.home-page .home-steps article p {
-  font-size: 15px !important;
-}
-
-.home-page .product-preview {
-  padding: 0 0 112px !important;
-  margin: 0 !important;
-}
-
-.home-page .preview-heading {
-  margin-bottom: 30px !important;
-}
-
-.home-page .preview-heading > p:last-child {
-  font-size: 16px !important;
-}
-
-.home-page .watch-dashboard {
-  border-radius: 20px !important;
-  box-shadow: var(--shadow) !important;
-}
-
-.home-page .dashboard-head {
-  min-height: 76px !important;
-  padding: 20px 26px !important;
-}
-
-.home-page .dashboard-head span {
-  font-size: 13px !important;
-}
-
-.home-page .dashboard-head strong {
-  font-size: 28px !important;
-}
-
-.home-page .watch-row {
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  gap: 30px !important;
-  min-height: 118px !important;
-  padding: 24px 26px !important;
-}
-
-.home-page .watch-route {
-  display: grid !important;
-  grid-template-columns: auto 24px minmax(0, 1fr) !important;
-  justify-content: start !important;
-  gap: 10px !important;
-  font-size: 24px !important;
-}
-
-.home-page .watch-route small {
-  font-size: 12px !important;
-}
-
-.home-page .watch-fare {
-  min-width: 120px !important;
-}
-
-.home-page .watch-fare span,
-.home-page .watch-fare small {
-  font-size: 11px !important;
-}
-
-.home-page .watch-fare strong {
-  font-size: 20px !important;
-}
-
-.home-page .watch-pill {
-  min-height: 42px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  padding: 0 14px !important;
-  border-radius: 11px !important;
-  font-size: 11px !important;
-}
-
-.home-page .pricing-preview {
-  padding-bottom: 112px !important;
-}
-
-.home-page .pricing-preview-card {
-  border-radius: 22px !important;
-  overflow: hidden !important;
-  padding: 0 !important;
-}
-
-.home-page .pricing-tier {
-  padding: 42px !important;
-}
-
-.home-page .pricing-tier strong {
-  font-size: 64px !important;
-}
-
-.home-page .pricing-tier small {
-  font-size: 15px !important;
-}
-
-.home-page .pricing-tier .button {
-  width: 100%;
-  margin-top: 28px;
-}
-
-.home-page .home-cta {
-  padding: 88px 0 104px !important;
-}
-
-.home-page .footer {
-  padding-bottom: 34px !important;
-}
-
-/* Redeye stays premium without becoming pure black. */
-html[data-theme="redeye"] {
-  --ts-red-bg: #14171b;
-  --ts-red-surface: #1b1f24;
-  --ts-red-muted: #a7adb6;
-  --ts-red-line: rgba(255,255,255,.12);
-}
-
-html[data-theme="redeye"] .home-page {
-  background: #14171b;
-}
-
-html[data-theme="redeye"] .home-page .discovery-layout,
-html[data-theme="redeye"] .home-page .watch-dashboard,
-html[data-theme="redeye"] .home-page .pricing-preview-card {
-  background: #1b1f24 !important;
-}
-
-html[data-theme="redeye"] .home-page .route-map {
-  background: #171b20 !important;
-}
-
+.home-page { background: var(--bg); color: var(--ink); }
+.home-page .shell { width: min(1320px, calc(100% - 64px)); margin-inline: auto; }
+.home-page .home-hero { display: block !important; min-height: 0 !important; padding: 104px 0 92px !important; }
+.home-page .home-hero-copy { max-width: 880px !important; }
+.home-page .home-hero h1 { max-width: 900px !important; font-size: clamp(64px, 8vw, 112px) !important; line-height: .91 !important; letter-spacing: -.075em !important; }
+.home-page .home-hero h1 em { color: var(--muted); }
+.home-page .lede { max-width: 650px !important; margin-top: 30px !important; font-size: 20px !important; line-height: 1.55 !important; }
+.home-page .hero-actions { margin-top: 34px !important; }
+.home-page .button, .home-page .button-primary { min-height: 50px !important; padding: 0 22px !important; border-radius: 14px !important; font-size: 15px !important; font-weight: 650 !important; }
+.home-page .text-link { font-size: 15px !important; }
+.home-page .home-hero-visual { display: none !important; }
+.home-page .hero-note { margin-top: 18px !important; font-size: 13px !important; }
+.home-page .discovery { padding: 22px 0 112px !important; }
+.home-page .discovery-head { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(280px, 420px) !important; align-items: end !important; gap: 60px !important; margin-bottom: 34px !important; }
+.home-page .discovery-head h2 { font-size: clamp(48px, 5.6vw, 76px) !important; line-height: .94 !important; }
+.home-page .discovery-head > p { margin: 0 !important; font-size: 16px !important; line-height: 1.55 !important; }
+.home-page .discovery-layout { display: grid !important; grid-template-columns: minmax(390px, .78fr) minmax(0, 1.22fr) !important; align-items: stretch !important; border: 1px solid var(--line-strong) !important; border-radius: 24px !important; background: var(--surface) !important; box-shadow: var(--shadow) !important; overflow: hidden !important; }
+.home-page .discovery-controls { padding: 34px !important; border-right: 1px solid var(--line) !important; }
+.home-page .discovery-field, .home-page .discovery-airport-search { margin-bottom: 20px !important; }
+.home-page .discovery-field > label, .home-page .discovery-airport-search > label { display: block; margin-bottom: 8px !important; color: var(--muted) !important; font-size: 13px !important; font-weight: 600 !important; }
+.home-page .discovery-field input, .home-page .discovery-field select, .home-page .discovery-airport-search input, .home-page .discovery-price { min-height: 54px !important; border-radius: 14px !important; font-size: 16px !important; }
+.home-page .discovery-airport-search small { font-size: 12px !important; }
+.home-page .discovery-options { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+.home-page .discovery-options button { min-height: 48px !important; border-radius: 12px !important; font-size: 14px !important; }
+.home-page .fare-target-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
+.home-page .fare-target-head strong { color: var(--ink); font-size: 24px !important; letter-spacing: -.04em; }
+.home-page .fare-target-slider { display: block !important; width: 100% !important; height: 6px !important; margin: 12px 0 0 !important; accent-color: var(--accent) !important; cursor: pointer; }
+.home-page .fare-target-labels { display: flex !important; justify-content: space-between !important; margin-top: 9px !important; color: var(--quiet) !important; font-size: 11px !important; }
+.home-page .route-map { min-width: 0 !important; min-height: 0 !important; background: var(--surface-2) !important; border-radius: 0 !important; }
+.home-page .route-map-canvas { min-height: 0 !important; aspect-ratio: 1 / 1 !important; }
+.home-page .route-map svg { width: 100% !important; height: 100% !important; }
+.home-page .route-map-detail { margin: 0 22px 22px !important; }
+.home-page .home-difference { padding: 0 0 112px !important; grid-template-columns: minmax(300px, .75fr) minmax(0, 1.25fr) !important; gap: 84px !important; }
+.home-page .home-difference-copy { position: static !important; }
+.home-page .home-difference h2, .home-page .preview-heading h2, .home-page .home-cta h2 { font-size: clamp(48px, 5.4vw, 76px) !important; line-height: .94 !important; }
+.home-page .home-steps article { padding: 28px 0 32px 52px !important; }
+.home-page .home-steps article h3 { font-size: 19px !important; }
+.home-page .home-steps article p { font-size: 15px !important; }
+.home-page .product-preview { padding: 0 0 112px !important; margin: 0 !important; }
+.home-page .preview-heading { margin-bottom: 30px !important; }
+.home-page .preview-heading > p:last-child { font-size: 16px !important; }
+.home-page .watch-dashboard { border-radius: 20px !important; box-shadow: var(--shadow) !important; }
+.home-page .dashboard-head { min-height: 76px !important; padding: 20px 26px !important; }
+.home-page .dashboard-head span { font-size: 13px !important; }
+.home-page .dashboard-head strong { font-size: 28px !important; }
+.home-page .watch-row { grid-template-columns: minmax(0, 1fr) auto !important; gap: 30px !important; min-height: 118px !important; padding: 24px 26px !important; }
+.home-page .watch-route { display: grid !important; grid-template-columns: auto 24px minmax(0, 1fr) !important; justify-content: start !important; gap: 10px !important; font-size: 24px !important; }
+.home-page .watch-route small { font-size: 12px !important; }
+.home-page .watch-fare { min-width: 120px !important; }
+.home-page .watch-fare span, .home-page .watch-fare small { font-size: 11px !important; }
+.home-page .watch-fare strong { font-size: 20px !important; }
+.home-page .watch-pill { min-height: 42px !important; display: inline-flex !important; align-items: center !important; padding: 0 14px !important; border-radius: 11px !important; font-size: 11px !important; }
+.home-page .pricing-preview { padding-bottom: 112px !important; }
+.home-page .pricing-preview-card { border-radius: 22px !important; overflow: hidden !important; padding: 0 !important; }
+.home-page .pricing-tier { padding: 42px !important; }
+.home-page .pricing-tier strong { font-size: 64px !important; }
+.home-page .pricing-tier small { font-size: 15px !important; }
+.home-page .pricing-tier .button { width: 100%; margin-top: 28px; }
+.home-page .home-cta { padding: 88px 0 104px !important; }
+.home-page .footer { padding-bottom: 34px !important; }
+html[data-theme="redeye"] { --ts-red-bg: #171a1f; --ts-red-surface: #20252c; --ts-red-muted: #a9b0b9; --ts-red-line: rgba(255,255,255,.12); }
+html[data-theme="redeye"] .home-page { background: #171a1f; }
+html[data-theme="redeye"] .home-page .discovery-layout, html[data-theme="redeye"] .home-page .watch-dashboard, html[data-theme="redeye"] .home-page .pricing-preview-card { background: #20252c !important; }
+html[data-theme="redeye"] .home-page .route-map { background: #1b2026 !important; }
 @media (max-width: 1000px) {
-  .home-page .discovery-head {
-    grid-template-columns: 1fr !important;
-    gap: 18px !important;
-  }
-  .home-page .discovery-layout {
-    grid-template-columns: 1fr !important;
-  }
-  .home-page .discovery-controls {
-    border-right: 0 !important;
-    border-bottom: 1px solid var(--line) !important;
-  }
-  .home-page .route-map {
-    min-height: 0 !important;
-  }
+  .home-page .discovery-head { grid-template-columns: 1fr !important; gap: 18px !important; }
+  .home-page .discovery-layout { grid-template-columns: 1fr !important; }
+  .home-page .discovery-controls { border-right: 0 !important; border-bottom: 1px solid var(--line) !important; }
 }
-
 @media (max-width: 720px) {
-  .home-page .shell {
-    width: min(100% - 36px, 640px);
-  }
-  .home-page .home-hero {
-    padding: 72px 0 68px !important;
-  }
-  .home-page .home-hero h1 {
-    font-size: 56px !important;
-  }
-  .home-page .lede {
-    font-size: 17px !important;
-  }
-  .home-page .discovery-controls {
-    padding: 24px 20px !important;
-  }
-  .home-page .route-map-canvas {
-    min-height: 360px !important;
-  }
-  .home-page .watch-row {
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
-  }
-  .home-page .watch-fare {
-    text-align: left !important;
-  }
-  .home-page .watch-pill {
-    justify-self: start !important;
-  }
-  .home-page .pricing-tier {
-    padding: 30px 24px !important;
-  }
+  .home-page .shell { width: min(100% - 36px, 640px); }
+  .home-page .home-hero { padding: 72px 0 68px !important; }
+  .home-page .home-hero h1 { font-size: 56px !important; }
+  .home-page .lede { font-size: 17px !important; }
+  .home-page .discovery-controls { padding: 24px 20px !important; }
+  .home-page .watch-row { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .home-page .watch-fare { text-align: left !important; }
+  .home-page .watch-pill { justify-self: start !important; }
+  .home-page .pricing-tier { padding: 30px 24px !important; }
 }
