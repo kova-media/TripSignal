@@ -15,8 +15,9 @@
 .home-page .discovery-head { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(280px, 420px) !important; align-items: end !important; gap: 60px !important; margin-bottom: 34px !important; }
 .home-page .discovery-head h2 { font-size: clamp(48px, 5.6vw, 76px) !important; line-height: .94 !important; }
 .home-page .discovery-head > p { margin: 0 !important; font-size: 16px !important; line-height: 1.55 !important; }
-.home-page .discovery-layout { display: grid !important; grid-template-columns: minmax(390px, .78fr) minmax(0, 1.22fr) !important; align-items: stretch !important; border: 1px solid var(--line-strong) !important; border-radius: 24px !important; background: var(--surface) !important; box-shadow: var(--shadow) !important; overflow: hidden !important; }
-.home-page .discovery-controls { padding: 34px !important; border-right: 1px solid var(--line) !important; }
+.home-page .discovery-layout { display: grid !important; grid-template-columns: minmax(390px, .78fr) minmax(0, 1.22fr) !important; grid-template-rows: auto auto !important; align-items: stretch !important; border: 1px solid var(--line-strong) !important; border-radius: 24px !important; background: var(--surface) !important; box-shadow: var(--shadow) !important; overflow: hidden !important; }
+.home-page .discovery-controls { grid-column: 1 !important; grid-row: 1 / span 2 !important; padding: 34px !important; border-right: 1px solid var(--line) !important; }
+.home-page .route-map { grid-column: 2 !important; grid-row: 1 !important; }
 .home-page .discovery-field, .home-page .discovery-airport-search { margin-bottom: 20px !important; }
 .home-page .discovery-field > label, .home-page .discovery-airport-search > label { display: block; margin-bottom: 8px !important; color: var(--muted) !important; font-size: 13px !important; font-weight: 600 !important; }
 .home-page .discovery-field input, .home-page .discovery-field select, .home-page .discovery-airport-search input, .home-page .discovery-price { min-height: 54px !important; border-radius: 14px !important; font-size: 16px !important; }
@@ -25,7 +26,11 @@
 .home-page .discovery-options button { min-height: 48px !important; border-radius: 12px !important; font-size: 14px !important; }
 .home-page .fare-target-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
 .home-page .fare-target-head strong { color: var(--ink); font-size: 24px !important; letter-spacing: -.04em; }
-.home-page .fare-target-slider { display: block !important; width: 100% !important; height: 6px !important; margin: 12px 0 0 !important; accent-color: var(--accent) !important; cursor: pointer; }
+.home-page .fare-target-slider { display: block !important; width: 100% !important; height: 8px !important; margin: 12px 0 0 !important; appearance: none !important; -webkit-appearance: none !important; background: transparent !important; border: 0 !important; cursor: pointer; }
+.home-page .fare-target-slider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: var(--line-strong); }
+.home-page .fare-target-slider::-webkit-slider-thumb { width: 18px; height: 18px; margin-top: -6px; -webkit-appearance: none; appearance: none; border: 2px solid var(--surface); border-radius: 50%; background: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.24); }
+.home-page .fare-target-slider::-moz-range-track { height: 6px; border-radius: 999px; background: var(--line-strong); }
+.home-page .fare-target-slider::-moz-range-thumb { width: 14px; height: 14px; border: 2px solid var(--surface); border-radius: 50%; background: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.24); }
 .home-page .fare-target-labels { display: flex !important; justify-content: space-between !important; margin-top: 9px !important; color: var(--quiet) !important; font-size: 11px !important; }
 .home-page .route-map { min-width: 0 !important; min-height: 0 !important; background: var(--surface-2) !important; border-radius: 0 !important; }
 .home-page .route-map-canvas { min-height: 0 !important; aspect-ratio: 1 / 1 !important; }
@@ -59,14 +64,16 @@
 .home-page .pricing-tier .button { width: 100%; margin-top: 28px; }
 .home-page .home-cta { padding: 88px 0 104px !important; }
 .home-page .footer { padding-bottom: 34px !important; }
-html[data-theme="redeye"] { --ts-red-bg: #171a1f; --ts-red-surface: #20252c; --ts-red-muted: #a9b0b9; --ts-red-line: rgba(255,255,255,.12); }
-html[data-theme="redeye"] .home-page { background: #171a1f; }
-html[data-theme="redeye"] .home-page .discovery-layout, html[data-theme="redeye"] .home-page .watch-dashboard, html[data-theme="redeye"] .home-page .pricing-preview-card { background: #20252c !important; }
-html[data-theme="redeye"] .home-page .route-map { background: #1b2026 !important; }
+html[data-theme="redeye"] { --ts-red-bg: #0d1218; --ts-red-surface: #171e26; --ts-red-muted: #a7b1bc; --ts-red-line: rgba(255,255,255,.11); }
+html[data-theme="redeye"] body { background: #0d1218; }
+html[data-theme="redeye"] .home-page { background: radial-gradient(900px 520px at 82% 7%, rgba(68,112,154,.18), transparent 68%), radial-gradient(760px 560px at 12% 46%, rgba(35,75,105,.12), transparent 72%), linear-gradient(135deg, #0a1016 0%, #111923 48%, #0b1118 100%) !important; background-attachment: fixed !important; }
+html[data-theme="redeye"] .home-page .discovery-layout, html[data-theme="redeye"] .home-page .watch-dashboard, html[data-theme="redeye"] .home-page .pricing-preview-card { background: #171e26 !important; }
+html[data-theme="redeye"] .home-page .route-map { background: #101821 !important; }
 @media (max-width: 1000px) {
   .home-page .discovery-head { grid-template-columns: 1fr !important; gap: 18px !important; }
-  .home-page .discovery-layout { grid-template-columns: 1fr !important; }
-  .home-page .discovery-controls { border-right: 0 !important; border-bottom: 1px solid var(--line) !important; }
+  .home-page .discovery-layout { grid-template-columns: 1fr !important; grid-template-rows: auto auto auto !important; }
+  .home-page .discovery-controls { grid-column: 1 !important; grid-row: 1 !important; border-right: 0 !important; border-bottom: 1px solid var(--line) !important; }
+  .home-page .route-map { grid-column: 1 !important; grid-row: 2 !important; }
 }
 @media (max-width: 720px) {
   .home-page .shell { width: min(100% - 36px, 640px); }
