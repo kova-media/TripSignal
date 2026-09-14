@@ -1,4 +1,13 @@
-/* Final destination chooser layout cleanup. */
+/* Destination chooser owns destination targeting. Hide the legacy destination search that follows it. */
+.home-page .discovery-controls .destination-chooser-root ~ .discovery-airport-search {
+  display: none !important;
+}
+
+/* Hide the old destination-only field if it is wrapped in a field container. */
+.home-page .discovery-controls .destination-chooser-root ~ .discovery-field:has(.discovery-airport-search) {
+  display: none !important;
+}
+
 .home-page .discovery-controls .destination-portal-host {
   margin-bottom: 20px !important;
 }
@@ -32,15 +41,10 @@
   margin-top: 7px !important;
 }
 
-/* Keep the native select text clear of the disclosure control. */
 .home-page .discovery-controls select {
   box-sizing: border-box !important;
   width: 100% !important;
   padding-right: 58px !important;
-}
-
-/* Give the timeframe arrow a deliberate inset instead of pinning it to the edge. */
-.home-page .discovery-controls select {
   appearance: none !important;
   -webkit-appearance: none !important;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23aeb8c4' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
