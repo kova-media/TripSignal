@@ -1,9 +1,10 @@
-/* Destination chooser owns destination targeting. Hide the legacy destination search that follows it. */
-.home-page .discovery-controls .destination-chooser-root ~ .discovery-airport-search {
+/* Destination chooser owns destination targeting. Hide the legacy destination UI that follows it. */
+.home-page .discovery-controls .destination-portal-host ~ .discovery-airport-search,
+.home-page .discovery-controls .destination-portal-host ~ .discovery-field:has(.discovery-airport-search) {
   display: none !important;
 }
 
-/* Hide the old destination-only field if it is wrapped in a field container. */
+.home-page .discovery-controls .destination-chooser-root ~ .discovery-airport-search,
 .home-page .discovery-controls .destination-chooser-root ~ .discovery-field:has(.discovery-airport-search) {
   display: none !important;
 }
