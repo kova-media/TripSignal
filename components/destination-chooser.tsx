@@ -28,9 +28,14 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
     const fields = Array.from(document.querySelectorAll<HTMLElement>('.discovery-field'));
     const where = fields.find((field) => field.querySelector('label')?.textContent?.trim() === 'Where');
     if (!where) return;
+    const originalOptions = where.querySelector<HTMLElement>(':scope > .discovery-options');
+    if (originalOptions) originalOptions.style.display = 'none';
     where.classList.add('destination-portal-host');
     setHost(where);
-    return () => where.classList.remove('destination-portal-host');
+    return () => {
+      if (originalOptions) originalOptions.style.display = '';
+      where.classList.remove('destination-portal-host');
+    };
   }, []);
 
   useEffect(() => {
@@ -86,8 +91,8 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
   const portal = (
     <div className="destination-chooser-root">
       <div className="discovery-options">
-        <button type="button" className={mode === 'country' ? 'active' : ''} onClick={() => { setMode('country'); setOpen(false); }}>Country</button>
         <button type="button" className={mode === 'airport' ? 'active' : ''} onClick={() => { setMode('airport'); setOpen(false); }}>Specific airport</button>
+        <button type="button" className={mode === 'country' ? 'active' : ''} onClick={() => { setMode('country'); setOpen(false); }}>Country</button>
       </div>
 
       {mode === 'airport' ? (
