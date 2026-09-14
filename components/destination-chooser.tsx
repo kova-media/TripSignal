@@ -29,11 +29,14 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
     const where = fields.find((field) => field.querySelector('label')?.textContent?.trim() === 'Where');
     if (!where) return;
     const originalOptions = where.querySelector<HTMLElement>(':scope > .discovery-options');
+    const originalSearch = where.querySelector<HTMLElement>(':scope > .discovery-airport-search');
     if (originalOptions) originalOptions.style.display = 'none';
+    if (originalSearch) originalSearch.style.display = 'none';
     where.classList.add('destination-portal-host');
     setHost(where);
     return () => {
       if (originalOptions) originalOptions.style.display = '';
+      if (originalSearch) originalSearch.style.display = '';
       where.classList.remove('destination-portal-host');
     };
   }, []);
@@ -98,51 +101,25 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
       {mode === 'airport' ? (
         <div className="discovery-airport-search destination-chooser-search">
           <label htmlFor="airport-destination">Destination</label>
-          <input
-            id="airport-destination"
-            value={airportQuery}
-            onChange={(event) => { setAirportQuery(event.target.value); setAirport(null); setOpen(true); }}
-            onFocus={() => { if (airportQuery.trim().length >= 2) setOpen(true); }}
-            placeholder="Search city or airport"
-            autoComplete="off"
-            aria-autocomplete="list"
-            aria-expanded={open}
-          />
+          <input id="airport-destination" value={airportQuery} onChange={(event) => { setAirportQuery(event.target.value); setAirport(null); setOpen(true); }} onFocus={() => { if (airportQuery.trim().length >= 2) setOpen(true); }} placeholder="Search city or airport" autoComplete="off" aria-autocomplete="list" aria-expanded={open} />
           <small>{airport ? `${airport.iata_code} selected` : 'Search by city or airport name'}</small>
-          {open && airportResults.length > 0 && (
-            <div className="discovery-airport-results" role="listbox">
-              {airportResults.map((result) => (
-                <button type="button" className="discovery-airport-result" key={`${result.iata_code}-${result.name}`} onMouseDown={(event) => event.preventDefault()} onClick={() => { setAirport(result); setAirportQuery(`${result.municipality || result.name} (${result.iata_code})`); setOpen(false); }}>
-                  <strong>{result.municipality || result.name}</strong><span>{result.iata_code} · {result.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          {open && airportResults.length > 0 && <div className="discovery-airport-results" role="listbox">
+            {airportResults.map((result) => <button type="button" className="discovery-airport-result" key={`${result.iata_code}-${result.name}`} onMouseDown={(event) => event.preventDefault()} onClick={() => { setAirport(result); setAirportQuery(`${result.municipality || result.name} (${result.iata_code})`); setOpen(false); }}>
+              <strong>{result.municipality || result.name}</strong><span>{result.iata_code} · {result.name}</span>
+            </button>)}
+          </div>}
         </div>
       ) : (
         <div className="discovery-airport-search destination-chooser-search">
           <label htmlFor="discovery-country">Destination country</label>
-          <input
-            id="discovery-country"
-            value={countryQuery}
-            onChange={(event) => { setCountryQuery(event.target.value); setCountry(null); setOpen(true); }}
-            onFocus={() => { if (countryQuery.trim().length >= 2) setOpen(true); }}
-            placeholder="Search for a country"
-            autoComplete="off"
-            aria-autocomplete="list"
-            aria-expanded={open}
-          />
+          <input id="discovery-country" value={countryQuery} onChange={(event) => { setCountryQuery(event.target.value); setCountry(null); setOpen(true); }} onFocus={() => { if (countryQuery.trim().length >= 2) setOpen(true); }} placeholder="Search for a country" autoComplete="off" aria-autocomplete="list" aria-expanded={open} />
           <input id="discovery-country-code" type="hidden" value={country?.code ?? ''} readOnly />
           <small>{country ? `${country.code} selected · all major airports` : 'Flights into airports across the country'}</small>
-          {open && countryResults.length > 0 && (
-            <div className="discovery-airport-results" role="listbox">
-              {countryResults.map((result) => (
-                <button type="button" className="discovery-airport-result" key={result.code} onMouseDown={(event) => event.preventDefault()} onClick={() => { setCountry(result); setCountryQuery(result.name); setOpen(false); }}>
-                  <strong>{result.name}</strong><span>{result.code} · Search across the country</span>
-                </button>
-              ))}
-            </div>
-          )}
+          {open && countryResults.length > 0 && <div className="discovery-airport-results" role="listbox">
+            {countryResults.map((result) => <button type="button" className="discovery-airport-result" key={result.code} onMouseDown={(event) => event.preventDefault()} onClick={() => { setCountry(result); setCountryQuery(result.name); setOpen(false); }}>
+              <strong>{result.name}</strong><span>{result.code} · Search across the country</span>
+            </button>)}
+          </div>}
         </div>
       )}
     </div>
