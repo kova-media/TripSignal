@@ -21,7 +21,8 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
   const [country, setCountry] = useState<Country | null>(null);
   const [countryResults, setCountryResults] = useState<Country[]>([]);
   const [open, setOpen] = useState(false);
-  const requestId = useRef(0);
+  const airportRequestId = useRef(0);
+  const countryRequestId = useRef(0);
 
   useEffect(() => {
     const fields = Array.from(document.querySelectorAll<HTMLElement>('.discovery-field'));
@@ -38,7 +39,7 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
 
   useEffect(() => {
     const query = airportQuery.trim();
-    const id = ++requestId.current;
+    const id = ++airportRequestId.current;
     if (mode !== 'airport' || query.length < 2 || airport?.municipality === query) {
       setAirportResults([]);
       return;
@@ -49,10 +50,10 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
       try {
         const response = await fetch(`/api/airports?q=${encodeURIComponent(query)}`, { signal: controller.signal });
         const data = await response.json();
-        if (requestId.current !== id) return;
+        if (airportRequestId.current !== id) return;
         setAirportResults(Array.isArray(data.airports) ? data.airports : []);
       } catch {
-        if (!controller.signal.aborted && requestId.current === id) setAirportResults([]);
+        if (!controller.signal.aborted && airportRequestId.current === id) setAirportResults([]);
       }
     }, 140);
     return () => { window.clearTimeout(timer); controller.abort(); };
@@ -60,7 +61,7 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
 
   useEffect(() => {
     const query = countryQuery.trim();
-    const id = ++requestId.current;
+    const id = ++countryRequestId.current;
     if (mode !== 'country' || query.length < 2 || country?.name === query) {
       setCountryResults([]);
       return;
@@ -71,10 +72,10 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
       try {
         const response = await fetch(`/api/countries?q=${encodeURIComponent(query)}`, { signal: controller.signal });
         const data = await response.json();
-        if (requestId.current !== id) return;
+        if (countryRequestId.current !== id) return;
         setCountryResults(Array.isArray(data.countries) ? data.countries : []);
       } catch {
-        if (!controller.signal.aborted && requestId.current === id) setCountryResults([]);
+        if (!controller.signal.aborted && countryRequestId.current === id) setCountryResults([]);
       }
     }, 140);
     return () => { window.clearTimeout(timer); controller.abort(); };
@@ -83,7 +84,7 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
   if (!host) return null;
 
   const portal = (
-    <>
+    <div className="destination-chooser-root">
       <div className="discovery-options">
         <button type="button" className={mode === 'country' ? 'active' : ''} onClick={() => { setMode('country'); setOpen(false); }}>Country</button>
         <button type="button" className={mode === 'airport' ? 'active' : ''} onClick={() => { setMode('airport'); setOpen(false); }}>Specific airport</button>
@@ -139,7 +140,7 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
           )}
         </div>
       )}
-    </>
+    </div>
   );
 
   return createPortal(portal, host);
