@@ -6,7 +6,7 @@ import { sendAlertCreatedEmail, sendMagicLinkEmail } from '@/lib/email';
 
 type AlertInput = {
   origin: string;
-  destinationMode: 'region' | 'airport';
+  destinationMode: 'country' | 'airport';
   destination: string;
   maxPrice: number;
   airlineMode: string;
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as AlertInput;
     const origin = String(body.origin ?? '').trim().toUpperCase();
-    const destinationMode = body.destinationMode === 'airport' ? 'airport' : 'region';
+    const destinationMode = body.destinationMode === 'country' ? 'country' : 'airport';
     const destination = String(body.destination ?? '').trim();
     const maxPrice = Number(body.maxPrice);
     const passengers = Number(body.passengers ?? 1);
@@ -46,6 +46,7 @@ export async function POST(request: Request) {
 
     if (!/^[A-Z]{3}$/.test(origin)) return NextResponse.json({ error: 'Origin must be a three-letter airport code.' }, { status: 400 });
     if (destinationMode === 'airport' && !/^[A-Za-z]{3}$/.test(destination)) return NextResponse.json({ error: 'Destination airport must be a three-letter airport code.' }, { status: 400 });
+    if (destinationMode === 'country' && !/^[A-Za-z]{2}$/.test(destination)) return NextResponse.json({ error: 'Destination country must be a two-letter country code.' }, { status: 400 });
     if (!Number.isFinite(maxPrice) || maxPrice <= 0) return NextResponse.json({ error: 'Enter a valid maximum price.' }, { status: 400 });
     if (!Number.isInteger(passengers) || passengers < 1 || passengers > 9) return NextResponse.json({ error: 'Choose between 1 and 9 passengers.' }, { status: 400 });
     if (!['Daily', 'Weekly', 'Monthly'].includes(body.frequency)) return NextResponse.json({ error: 'Choose a valid search frequency.' }, { status: 400 });
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
     const criteria = {
       origin,
       destinationMode,
-      destination: destinationMode === 'airport' ? destination.toUpperCase() : destination,
+      destination: destinationMode === 'airport' ? destination.toUpperCase() : destination.toUpperCase(),
       maxPrice,
       airlineMode,
       maxStops: String(body.maxStops ?? '1'),
