@@ -1,5 +1,6 @@
 import { createQuery, getFlights, Passengers, type Flights } from 'fast-flights-ts';
 import type { FlightOffer, FlightProvider, FlightSearchCriteria, FlightSegment } from './types';
+import { getAirportsForCountry } from './country-airports';
 
 const EUROPE_AIRPORTS = [
   'AMS', 'FCO', 'MAD', 'BCN', 'LIS', 'CPH', 'FRA', 'MUC', 'BER', 'VIE', 'PRG', 'BUD',
@@ -138,15 +139,21 @@ class GoogleFlightsProvider implements FlightProvider {
 
   async search(criteria: FlightSearchCriteria): Promise<FlightOffer[]> {
     const destination = criteria.destination;
-    const destinations = destination.type === 'airport'
-      ? [destination.value]
-      : destination.type === 'airports'
-        ? destination.value
-        : destination.type === 'region'
-          ? REGION_AIRPORTS[destination.value] ?? []
-          : destination.type === 'city'
-            ? [destination.value]
-            : [];
+    let destinations: string[];
+
+    if (destination.type === 'airport') {
+      destinations = [destination.value];
+    } else if (destination.type === 'airports') {
+      destinations = destination.value;
+    } else if (destination.type === 'region') {
+      destinations = REGION_AIRPORTS[destination.value] ?? [];
+    } else if (destination.type === 'country') {
+      destinations = await getAirportsForCountry(destination.value);
+    } else if (destination.type === 'city') {
+      destinations = [destination.value];
+    } else {
+      destinations = [];
+    }
 
     if (destinations.length === 0) return [];
 
