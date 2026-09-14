@@ -5,7 +5,7 @@ import { sendFareSignalEmail } from './email';
 
 type AlertCriteria = {
   origin: string;
-  destinationMode: 'region' | 'airport';
+  destinationMode: 'country' | 'airport' | 'region';
   destination: string;
   maxPrice: number;
   airlineMode: string;
@@ -66,7 +66,9 @@ function buildCriteria(alert: AlertCriteria, salt = 0): FlightSearchCriteria {
     origin: alert.origin,
     destination: alert.destinationMode === 'airport'
       ? { type: 'airport', value: alert.destination.toUpperCase() }
-      : { type: 'region', value: alert.destination },
+      : alert.destinationMode === 'country'
+        ? { type: 'country', value: alert.destination.toUpperCase() }
+        : { type: 'region', value: alert.destination },
     maxPrice: alert.maxPrice,
     cabin: alert.cabin,
     airlines: allAirlines ? [] : [alert.airlineMode.toUpperCase()],
@@ -80,7 +82,11 @@ function buildCriteria(alert: AlertCriteria, salt = 0): FlightSearchCriteria {
 }
 
 export function summarizeAlert(alert: AlertCriteria) {
-  const destination = alert.destinationMode === 'airport' ? alert.destination.toUpperCase() : alert.destination;
+  const destination = alert.destinationMode === 'airport'
+    ? alert.destination.toUpperCase()
+    : alert.destinationMode === 'country'
+      ? alert.destination.toUpperCase()
+      : alert.destination;
   const cabin = alert.cabin === 'premium_economy' ? 'Premium economy' : alert.cabin === 'business' ? 'Business' : alert.cabin === 'first' ? 'First class' : 'Economy';
   return `${alert.origin} → ${destination} · ${cabin} · under $${alert.maxPrice.toLocaleString()} · ${alert.dateRange} · ${alert.frequency}`;
 }
