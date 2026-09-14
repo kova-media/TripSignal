@@ -1,11 +1,60 @@
-/* Destination chooser owns the destination UI. Hide the legacy controls that still sit beside it. */
-.home-page .destination-portal-host ~ .discovery-field:has(.discovery-airport-search),
-.home-page .destination-portal-host ~ .discovery-airport-search {
+/* Final destination chooser layout cleanup. */
+.home-page .discovery-controls .destination-portal-host {
+  margin-bottom: 20px !important;
+}
+
+.home-page .discovery-controls .destination-portal-host > label {
   display: none !important;
 }
 
-/* Give native select controls enough right padding for the disclosure arrow. */
-.home-page .discovery-field select,
+.home-page .discovery-controls .destination-chooser-root {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.home-page .discovery-controls .destination-chooser-root .discovery-options {
+  width: 100% !important;
+  margin: 0 0 18px !important;
+}
+
+.home-page .discovery-controls .destination-chooser-root .discovery-airport-search {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.home-page .discovery-controls .destination-chooser-root .discovery-airport-search > label {
+  display: block !important;
+  margin: 0 0 8px !important;
+}
+
+.home-page .discovery-controls .destination-chooser-root .discovery-airport-search small {
+  display: block !important;
+  margin-top: 7px !important;
+}
+
+/* Keep the native select text clear of the disclosure control. */
 .home-page .discovery-controls select {
-  padding-right: 56px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  padding-right: 58px !important;
+}
+
+/* Give the timeframe arrow a deliberate inset instead of pinning it to the edge. */
+.home-page .discovery-controls select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23aeb8c4' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 18px center !important;
+  background-size: 20px 20px !important;
+}
+
+@media (max-width: 720px) {
+  .home-page .discovery-controls .destination-portal-host {
+    margin-bottom: 16px !important;
+  }
+
+  .home-page .discovery-controls .destination-chooser-root .discovery-options {
+    margin-bottom: 16px !important;
+  }
 }
