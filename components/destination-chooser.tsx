@@ -30,13 +30,13 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
     if (!where) return;
     const originalOptions = where.querySelector<HTMLElement>(':scope > .discovery-options');
     const originalSearch = where.querySelector<HTMLElement>(':scope > .discovery-airport-search');
-    if (originalOptions) originalOptions.style.display = 'none';
-    if (originalSearch) originalSearch.style.display = 'none';
+    originalOptions?.style.setProperty('display', 'none', 'important');
+    originalSearch?.style.setProperty('display', 'none', 'important');
     where.classList.add('destination-portal-host');
     setHost(where);
     return () => {
-      if (originalOptions) originalOptions.style.display = '';
-      if (originalSearch) originalSearch.style.display = '';
+      if (originalOptions) originalOptions.style.removeProperty('display');
+      if (originalSearch) originalSearch.style.removeProperty('display');
       where.classList.remove('destination-portal-host');
     };
   }, []);
