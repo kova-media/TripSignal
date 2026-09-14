@@ -6,6 +6,32 @@
   anchor-name: --trip-create-alert;
 }
 
+.wrapper :global(.destination-portal-host) {
+  position: relative;
+}
+
+.wrapper :global(.destination-portal-host > :not(.destination-chooser-root)) {
+  display: none;
+}
+
+.wrapper :global(.destination-portal-host .destination-chooser-root) {
+  display: block;
+}
+
+.wrapper :global(.destination-chooser-root .discovery-options) {
+  position: relative;
+  z-index: 2;
+}
+
+.wrapper :global(.destination-chooser-root .destination-chooser-search) {
+  position: relative;
+  z-index: 3;
+}
+
+.wrapper :global(.destination-chooser-search .discovery-airport-results) {
+  z-index: 20;
+}
+
 .message {
   margin: 12px 0 0;
   color: var(--ink);
