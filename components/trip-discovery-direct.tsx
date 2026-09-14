@@ -23,11 +23,6 @@ function selectedCabin(root: HTMLElement) {
   return active?.textContent?.trim() ?? 'Premium economy';
 }
 
-function selectedDestinationMode(root: HTMLElement): DestinationMode {
-  const active = root.querySelector<HTMLButtonElement>('.destination-portal-host .discovery-options button.active');
-  return active?.textContent?.trim() === 'Country' ? 'country' : 'airport';
-}
-
 function airportCode(inputValue: string) {
   const match = inputValue.match(/\(([A-Za-z]{3})\)$/);
   return match?.[1]?.toUpperCase() ?? '';
@@ -77,17 +72,16 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
 
     const root = event.currentTarget;
     const origin = airportCode(valueOf(root, 'airport-from'));
-    const mode = destinationMode;
     const destinationInput = valueOf(root, 'airport-destination');
     const countryCode = valueOf(root, 'discovery-country-code');
-    const destination = mode === 'country' ? countryCode : airportCode(destinationInput);
+    const destination = destinationMode === 'country' ? countryCode : airportCode(destinationInput);
     const specificDate = valueOf(root, 'discovery-date');
     const dateRange = specificDate ? 'Custom dates' : valueOf(root, 'discovery-window');
     const email = accountEmail ?? valueOf(root, 'discovery-email');
     const cabin = selectedCabin(root);
     const payload = {
       origin,
-      destinationMode: mode,
+      destinationMode,
       destination,
       maxPrice: Number(valueOf(root, 'discovery-budget')),
       airlineMode: valueOf(root, 'discovery-airline'),
@@ -127,7 +121,6 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
     <div className={`${styles.wrapper}${accountEmail ? ' account-bound' : ''}`} data-trip-discovery-direct onClickCapture={handleClick} aria-busy={submitting}>
       <TripDiscovery />
       <DestinationChooser onModeChange={setDestinationMode} />
-      {destinationMode === 'country' && <input id="discovery-country-code" type="hidden" value="" readOnly aria-hidden="true" />}
       {success && <p className={`${styles.message} discovery-direct-success`} role="status">{success}</p>}
       {error && <p className={`${styles.message} ${styles.error} discovery-direct-error`} role="alert">{error}</p>}
       {submitting && <p className={`${styles.message} ${styles.status} discovery-direct-status`} role="status">Creating your alert…</p>}
