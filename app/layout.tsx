@@ -11,6 +11,7 @@ import './trip-extras.css';
 import './discovery-layout-fix.css';
 import './premium-ui.css';
 import './flighty-ui.css';
+import './destination-cleanup.css';
 
 export const metadata: Metadata = {
   title: 'TripSignal | Travel intelligence, on your terms',
