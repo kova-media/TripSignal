@@ -3,12 +3,15 @@
 import { MouseEvent, ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import TripDiscovery from '@/components/trip-discovery';
+import DestinationChooser from '@/components/destination-chooser';
 import styles from './trip-discovery-direct.module.css';
 
 type DiscoveryDirectProps = {
   children?: ReactNode;
   accountEmail?: string | null;
 };
+
+type DestinationMode = 'country' | 'airport';
 
 function valueOf(root: HTMLElement, id: string) {
   const element = root.querySelector<HTMLInputElement | HTMLSelectElement>(`#${id}`);
@@ -20,11 +23,9 @@ function selectedCabin(root: HTMLElement) {
   return active?.textContent?.trim() ?? 'Premium economy';
 }
 
-function selectedDestinationMode(root: HTMLElement) {
-  const fields = Array.from(root.querySelectorAll<HTMLElement>('.discovery-field'));
-  const whereField = fields.find((field) => field.querySelector('label')?.textContent?.trim() === 'Where');
-  const active = whereField?.querySelector<HTMLButtonElement>('.discovery-options button.active');
-  return active?.textContent?.trim() === 'Region' ? 'region' : 'airport';
+function selectedDestinationMode(root: HTMLElement): DestinationMode {
+  const active = root.querySelector<HTMLButtonElement>('.destination-portal-host .discovery-options button.active');
+  return active?.textContent?.trim() === 'Country' ? 'country' : 'airport';
 }
 
 function airportCode(inputValue: string) {
@@ -43,6 +44,7 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [destinationMode, setDestinationMode] = useState<DestinationMode>('airport');
 
   useEffect(() => {
     if (!accountEmail) return;
@@ -75,16 +77,17 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
 
     const root = event.currentTarget;
     const origin = airportCode(valueOf(root, 'airport-from'));
-    const destinationMode = selectedDestinationMode(root) as 'region' | 'airport';
+    const mode = destinationMode;
     const destinationInput = valueOf(root, 'airport-destination');
-    const destination = destinationMode === 'region' ? valueOf(root, 'discovery-region') : airportCode(destinationInput);
+    const countryCode = valueOf(root, 'discovery-country-code');
+    const destination = mode === 'country' ? countryCode : airportCode(destinationInput);
     const specificDate = valueOf(root, 'discovery-date');
     const dateRange = specificDate ? 'Custom dates' : valueOf(root, 'discovery-window');
     const email = accountEmail ?? valueOf(root, 'discovery-email');
     const cabin = selectedCabin(root);
     const payload = {
       origin,
-      destinationMode,
+      destinationMode: mode,
       destination,
       maxPrice: Number(valueOf(root, 'discovery-budget')),
       airlineMode: valueOf(root, 'discovery-airline'),
@@ -123,6 +126,8 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
   return (
     <div className={`${styles.wrapper}${accountEmail ? ' account-bound' : ''}`} data-trip-discovery-direct onClickCapture={handleClick} aria-busy={submitting}>
       <TripDiscovery />
+      <DestinationChooser onModeChange={setDestinationMode} />
+      {destinationMode === 'country' && <input id="discovery-country-code" type="hidden" value="" readOnly aria-hidden="true" />}
       {success && <p className={`${styles.message} discovery-direct-success`} role="status">{success}</p>}
       {error && <p className={`${styles.message} ${styles.error} discovery-direct-error`} role="alert">{error}</p>}
       {submitting && <p className={`${styles.message} ${styles.status} discovery-direct-status`} role="status">Creating your alert…</p>}
