@@ -126,6 +126,7 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
             aria-autocomplete="list"
             aria-expanded={open}
           />
+          <input id="discovery-country-code" type="hidden" value={country?.code ?? ''} readOnly />
           <small>{country ? `${country.code} selected · all major airports` : 'Flights into airports across the country'}</small>
           {open && countryResults.length > 0 && (
             <div className="discovery-airport-results" role="listbox">
