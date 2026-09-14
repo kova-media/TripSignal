@@ -1,0 +1,11 @@
+/* Destination chooser owns the destination UI. Hide the legacy controls that still sit beside it. */
+.home-page .destination-portal-host ~ .discovery-field:has(.discovery-airport-search),
+.home-page .destination-portal-host ~ .discovery-airport-search {
+  display: none !important;
+}
+
+/* Give native select controls enough right padding for the disclosure arrow. */
+.home-page .discovery-field select,
+.home-page .discovery-controls select {
+  padding-right: 56px !important;
+}
