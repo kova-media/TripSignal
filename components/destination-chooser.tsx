@@ -52,7 +52,6 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
       setAirportResults([]);
       return;
     }
-
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       try {
@@ -74,7 +73,6 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
       setCountryResults([]);
       return;
     }
-
     const controller = new AbortController();
     const timer = window.setTimeout(async () => {
       try {
