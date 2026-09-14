@@ -1,0 +1,26 @@
+/* Final destination chooser spacing cleanup. */
+.home-page .discovery-controls .discovery-field:has(.discovery-options) {
+  margin-bottom: 14px !important;
+}
+
+.home-page .discovery-controls .discovery-field:has(.discovery-options) + .discovery-airport-search {
+  margin-top: -2px !important;
+  margin-bottom: 28px !important;
+}
+
+.home-page .discovery-controls .discovery-airport-search + .discovery-field {
+  margin-top: 0 !important;
+}
+
+.home-page .discovery-controls .discovery-airport-search small {
+  display: block !important;
+  margin-top: 7px !important;
+}
+
+.home-page .discovery-controls .discovery-airport-search + .discovery-field > label {
+  margin-top: 0 !important;
+}
+
+.home-page .discovery-controls select {
+  padding-right: 58px !important;
+}
