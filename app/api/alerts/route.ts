@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     const criteria = {
       origin,
       destinationMode,
-      destination: destinationMode === 'airport' ? destination.toUpperCase() : destination.toUpperCase(),
+      destination: destination.toUpperCase(),
       maxPrice,
       airlineMode,
       maxStops: String(body.maxStops ?? '1'),
@@ -106,7 +106,10 @@ export async function POST(request: Request) {
 
       if (plan !== 'pro') {
         const alertCountResult = await client.query<{ count: string }>(
-          'select count(*)::text as count from alerts where user_id = $1',
+          `select count(*)::text as count
+           from alerts
+           where user_id = $1
+             and created_at >= date_trunc('month', now())`,
           [userId],
         );
         const alertCount = Number(alertCountResult.rows[0]?.count ?? 0);
@@ -115,9 +118,10 @@ export async function POST(request: Request) {
           await client.query('ROLLBACK');
           return NextResponse.json(
             {
-              error: 'Free accounts can have one alert. Upgrade to TripSignal Pro to create unlimited alerts.',
+              error: 'Free accounts can create one new watch each month. Upgrade to TripSignal Pro to create unlimited watches.',
               code: 'FREE_ALERT_LIMIT',
               limit: 1,
+              period: 'month',
             },
             { status: 403 },
           );
