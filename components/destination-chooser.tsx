@@ -17,23 +17,28 @@ type DestinationChooserProps = {
 
 function syncTripDiscoveryAirport(result: Airport) {
   const value = `${result.municipality || result.name} (${result.iata_code})`;
-  const searches = Array.from(document.querySelectorAll<HTMLElement>('.discovery-airport-search'));
-  const originalSearch = searches.find((element) => {
-    if (element.classList.contains('destination-chooser-search')) return false;
-    return element.querySelector('label')?.textContent?.trim() === 'Destination';
-  });
-  const input = originalSearch?.querySelector<HTMLInputElement>('input');
+  const input = document.querySelector<HTMLInputElement>('#explore input#airport-destination:not(.destination-chooser-search input)')
+    ?? Array.from(document.querySelectorAll<HTMLInputElement>('#airport-destination')).find((element) => !element.closest('.destination-chooser-search'));
   if (!input) return;
 
   const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
   setter?.call(input, value);
   input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true }));
 
-  window.setTimeout(() => {
-    const buttons = Array.from(originalSearch?.querySelectorAll<HTMLButtonElement>('.discovery-airport-result') ?? []);
+  let attempts = 0;
+  const findAndSelect = () => {
+    attempts += 1;
+    const search = input.closest('.discovery-airport-search');
+    const buttons = Array.from(search?.querySelectorAll<HTMLButtonElement>('.discovery-airport-result') ?? []);
     const match = buttons.find((button) => button.textContent?.includes(result.iata_code));
-    match?.click();
-  }, 450);
+    if (match) {
+      match.click();
+      return;
+    }
+    if (attempts < 20) window.setTimeout(findAndSelect, 150);
+  };
+  window.setTimeout(findAndSelect, 150);
 }
 
 export default function DestinationChooser({ onModeChange, onDestinationChange }: DestinationChooserProps) {
