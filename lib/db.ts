@@ -87,11 +87,15 @@ export async function ensureSchema() {
         email text not null,
         user_id uuid references users(id) on delete set null,
         criteria jsonb not null,
-        frequency text not null check (frequency in ('Weekly', 'Monthly')),
+        frequency text not null check (frequency in ('Daily', 'Weekly', 'Monthly')),
         active boolean not null default true,
         last_checked_at timestamptz,
         created_at timestamptz not null default now()
       );
+
+      -- Upgrade databases created before Daily frequency was supported.
+      alter table alerts drop constraint if exists alerts_frequency_check;
+      alter table alerts add constraint alerts_frequency_check check (frequency in ('Daily', 'Weekly', 'Monthly'));
 
       alter table alerts add column if not exists user_id uuid references users(id) on delete set null;
       create index if not exists alerts_user_idx on alerts (user_id, created_at desc);
