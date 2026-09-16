@@ -12,7 +12,7 @@ export default async function AlertsPage() {
 
   return (
     <main className="alerts-page">
-      <SiteHeader authenticated={Boolean(currentUser)} primaryHref={currentUser ? '/profile' : undefined} primaryLabel={currentUser ? 'Profile' : undefined} />
+      <SiteHeader backHref="/" backLabel="Home" authenticated={Boolean(currentUser)} primaryHref={currentUser ? '/profile' : undefined} primaryLabel={currentUser ? 'Profile' : undefined} />
       <section className="shell" style={{ paddingBlock: '48px 96px' }}>
         <div style={{ maxWidth: 1180, margin: '0 auto' }}>
           <div style={{ marginBottom: 28 }}>
