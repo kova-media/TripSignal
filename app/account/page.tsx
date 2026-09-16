@@ -93,7 +93,7 @@ export default async function AccountPage() {
                     </div>
                     <div className={styles.alertRight}>
                       <span className={`${styles.status} ${!alert.active ? styles.paused : ''}`}><i className={styles.dot} />{alert.active ? 'Watching' : 'Paused'}</span>
-                      <AlertActions id={alert.id} />
+                      <AlertActions id={alert.id} active={alert.active} />
                     </div>
                   </article>
                 ))}
