@@ -126,7 +126,6 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
               setCountry(result);
               setCountryQuery(result.name);
               setOpen(false);
-              window.dispatchEvent(new CustomEvent<DestinationSelection>('tripsignal:destination-change', { detail: { mode: 'country', country: result } }));
             }}>
               <strong>{result.name}</strong><span>{result.code} · Search across the country</span>
             </button>)}
