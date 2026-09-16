@@ -23,7 +23,7 @@ export default function RefundsPage() {
           <p>TripSignal Pro is currently an annual subscription. If you purchased a Pro subscription and decide it is not right for you, you may request a refund within 30 days of the initial purchase.</p>
 
           <h2>2. How to request a refund</h2>
-          <p>Email <a href="mailto:alerts@tripsignal.travel">alerts@tripsignal.travel</a> from the email address associated with your TripSignal account. Include the account email and the date of purchase so we can locate the subscription.</p>
+          <p>Use the <a href="/contact">TripSignal contact form</a> to request a refund. Include the email address associated with your TripSignal account and the date of purchase so we can locate the subscription.</p>
 
           <h2>3. Refund processing</h2>
           <p>Approved refunds are returned through the original payment method. Processing time can depend on the payment provider and your financial institution.</p>
