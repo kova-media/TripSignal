@@ -10,18 +10,11 @@ function tripDays(value: string): [number, number] {
     default: return [7, 21];
   }
 }
-
 function windowStart(value: string): string {
   const days = value === 'Next 3 months' ? 14 : value === 'Next 6 months' ? 30 : value === 'Next 12 months' ? 60 : 30;
-  const date = new Date();
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
+  const date = new Date(); date.setUTCDate(date.getUTCDate() + days); return date.toISOString().slice(0, 10);
 }
-
-function destinationScope(mode: string, value: string): DestinationScope {
-  if (mode === 'airport') return { type: 'airport', value };
-  return { type: 'region', value };
-}
+function destinationScope(mode: string, value: string): DestinationScope { if (mode === 'airport') return { type: 'airport', value }; return { type: 'region', value }; }
 
 export async function POST(request: Request) {
   try {
@@ -37,29 +30,16 @@ export async function POST(request: Request) {
     const contact = body.contact && typeof body.contact === 'object' ? body.contact : null;
     const contactType = String(contact?.type ?? '');
     const contactValue = String(contact?.value ?? '').trim();
-
-    if (!/^[A-Z]{3}$/.test(origin)) {
-      return NextResponse.json({ error: 'Origin must be a three-letter airport code.' }, { status: 400 });
-    }
-    if (destinationMode === 'airport' && !/^[A-Z]{3}$/.test(destinationAirport)) {
-      return NextResponse.json({ error: 'Destination airport must be a three-letter airport code.' }, { status: 400 });
-    }
-    if (!Number.isFinite(maxPrice) || maxPrice <= 0) {
-      return NextResponse.json({ error: 'Enter a valid maximum price.' }, { status: 400 });
-    }
-    if (contactType !== 'email' && contactType !== 'sms') {
-      return NextResponse.json({ error: 'Choose how you want to receive TripSignal alerts.' }, { status: 400 });
-    }
-    if (contactType === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactValue)) {
-      return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
-    }
-    if (contactType === 'sms' && contactValue.replace(/\D/g, '').length < 10) {
-      return NextResponse.json({ error: 'Enter a valid mobile phone number.' }, { status: 400 });
-    }
-
+    if (!/^[A-Z]{3}$/.test(origin)) return NextResponse.json({ error: 'Origin must be a three-letter airport code.' }, { status: 400 });
+    if (destinationMode === 'airport' && !/^[A-Z]{3}$/.test(destinationAirport)) return NextResponse.json({ error: 'Destination airport must be a three-letter airport code.' }, { status: 400 });
+    if (!Number.isFinite(maxPrice) || maxPrice <= 0) return NextResponse.json({ error: 'Enter a valid maximum price.' }, { status: 400 });
+    if (contactType !== 'email' && contactType !== 'sms') return NextResponse.json({ error: 'Choose how you want to receive TripSignal alerts.' }, { status: 400 });
+    if (contactType === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactValue)) return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
+    if (contactType === 'sms' && contactValue.replace(/\D/g, '').length < 10) return NextResponse.json({ error: 'Enter a valid mobile phone number.' }, { status: 400 });
     const criteria: FlightSearchCriteria = {
       origin,
       destination: destinationScope(destinationMode, destinationMode === 'airport' ? destinationAirport : destination),
+      tripType: body.tripType === 'one-way' ? 'one-way' : 'round-trip',
       maxPrice,
       cabin: (body.cabin ?? 'economy') as CabinClass,
       airlines: airlineMode === 'all' ? [] : [airlineMode.toUpperCase()],
@@ -70,23 +50,9 @@ export async function POST(request: Request) {
       departureEnd: windowStart(String(body.dateRange ?? 'Next 12 months')),
       passengers: 1,
     };
-
     const provider = getFlightProvider();
     const offers = await provider.search(criteria);
-
-    return NextResponse.json({
-      provider: provider.name,
-      searched: {
-        origin: criteria.origin,
-        destination: destinationMode === 'airport' ? destinationAirport : destination,
-        destinationMode,
-        departureDate: criteria.departureStart,
-        tripDays: minTripDays,
-        airline: airlineMode === 'all' ? 'all' : airlineMode.toUpperCase(),
-        contactType,
-      },
-      offers,
-    });
+    return NextResponse.json({ provider: provider.name, searched: { origin: criteria.origin, destination: destinationMode === 'airport' ? destinationAirport : destination, destinationMode, tripType: criteria.tripType, departureDate: criteria.departureStart, tripDays: minTripDays, airline: airlineMode === 'all' ? 'all' : airlineMode.toUpperCase(), contactType }, offers });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Flight search failed.';
     console.error('TripSignal flight search error:', error);
