@@ -12,6 +12,7 @@ import './discovery-layout-fix.css';
 import './premium-ui.css';
 import './flighty-ui.css';
 import './destination-cleanup.css';
+import './airplane-cursor.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
