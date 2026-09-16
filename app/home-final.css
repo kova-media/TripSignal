@@ -12,8 +12,57 @@
 .home-page .footer-links{display:flex;align-items:center;justify-content:center;gap:18px;color:var(--quiet)}
 .home-page .footer-links a:hover{color:var(--ink)}
 
+/* Center the entire page content, not only the hero. */
+.home-page .discovery-head{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;margin-inline:auto}
+.home-page .discovery-head h2,.home-page .discovery-head>p{max-width:760px;margin-inline:auto;text-align:center}
+.home-page .discovery-head>p{max-width:620px}
+.home-page .discovery-layout{margin-inline:auto}
+.home-page .discovery-controls{text-align:center}
+.home-page .discovery-field>label{text-align:center}
+.home-page .discovery-options{justify-content:center}
+.home-page .benchmark-head{justify-content:center}
+.home-page .benchmark-labels{text-align:center}
+.home-page .benchmark p{text-align:center}
+.home-page .discovery-cta{display:block;margin-inline:auto}
+.home-page .discovery-routes-head{text-align:center}
+.home-page .route-row{text-align:center}
+.home-page .route-row>span:last-child{text-align:center}
+.home-page .route-row small,.home-page .route-row strong,.home-page .route-row b{text-align:center}
+
+.home-page .home-difference{display:flex;flex-direction:column;align-items:center;gap:44px;text-align:center;margin-inline:auto}
+.home-page .home-difference-copy{width:100%;max-width:760px;text-align:center}
+.home-page .home-difference h2{max-width:760px;margin-inline:auto;text-align:center}
+.home-page .home-steps{width:100%;max-width:980px;margin-inline:auto}
+.home-page .home-steps article{text-align:center}
+.home-page .home-steps span{margin-inline:auto}
+.home-page .home-steps p{max-width:280px;margin-inline:auto}
+
+.home-page .product-preview{text-align:center}
+.home-page .preview-heading{max-width:760px;margin-inline:auto;text-align:center}
+.home-page .preview-heading h2,.home-page .preview-heading>p:last-child{margin-inline:auto;text-align:center}
+.home-page .watch-dashboard{margin-inline:auto;text-align:center}
+.home-page .dashboard-head{justify-content:center}
+.home-page .watch-row{text-align:center}
+.home-page .watch-route,.home-page .watch-fare{align-items:center}
+.home-page .watch-pill{justify-self:center}
+.home-page .empty-watches{text-align:center}
+
+.home-page .pricing-preview{text-align:center}
+.home-page .pricing-preview-card{max-width:1000px;margin-inline:auto}
+.home-page .pricing-tier{text-align:center}
+.home-page .pricing-tier .button{margin-inline:auto}
+
+.home-page .home-cta{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-inline:auto}
+.home-page .home-cta h2{margin-inline:auto;text-align:center}
+.home-page .home-cta>div{width:100%}
+.home-page .home-cta>.button{margin-inline:auto}
+
 @media (max-width: 600px){
   .home-page .home-hero-copy{max-width:none}
   .home-page .footer{grid-template-columns:1fr;gap:14px}
-  .home-page .footer-links{justify-content:flex-start;flex-wrap:wrap}
+  .home-page .footer-links{justify-content:center;flex-wrap:wrap}
+  .home-page .home-steps{grid-template-columns:1fr}
+  .home-page .discovery-head{gap:14px}
+  .home-page .discovery-layout{grid-template-columns:1fr!important}
+  .home-page .discovery-controls{text-align:center}
 }
