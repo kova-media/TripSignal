@@ -12,7 +12,6 @@
 .home-page .footer-links{display:flex;align-items:center;justify-content:center;gap:18px;color:var(--quiet)}
 .home-page .footer-links a:hover{color:var(--ink)}
 
-/* Center the entire page content, not only the hero. */
 .home-page .discovery-head{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;margin-inline:auto}
 .home-page .discovery-head h2,.home-page .discovery-head>p{max-width:760px;margin-inline:auto;text-align:center}
 .home-page .discovery-head>p{max-width:620px}
@@ -51,18 +50,31 @@
 .home-page .pricing-preview-card{max-width:1000px;margin-inline:auto}
 .home-page .pricing-tier{text-align:center}
 .home-page .pricing-tier .button{margin-inline:auto}
+.home-page .pricing-tier:first-child{background:#fffefa;color:#151817}
+.home-page .pricing-tier:first-child>span,.home-page .pricing-tier:first-child>small{color:#6f7471}
+.home-page .pricing-tier:first-child>strong{color:#151817}
+.home-page .pricing-tier:first-child .button{background:#151817;color:#fff}
+.home-page .pricing-tier + .pricing-tier{border-left:1px solid var(--line)}
 
 .home-page .home-cta{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-inline:auto}
 .home-page .home-cta h2{margin-inline:auto;text-align:center}
 .home-page .home-cta>div{width:100%}
 .home-page .home-cta>.button{margin-inline:auto}
 
-@media (max-width: 600px){
+/* Keep the builder's field names left aligned while the surrounding homepage remains centered. */
+.home-page .discovery-controls{text-align:left!important}
+.home-page .discovery-controls label,.home-page .discovery-controls legend,.home-page .discovery-controls .discovery-airport-search>label,.home-page .discovery-controls .discovery-field>label{width:100%;text-align:left!important;align-self:flex-start}
+.home-page .discovery-controls input,.home-page .discovery-controls select{text-align:left}
+.home-page .discovery-controls .discovery-options{justify-content:flex-start}
+.home-page .discovery-controls .benchmark-head{justify-content:space-between}
+.home-page .discovery-controls .benchmark-labels,.home-page .discovery-controls .benchmark p{text-align:left}
+
+@media (max-width:600px){
   .home-page .home-hero-copy{max-width:none}
   .home-page .footer{grid-template-columns:1fr;gap:14px}
   .home-page .footer-links{justify-content:center;flex-wrap:wrap}
   .home-page .home-steps{grid-template-columns:1fr}
   .home-page .discovery-head{gap:14px}
   .home-page .discovery-layout{grid-template-columns:1fr!important}
-  .home-page .discovery-controls{text-align:center}
+  .home-page .discovery-controls{text-align:left!important}
 }
