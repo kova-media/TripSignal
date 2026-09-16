@@ -9,7 +9,11 @@
 .home-page .discovery-layout{grid-template-columns:minmax(280px,.62fr) minmax(0,1.38fr)!important;gap:0!important}
 .home-page .route-map{width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;transform:none!important}
 .home-page .route-map svg{width:100%!important;height:100%!important;aspect-ratio:1/1!important;max-width:none!important;max-height:none!important}
+.home-page .footer-links{display:flex;align-items:center;justify-content:center;gap:18px;color:var(--quiet)}
+.home-page .footer-links a:hover{color:var(--ink)}
 
 @media (max-width: 600px){
   .home-page .home-hero-copy{max-width:none}
+  .home-page .footer{grid-template-columns:1fr;gap:14px}
+  .home-page .footer-links{justify-content:flex-start;flex-wrap:wrap}
 }
