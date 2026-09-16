@@ -10,33 +10,33 @@
 .button-primary,
 .button-dark,
 .button-light {
-  min-height: var(--control-height);
-  border-radius: var(--control-radius);
-  padding: 0 20px;
-  font-size: 14px;
-  font-weight: 700;
+  min-height: var(--control-height) !important;
+  border-radius: var(--control-radius) !important;
+  padding: 0 20px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
 }
 
 .discovery-options button,
 .option,
 .tripType button {
-  min-height: var(--selector-height);
-  border: 1px solid var(--line-strong);
-  border-radius: var(--control-radius);
-  background: transparent;
-  color: var(--muted);
-  padding: 0 14px;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: none;
+  min-height: var(--selector-height) !important;
+  border: 1px solid var(--line-strong) !important;
+  border-radius: var(--control-radius) !important;
+  background: transparent !important;
+  color: var(--muted) !important;
+  padding: 0 14px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
   transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
 }
 
 .discovery-options button:hover,
 .option:hover,
 .tripType button:hover {
-  border-color: var(--accent);
-  color: var(--ink);
+  border-color: var(--accent) !important;
+  color: var(--ink) !important;
 }
 
 .discovery-options button.active,
@@ -53,5 +53,5 @@
 .discovery-airport-search input,
 .builder-form select,
 .builder-form input {
-  border-radius: var(--control-radius);
+  border-radius: var(--control-radius) !important;
 }
