@@ -2,61 +2,68 @@
   anchor-scope: --trip-create-alert;
 }
 
-.wrapper :global(.discovery-cta) {
-  anchor-name: --trip-create-alert;
+.tripType {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  max-width: 620px;
+  margin: 0 auto 18px;
+  padding: 12px 14px;
+  border: 1px solid var(--line, #dedfda);
+  background: var(--card, #fffefa);
 }
 
-.wrapper :global(.destination-portal-host) {
-  position: relative;
+.tripType > span {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-.wrapper :global(.destination-portal-host > :not(.destination-chooser-root)) {
-  display: none;
+.tripType > div {
+  display: flex;
+  gap: 6px;
 }
 
-.wrapper :global(.destination-portal-host .destination-chooser-root) {
-  display: block;
-}
-
-.wrapper :global(.destination-chooser-root .discovery-options) {
-  position: relative;
-  z-index: 2;
-}
-
-.wrapper :global(.destination-chooser-root .destination-chooser-search) {
-  position: relative;
-  z-index: 3;
-}
-
-.wrapper :global(.destination-chooser-search .discovery-airport-results) {
-  z-index: 20;
-}
-
-.message {
-  margin: 12px 0 0;
+.tripType button {
+  border: 1px solid var(--line, #dedfda);
+  background: transparent;
   color: var(--ink);
+  border-radius: 5px;
+  padding: 8px 13px;
+  font: inherit;
   font-size: 13px;
-  line-height: 1.5;
+  font-weight: 700;
+  cursor: pointer;
 }
+
+.tripType button.tripTypeActive {
+  background: var(--ink);
+  color: var(--card, #fffefa);
+  border-color: var(--ink);
+}
+
+.wrapper :global(.discovery-cta) { anchor-name: --trip-create-alert; }
+.wrapper :global(.destination-portal-host) { position: relative; }
+.wrapper :global(.destination-portal-host > :not(.destination-chooser-root)) { display: none; }
+.wrapper :global(.destination-portal-host .destination-chooser-root) { display: block; }
+.wrapper :global(.destination-chooser-root .discovery-options) { position: relative; z-index: 2; }
+.wrapper :global(.destination-chooser-root .destination-chooser-search) { position: relative; z-index: 3; }
+.wrapper :global(.destination-chooser-search .discovery-airport-results) { z-index: 20; }
+
+.message { margin: 12px 0 0; color: var(--ink); font-size: 13px; line-height: 1.5; }
 
 @supports (position-anchor: --trip-create-alert) and (top: anchor(bottom)) {
-  .message {
-    position: absolute;
-    position-anchor: --trip-create-alert;
-    top: calc(anchor(bottom) + 12px);
-    left: anchor(left);
-    width: anchor-size(width);
-    max-width: 100%;
-    margin: 0;
-    z-index: 5;
-    pointer-events: none;
-  }
+  .message { position: absolute; position-anchor: --trip-create-alert; top: calc(anchor(bottom) + 12px); left: anchor(left); width: anchor-size(width); max-width: 100%; margin: 0; z-index: 5; pointer-events: none; }
 }
 
-.error {
-  color: #d88a8a;
-}
+.error { color: #d88a8a; }
+.status { color: var(--muted); }
 
-.status {
-  color: var(--muted);
+@media (max-width: 640px) {
+  .tripType { align-items: flex-start; flex-direction: column; }
+  .tripType > div { width: 100%; }
+  .tripType button { flex: 1; }
 }
