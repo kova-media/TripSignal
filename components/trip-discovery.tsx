@@ -11,6 +11,9 @@ type DestinationMode = 'region' | 'airport';
 type Airport = { iata_code: string; name: string; municipality?: string; iso_country?: string; latitude?: number; longitude?: number };
 type Coordinate = [number, number];
 type Frequency = 'Daily' | 'Weekly' | 'Monthly';
+type DestinationSelection =
+  | { mode: 'airport'; airport: Airport }
+  | { mode: 'country'; country: { code: string; name: string } };
 
 const regions = ['Europe', 'North America', 'South America', 'Asia', 'Africa', 'Middle East', 'Oceania'];
 const cabinOptions = ['Economy', 'Premium economy', 'Business', 'First class'];
@@ -131,6 +134,34 @@ export default function TripDiscovery() {
   const [dateRange, setDateRange] = useState('Next 12 months');
   const [frequency, setFrequency] = useState<Frequency>('Weekly');
   const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    const handleDestinationChange = (event: Event) => {
+      const detail = (event as CustomEvent<DestinationSelection>).detail;
+      if (!detail) return;
+
+      if (detail.mode === 'airport') {
+        const airport = detail.airport;
+        setDestinationMode('airport');
+        setDestinationAirport(airport.iata_code);
+        setDestinationSearch(`${airport.municipality || airport.name} (${airport.iata_code})`);
+        setDestinationCoordinate(
+          airport.latitude != null && airport.longitude != null
+            ? [airport.longitude, airport.latitude]
+            : airportCoordinates[airport.iata_code]
+        );
+        return;
+      }
+
+      setDestinationMode('region');
+      setDestinationSearch(detail.country.name);
+      setDestinationAirport('');
+      setDestinationCoordinate(undefined);
+    };
+
+    window.addEventListener('tripsignal:destination-change', handleDestinationChange);
+    return () => window.removeEventListener('tripsignal:destination-change', handleDestinationChange);
+  }, []);
 
   const budgetValue = Number(budget) || 0;
   const destinationCoordinates = destinationCoordinate ?? (destinationAirport ? airportCoordinates[destinationAirport] : undefined);
