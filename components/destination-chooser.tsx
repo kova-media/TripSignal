@@ -3,37 +3,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-type Mode = 'airport' | 'country';
-type Airport = { iata_code: string; name: string; municipality?: string };
-type Country = { code: string; name: string };
+export type Mode = 'airport' | 'country';
+export type Airport = { iata_code: string; name: string; municipality?: string; iso_country?: string; latitude?: number; longitude?: number };
+export type Country = { code: string; name: string };
+export type DestinationSelection =
+  | { mode: 'airport'; airport: Airport }
+  | { mode: 'country'; country: Country };
 
 type DestinationChooserProps = {
   onModeChange?: (mode: Mode) => void;
+  onDestinationChange?: (selection: DestinationSelection) => void;
 };
 
-function syncTripDiscoveryAirport(result: Airport) {
-  const fields = Array.from(document.querySelectorAll<HTMLElement>('.discovery-field'));
-  const where = fields.find((field) => field.querySelector('label')?.textContent?.trim() === 'Where');
-  if (!where) return;
-
-  const originalSearch = Array.from(where.querySelectorAll<HTMLElement>('.discovery-airport-search'))
-    .find((element) => !element.classList.contains('destination-chooser-search'));
-  const input = originalSearch?.querySelector<HTMLInputElement>('input');
-  if (!input) return;
-
-  const value = `${result.municipality || result.name} (${result.iata_code})`;
-  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
-  setter?.call(input, value);
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-
-  window.setTimeout(() => {
-    const buttons = Array.from(originalSearch?.querySelectorAll<HTMLButtonElement>('.discovery-airport-result') ?? []);
-    const match = buttons.find((button) => button.textContent?.includes(result.iata_code));
-    match?.click();
-  }, 300);
-}
-
-export default function DestinationChooser({ onModeChange }: DestinationChooserProps) {
+export default function DestinationChooser({ onModeChange, onDestinationChange }: DestinationChooserProps) {
   const [host, setHost] = useState<HTMLElement | null>(null);
   const [mode, setMode] = useState<Mode>('airport');
   const [airportQuery, setAirportQuery] = useState('');
@@ -123,7 +105,12 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
           <input id="airport-destination" value={airportQuery} onChange={(event) => { setAirportQuery(event.target.value); setAirport(null); setOpen(true); }} onFocus={() => { if (airportQuery.trim().length >= 2) setOpen(true); }} placeholder="Search city or airport" autoComplete="off" aria-autocomplete="list" aria-expanded={open} />
           <small>{airport ? `${airport.iata_code} selected` : 'Search by city or airport name'}</small>
           {open && airportResults.length > 0 && <div className="discovery-airport-results" role="listbox">
-            {airportResults.map((result) => <button type="button" className="discovery-airport-result" key={`${result.iata_code}-${result.name}`} onMouseDown={(event) => event.preventDefault()} onClick={() => { setAirport(result); setAirportQuery(`${result.municipality || result.name} (${result.iata_code})`); setOpen(false); syncTripDiscoveryAirport(result); }}>
+            {airportResults.map((result) => <button type="button" className="discovery-airport-result" key={`${result.iata_code}-${result.name}`} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+              setAirport(result);
+              setAirportQuery(`${result.municipality || result.name} (${result.iata_code})`);
+              setOpen(false);
+              onDestinationChange?.({ mode: 'airport', airport: result });
+            }}>
               <strong>{result.municipality || result.name}</strong><span>{result.iata_code} · {result.name}</span>
             </button>)}
           </div>}
@@ -135,9 +122,14 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
           <input id="discovery-country-code" type="hidden" value={country?.code ?? ''} readOnly />
           <small>{country ? `${country.code} selected · all major airports` : 'Flights into airports across the country'}</small>
           {open && countryResults.length > 0 && <div className="discovery-airport-results" role="listbox">
-            {countryResults.map((result) => <button type="button" className="discovery-airport-result" key={result.code} onMouseDown={(event) => event.preventDefault()} onClick={() => { setCountry(result); setCountryQuery(result.name); setOpen(false); }}>
-                <strong>{result.name}</strong><span>{result.code} · Search across the country</span>
-              </button>)}
+            {countryResults.map((result) => <button type="button" className="discovery-airport-result" key={result.code} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+              setCountry(result);
+              setCountryQuery(result.name);
+              setOpen(false);
+              onDestinationChange?.({ mode: 'country', country: result });
+            }}>
+              <strong>{result.name}</strong><span>{result.code} · Search across the country</span>
+            </button>)}
           </div>}
         </div>
       )}
