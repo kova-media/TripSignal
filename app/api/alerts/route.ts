@@ -8,10 +8,11 @@ type AlertInput = {
   origin: string;
   destinationMode: 'country' | 'airport';
   destination: string;
+  tripType?: 'round-trip' | 'one-way';
   maxPrice: number;
   airlineMode: string;
   maxStops: string;
-  tripLength: string;
+  tripLength?: string;
   dateRange: string;
   dateStart?: string;
   dateEnd?: string;
@@ -21,13 +22,8 @@ type AlertInput = {
   email?: string;
 };
 
-function validEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function validDate(value: string) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T00:00:00Z`).getTime());
-}
+function validEmail(email: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+function validDate(value: string) { return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T00:00:00Z`).getTime()); }
 
 export async function POST(request: Request) {
   try {
@@ -35,6 +31,7 @@ export async function POST(request: Request) {
     const origin = String(body.origin ?? '').trim().toUpperCase();
     const destinationMode = body.destinationMode === 'country' ? 'country' : 'airport';
     const destination = String(body.destination ?? '').trim();
+    const tripType = body.tripType === 'one-way' ? 'one-way' : 'round-trip';
     const maxPrice = Number(body.maxPrice);
     const passengers = Number(body.passengers ?? 1);
     const dateRange = String(body.dateRange ?? 'Next 12 months').trim();
@@ -62,6 +59,7 @@ export async function POST(request: Request) {
       origin,
       destinationMode,
       destination: destination.toUpperCase(),
+      tripType,
       maxPrice,
       airlineMode,
       maxStops: String(body.maxStops ?? '1'),
@@ -75,14 +73,11 @@ export async function POST(request: Request) {
     } as const;
 
     await ensureSchema();
-
     const currentUser = await getCurrentUser();
     let userId = currentUser?.id;
     let signInEmailSent = false;
     const email = currentUser?.email ?? String(body.email ?? '').trim().toLowerCase();
-
     if (!validEmail(email)) return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
-
     if (!userId) {
       const account = await createMagicLink(email);
       await sendMagicLinkEmail(email, account.url);
@@ -93,85 +88,37 @@ export async function POST(request: Request) {
     const db = getDb();
     const client = await db.connect();
     let alertId = '';
-
     try {
       await client.query('BEGIN');
       await client.query('select pg_advisory_xact_lock(hashtextextended($1, 0))', [userId]);
-
-      const accountResult = await client.query<{ plan: string }>(
-        'select plan from users where id = $1 limit 1',
-        [userId],
-      );
+      const accountResult = await client.query<{ plan: string }>('select plan from users where id = $1 limit 1', [userId]);
       const plan = accountResult.rows[0]?.plan ?? 'free';
-
       if (plan !== 'pro') {
-        const alertCountResult = await client.query<{ count: string }>(
-          `select count(*)::text as count
-           from alerts
-           where user_id = $1
-             and created_at >= date_trunc('month', now())`,
-          [userId],
-        );
-        const alertCount = Number(alertCountResult.rows[0]?.count ?? 0);
-
-        if (alertCount >= 1) {
+        const alertCountResult = await client.query<{ count: string }>(`select count(*)::text as count from alerts where user_id = $1 and created_at >= date_trunc('month', now())`, [userId]);
+        if (Number(alertCountResult.rows[0]?.count ?? 0) >= 1) {
           await client.query('ROLLBACK');
-          return NextResponse.json(
-            {
-              error: 'Free accounts can create one new watch each month. Upgrade to TripSignal Pro to create unlimited watches.',
-              code: 'FREE_ALERT_LIMIT',
-              limit: 1,
-              period: 'month',
-            },
-            { status: 403 },
-          );
+          return NextResponse.json({ error: 'Free accounts can create one new watch each month. Upgrade to TripSignal Pro to create unlimited watches.', code: 'FREE_ALERT_LIMIT', limit: 1, period: 'month' }, { status: 403 });
         }
       }
-
-      const inserted = await client.query<{ id: string }>(
-        `insert into alerts (email, user_id, criteria, frequency)
-         values ($1, $2, $3::jsonb, $4)
-         returning id`,
-        [email, userId, JSON.stringify(criteria), criteria.frequency],
-      );
+      const inserted = await client.query<{ id: string }>(`insert into alerts (email, user_id, criteria, frequency) values ($1, $2, $3::jsonb, $4) returning id`, [email, userId, JSON.stringify(criteria), criteria.frequency]);
       alertId = inserted.rows[0]?.id ?? '';
       if (!alertId) throw new Error('Could not create alert.');
-
       await client.query('COMMIT');
     } catch (error) {
       try { await client.query('ROLLBACK'); } catch {}
       throw error;
-    } finally {
-      client.release();
-    }
+    } finally { client.release(); }
 
     let confirmationError = '';
-    try {
-      await sendAlertCreatedEmail(email, summarizeAlert(criteria));
-    } catch (error) {
-      confirmationError = error instanceof Error ? error.message : 'Confirmation email failed.';
-      console.error('TripSignal confirmation email error:', error);
-    }
+    try { await sendAlertCreatedEmail(email, summarizeAlert(criteria)); }
+    catch (error) { confirmationError = error instanceof Error ? error.message : 'Confirmation email failed.'; console.error('TripSignal confirmation email error:', error); }
 
     let searchError = '';
     let offers: Awaited<ReturnType<typeof runAlertSearch>>['offers'] = [];
-    try {
-      const result = await runAlertSearch(alertId, email, criteria);
-      offers = result.offers;
-    } catch (error) {
-      searchError = error instanceof Error ? error.message : 'Initial fare search failed.';
-      console.error('TripSignal initial alert search error:', error);
-    }
+    try { offers = (await runAlertSearch(alertId, email, criteria)).offers; }
+    catch (error) { searchError = error instanceof Error ? error.message : 'Initial fare search failed.'; console.error('TripSignal initial alert search error:', error); }
 
-    return NextResponse.json({
-      alertId,
-      active: true,
-      accountCreated: !currentUser,
-      signInEmailSent,
-      offers,
-      confirmationSent: !confirmationError,
-      warning: confirmationError || searchError || undefined,
-    });
+    return NextResponse.json({ alertId, active: true, accountCreated: !currentUser, signInEmailSent, offers, confirmationSent: !confirmationError, warning: confirmationError || searchError || undefined });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Could not create alert.';
     console.error('TripSignal alert creation error:', error);
