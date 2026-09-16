@@ -38,8 +38,7 @@ export default async function Home() {
          and criteria ? 'destination'
          and criteria ? 'maxPrice'
          and lower(coalesce(criteria->>'destination', '')) not in ('any destination', 'any airport')
-       order by created_at desc
-       limit 3`,
+       order by created_at desc`,
       [user.id],
     );
     watches = result.rows;
