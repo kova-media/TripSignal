@@ -15,6 +15,27 @@ type DestinationChooserProps = {
   onDestinationChange?: (selection: DestinationSelection) => void;
 };
 
+function syncTripDiscoveryAirport(result: Airport) {
+  const value = `${result.municipality || result.name} (${result.iata_code})`;
+  const searches = Array.from(document.querySelectorAll<HTMLElement>('.discovery-airport-search'));
+  const originalSearch = searches.find((element) => {
+    if (element.classList.contains('destination-chooser-search')) return false;
+    return element.querySelector('label')?.textContent?.trim() === 'Destination';
+  });
+  const input = originalSearch?.querySelector<HTMLInputElement>('input');
+  if (!input) return;
+
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set;
+  setter?.call(input, value);
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+
+  window.setTimeout(() => {
+    const buttons = Array.from(originalSearch?.querySelectorAll<HTMLButtonElement>('.discovery-airport-result') ?? []);
+    const match = buttons.find((button) => button.textContent?.includes(result.iata_code));
+    match?.click();
+  }, 450);
+}
+
 export default function DestinationChooser({ onModeChange, onDestinationChange }: DestinationChooserProps) {
   const [host, setHost] = useState<HTMLElement | null>(null);
   const [mode, setMode] = useState<Mode>('airport');
@@ -110,6 +131,7 @@ export default function DestinationChooser({ onModeChange, onDestinationChange }
               setAirportQuery(`${result.municipality || result.name} (${result.iata_code})`);
               setOpen(false);
               onDestinationChange?.({ mode: 'airport', airport: result });
+              syncTripDiscoveryAirport(result);
             }}>
               <strong>{result.municipality || result.name}</strong><span>{result.iata_code} · {result.name}</span>
             </button>)}
