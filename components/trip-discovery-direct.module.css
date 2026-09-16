@@ -15,38 +15,39 @@
 .tripType {
   position: static;
   order: 7;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
+  display: block;
   width: 100%;
   margin: 0 0 20px;
-  padding: 0 0 20px;
-  border-bottom: 1px solid var(--line);
+  padding: 0;
+  border: 0;
 }
 
 .tripType > span {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--muted);
 }
 
 .tripTypeOptions {
-  display: flex;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
 }
 
 .tripType button {
+  min-height: 48px;
+  width: 100%;
   border: 1px solid var(--line-strong);
   background: transparent;
   color: var(--muted);
-  border-radius: 5px;
-  padding: 8px 13px;
+  border-radius: 12px;
+  padding: 0 14px;
   font: inherit;
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -87,17 +88,11 @@
 .status { color: var(--muted); }
 
 @media (max-width: 640px) {
-  .tripType {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 10px;
-  }
-
   .tripTypeOptions {
     width: 100%;
   }
 
   .tripType button {
-    flex: 1;
+    min-height: 48px;
   }
 }
