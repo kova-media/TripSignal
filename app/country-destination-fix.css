@@ -1,0 +1,3 @@
+.country-destination-selected ~ .discovery-field:has(#discovery-region) {
+  display: none !important;
+}
