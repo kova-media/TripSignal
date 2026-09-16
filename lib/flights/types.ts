@@ -1,4 +1,5 @@
 export type CabinClass = 'economy' | 'premium_economy' | 'business' | 'first';
+export type FlightTripType = 'round-trip' | 'one-way';
 
 export type DestinationScope =
   | { type: 'anywhere' }
@@ -11,6 +12,7 @@ export type DestinationScope =
 export interface FlightSearchCriteria {
   origin: string;
   destination: DestinationScope;
+  tripType: FlightTripType;
   maxPrice: number;
   cabin: CabinClass;
   airlines: string[];
