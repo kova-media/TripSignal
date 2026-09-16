@@ -2,16 +2,23 @@
   anchor-scope: --trip-create-alert;
 }
 
+.wrapper :global(.discovery-controls) {
+  position: relative;
+  padding-top: 72px;
+}
+
 .tripType {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  max-width: 620px;
-  margin: 0 auto 18px;
-  padding: 12px 14px;
-  border: 1px solid var(--line, #dedfda);
-  background: var(--card, #fffefa);
+  margin: 0;
+  padding: 0 0 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .tripType > span {
@@ -22,13 +29,13 @@
   color: var(--muted);
 }
 
-.tripType > div {
+.tripTypeOptions {
   display: flex;
   gap: 6px;
 }
 
 .tripType button {
-  border: 1px solid var(--line, #dedfda);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   background: transparent;
   color: var(--ink);
   border-radius: 5px;
@@ -40,9 +47,13 @@
 }
 
 .tripType button.tripTypeActive {
-  background: var(--ink);
-  color: var(--card, #fffefa);
-  border-color: var(--ink);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ink);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.oneWay :global(.discovery-field:has(#discovery-trip-length)) {
+  display: none;
 }
 
 .wrapper :global(.discovery-cta) { anchor-name: --trip-create-alert; }
@@ -63,7 +74,8 @@
 .status { color: var(--muted); }
 
 @media (max-width: 640px) {
+  .wrapper :global(.discovery-controls) { padding-top: 116px; }
   .tripType { align-items: flex-start; flex-direction: column; }
-  .tripType > div { width: 100%; }
+  .tripTypeOptions { width: 100%; }
   .tripType button { flex: 1; }
 }
