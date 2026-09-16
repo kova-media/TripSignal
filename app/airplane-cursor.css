@@ -1,18 +1,26 @@
 @media (hover: hover) and (pointer: fine) {
-  body {
-    cursor: url('/airplane-cursor.svg') 4 4, auto;
-  }
-
-  a,
-  button,
-  [role='button'] {
-    cursor: url('/airplane-cursor.svg') 4 4, pointer;
+  html,
+  body,
+  body * {
+    cursor: url('/airplane-cursor.svg') 8 8, auto !important;
   }
 
   input,
   textarea,
   select,
   [contenteditable='true'] {
-    cursor: auto;
+    cursor: text !important;
+  }
+
+  button,
+  a,
+  [role='button'] {
+    cursor: url('/airplane-cursor.svg') 8 8, pointer !important;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='range'] {
+    cursor: pointer !important;
   }
 }
