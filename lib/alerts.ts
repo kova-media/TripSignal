@@ -49,10 +49,12 @@ function nextDepartureDate(alert: AlertCriteria, salt = 0) {
   const [startValue, endValue] = dateRangeBounds(alert);
   const start = new Date(`${startValue}T00:00:00Z`);
   const end = new Date(`${endValue}T00:00:00Z`);
+  const [, maxTripDays] = tripDays(alert.tripLength);
   const spanDays = Math.max(0, Math.round((end.getTime() - start.getTime()) / 86_400_000));
+  const latestDepartureOffset = Math.max(0, spanDays - maxTripDays);
   const sampleCount = alert.destinationMode === 'airport' ? 4 : 2;
   const index = salt % sampleCount;
-  const offset = Math.round((spanDays * index) / (sampleCount - 1));
+  const offset = sampleCount === 1 ? 0 : Math.round((latestDepartureOffset * index) / (sampleCount - 1));
   start.setUTCDate(start.getUTCDate() + offset);
   return start.toISOString().slice(0, 10);
 }
