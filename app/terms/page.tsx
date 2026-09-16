@@ -54,7 +54,7 @@ export default function TermsPage() {
           <p>We may update these terms as the service changes. The current version will be published on this page. Continued use of TripSignal after an update becomes effective constitutes acceptance of the revised terms to the extent permitted by law.</p>
 
           <h2>12. Contact</h2>
-          <p>Questions about these terms can be sent to <a href="mailto:alerts@tripsignal.travel">alerts@tripsignal.travel</a>.</p>
+          <p>Questions about these terms can be sent through the <a href="/contact">TripSignal contact form</a>.</p>
         </div>
       </article>
       <footer className="legal-footer shell">
