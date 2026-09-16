@@ -1,6 +1,7 @@
 'use client';
 
 import { MouseEvent, ReactNode, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import TripDiscovery from '@/components/trip-discovery';
 import DestinationChooser from '@/components/destination-chooser';
@@ -22,6 +23,7 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
   const [error, setError] = useState('');
   const [destinationMode, setDestinationMode] = useState<DestinationMode>('airport');
   const [tripType, setTripType] = useState<TripType>('round-trip');
+  const [controlsHost, setControlsHost] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!accountEmail) return;
@@ -39,6 +41,16 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
     const timer = window.setTimeout(syncAccountEmail, 100);
     return () => { cancelAnimationFrame(firstFrame); window.clearTimeout(timer); };
   }, [accountEmail]);
+
+  useEffect(() => {
+    const findControls = () => {
+      const host = document.querySelector<HTMLElement>('[data-trip-discovery-direct] .discovery-controls');
+      if (host) setControlsHost(host);
+    };
+    const firstFrame = requestAnimationFrame(findControls);
+    const timer = window.setTimeout(findControls, 50);
+    return () => { cancelAnimationFrame(firstFrame); window.clearTimeout(timer); };
+  }, []);
 
   async function handleClick(event: MouseEvent<HTMLDivElement>) {
     const target = event.target as HTMLElement | null;
@@ -67,16 +79,20 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
     finally { setSubmitting(false); }
   }
 
-  return (
-    <div className={`${styles.wrapper}${accountEmail ? ' account-bound' : ''}`} data-trip-discovery-direct onClickCapture={handleClick} aria-busy={submitting}>
-      <div className={styles.tripType} role="group" aria-label="Flight type">
-        <span>Flight type</span>
-        <div>
-          <button type="button" className={tripType === 'round-trip' ? styles.tripTypeActive : ''} onClick={() => setTripType('round-trip')}>Round trip</button>
-          <button type="button" className={tripType === 'one-way' ? styles.tripTypeActive : ''} onClick={() => setTripType('one-way')}>One way</button>
-        </div>
+  const tripTypeSelector = (
+    <div className={styles.tripType} role="group" aria-label="Flight type">
+      <span>Flight type</span>
+      <div className={styles.tripTypeOptions}>
+        <button type="button" className={tripType === 'round-trip' ? styles.tripTypeActive : ''} onClick={() => setTripType('round-trip')}>Round trip</button>
+        <button type="button" className={tripType === 'one-way' ? styles.tripTypeActive : ''} onClick={() => setTripType('one-way')}>One way</button>
       </div>
+    </div>
+  );
+
+  return (
+    <div className={`${styles.wrapper}${accountEmail ? ' account-bound' : ''}${tripType === 'one-way' ? ` ${styles.oneWay}` : ''}`} data-trip-discovery-direct onClickCapture={handleClick} aria-busy={submitting}>
       <TripDiscovery />
+      {controlsHost && createPortal(tripTypeSelector, controlsHost)}
       <DestinationChooser onModeChange={setDestinationMode} />
       {success && <p className={`${styles.message} discovery-direct-success`} role="status">{success}</p>}
       {error && <p className={`${styles.message} ${styles.error} discovery-direct-error`} role="alert">{error}</p>}
