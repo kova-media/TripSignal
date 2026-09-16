@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AirplaneCursor from '@/components/airplane-cursor';
 import './globals.css';
 import './brand.css';
 import './tech.css';
@@ -13,7 +12,6 @@ import './discovery-layout-fix.css';
 import './premium-ui.css';
 import './flighty-ui.css';
 import './destination-cleanup.css';
-import './airplane-cursor.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
@@ -50,7 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" suppressHydrationWarning>
       <head><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} /></head>
-      <body><script dangerouslySetInnerHTML={{ __html: themeScript }} /><AirplaneCursor />{children}</body>
+      <body><script dangerouslySetInnerHTML={{ __html: themeScript }} />{children}</body>
     </html>
   );
 }
