@@ -60,7 +60,7 @@ export default function PrivacyPage() {
           <p>We may update this Privacy Policy when the service or applicable requirements change. The current version will be published on this page.</p>
 
           <h2>12. Contact</h2>
-          <p>Privacy questions or requests can be sent to <a href="mailto:alerts@tripsignal.travel">alerts@tripsignal.travel</a>.</p>
+          <p>Privacy questions or requests can be sent through the <a href="/contact">TripSignal contact form</a>.</p>
         </div>
       </article>
       <footer className="legal-footer shell">
