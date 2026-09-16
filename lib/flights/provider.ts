@@ -134,6 +134,13 @@ async function searchOne(
   return [];
 }
 
+function returnTripDays(criteria: FlightSearchCriteria) {
+  const min = Math.max(criteria.minTripDays, 1);
+  const max = Math.max(criteria.maxTripDays, min);
+  const midpoint = Math.round((min + max) / 2);
+  return Array.from(new Set([min, midpoint, max]));
+}
+
 class GoogleFlightsProvider implements FlightProvider {
   readonly name = 'google-flights';
 
@@ -158,13 +165,14 @@ class GoogleFlightsProvider implements FlightProvider {
     if (destinations.length === 0) return [];
 
     const departureDate = criteria.departureStart;
-    const tripDays = Math.max(criteria.minTripDays, 1);
-    const departure = new Date(`${departureDate}T00:00:00Z`);
-    departure.setUTCDate(departure.getUTCDate() + tripDays);
-    const returnDate = departure.toISOString().slice(0, 10);
+    const returnDates = returnTripDays(criteria).map((days) => {
+      const departure = new Date(`${departureDate}T00:00:00Z`);
+      departure.setUTCDate(departure.getUTCDate() + days);
+      return departure.toISOString().slice(0, 10);
+    });
 
     const results = await Promise.all(
-      destinations.map((airport) => searchOne(criteria.origin, airport, departureDate, returnDate, criteria)),
+      destinations.flatMap((airport) => returnDates.map((returnDate) => searchOne(criteria.origin, airport, departureDate, returnDate, criteria))),
     );
 
     return results.flat().sort((a, b) => a.price - b.price).slice(0, 25);
