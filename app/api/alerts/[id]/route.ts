@@ -5,16 +5,10 @@ import { getDb, ensureSchema } from '@/lib/db';
 async function getOwnedAlert(id: string, userId: string) {
   await ensureSchema();
   const db = getDb();
-  return db.query<{ id: string; active: boolean; criteria: Record<string, unknown>; frequency: string; email: string }>(
-    `select id, active, criteria, frequency, email from alerts where id = $1 and user_id = $2`,
-    [id, userId],
-  );
+  return db.query<{ id: string; active: boolean; criteria: Record<string, unknown>; frequency: string; email: string }>('select id, active, criteria, frequency, email from alerts where id = $1 and user_id = $2', [id, userId]);
 }
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'You must be signed in.' }, { status: 401 });
   const { id } = await params;
@@ -24,24 +18,18 @@ export async function GET(
   return NextResponse.json({ alert: result.rows[0] });
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'You must be signed in.' }, { status: 401 });
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: 'Invalid alert.' }, { status: 400 });
-
   let body: Record<string, unknown>;
   try { body = await request.json(); } catch { return NextResponse.json({ error: 'Invalid request.' }, { status: 400 }); }
-
   const existing = await getOwnedAlert(id, user.id);
   if (!existing.rowCount) return NextResponse.json({ error: 'Alert not found.' }, { status: 404 });
-
   if (typeof body.active === 'boolean') {
     const db = getDb();
-    await db.query(`update alerts set active = $1 where id = $2 and user_id = $3`, [body.active, id, user.id]);
+    await db.query('update alerts set active = $1 where id = $2 and user_id = $3', [body.active, id, user.id]);
     return NextResponse.json({ ok: true, active: body.active });
   }
 
@@ -49,6 +37,7 @@ export async function PATCH(
   const rawDestinationMode = String(body.destinationMode ?? 'airport');
   const destinationMode = rawDestinationMode === 'country' ? 'country' : rawDestinationMode === 'region' ? 'region' : 'airport';
   const destination = String(body.destination ?? '').trim();
+  const tripType = body.tripType === 'one-way' ? 'one-way' : 'round-trip';
   const maxPrice = Number(body.maxPrice);
   const passengers = Number(body.passengers ?? 1);
   const email = String(body.email ?? existing.rows[0].email ?? user.email).trim().toLowerCase();
@@ -77,6 +66,7 @@ export async function PATCH(
     origin,
     destinationMode,
     destination: destinationMode === 'airport' || destinationMode === 'country' ? destination.toUpperCase() : destination,
+    tripType,
     maxPrice,
     airlineMode: String(body.airlineMode ?? 'all').toUpperCase() === 'ALL' ? 'all' : String(body.airlineMode ?? 'all').toUpperCase(),
     maxStops: String(body.maxStops ?? '1'),
@@ -88,26 +78,19 @@ export async function PATCH(
     cabin,
     passengers,
   };
-
   const db = getDb();
-  await db.query(
-    `update alerts set email = $1, criteria = $2::jsonb, frequency = $3 where id = $4 and user_id = $5`,
-    [email, JSON.stringify(criteria), frequency, id, user.id],
-  );
+  await db.query('update alerts set email = $1, criteria = $2::jsonb, frequency = $3 where id = $4 and user_id = $5', [email, JSON.stringify(criteria), frequency, id, user.id]);
   return NextResponse.json({ ok: true, alert: { id, email, criteria, frequency } });
 }
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'You must be signed in.' }, { status: 401 });
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: 'Invalid alert.' }, { status: 400 });
   await ensureSchema();
   const db = getDb();
-  const result = await db.query(`delete from alerts where id = $1 and user_id = $2 returning id`, [id, user.id]);
+  const result = await db.query('delete from alerts where id = $1 and user_id = $2 returning id', [id, user.id]);
   if (!result.rowCount) return NextResponse.json({ error: 'Alert not found.' }, { status: 404 });
   return NextResponse.json({ ok: true });
 }
