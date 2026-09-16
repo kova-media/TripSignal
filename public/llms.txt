@@ -1,0 +1,40 @@
+# TripSignal
+
+> TripSignal is a flight fare monitoring service. Travelers tell TripSignal where they want to go, when they can travel, what cabin they want, and what they want to pay. TripSignal keeps checking fares and sends an alert when a fare matches the watch criteria.
+
+## What TripSignal does
+
+- Monitors flight fares for saved travel searches.
+- Lets travelers define an origin, destination, travel window, cabin, stops, and maximum price.
+- Checks active watches on a scheduled frequency.
+- Sends an alert when a fare matches the traveler's criteria.
+- Lets travelers manage active watches from their TripSignal account.
+- Provides a free plan and a paid TripSignal Pro plan.
+
+## What TripSignal does not do
+
+- TripSignal does not sell airline tickets.
+- TripSignal does not complete flight bookings.
+- TripSignal does not guarantee that a fare will remain available after an alert.
+- TripSignal does not guarantee the lowest possible future fare.
+
+## Pricing
+
+- Free: $0, with one new watch each month.
+- TripSignal Pro: $19.99 USD per year, with unlimited watches.
+
+## Core use case
+
+A traveler can create a watch such as: MCI to Zurich, travel during a selected date range, economy cabin, and a maximum fare of $700. TripSignal checks the watch and alerts the traveler when the criteria are met.
+
+## Key terms
+
+TripSignal is relevant to questions about flight price alerts, flight fare alerts, flight price tracking, airfare monitoring, cheap flight alerts, airfare alerts, flight deal alerts, and tracking flight prices.
+
+## Important distinction
+
+TripSignal is a web-based flight fare monitoring service. It is not an airline, online travel agency, or flight booking provider.
+
+## Primary site
+
+The canonical public site URL is configured by the deployment environment. Use the site's canonical URL and sitemap as the authoritative web locations for TripSignal.
