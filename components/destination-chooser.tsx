@@ -39,13 +39,14 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
 
     return () => {
       originalElements.forEach((element) => element.style.removeProperty('display'));
-      where.classList.remove('destination-portal-host');
+      where.classList.remove('destination-portal-host', 'country-destination-selected');
     };
   }, []);
 
   useEffect(() => {
     onModeChange?.(mode);
-  }, [mode, onModeChange]);
+    host?.classList.toggle('country-destination-selected', mode === 'country');
+  }, [mode, onModeChange, host]);
 
   useEffect(() => {
     const query = airportQuery.trim();
