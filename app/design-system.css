@@ -1,0 +1,57 @@
+/* Shared TripSignal control system. Keep every CTA and selector visually consistent. */
+
+:root {
+  --control-radius: 12px;
+  --control-height: 50px;
+  --selector-height: 48px;
+}
+
+.button,
+.button-primary,
+.button-dark,
+.button-light {
+  min-height: var(--control-height);
+  border-radius: var(--control-radius);
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.discovery-options button,
+.option,
+.tripType button {
+  min-height: var(--selector-height);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--control-radius);
+  background: transparent;
+  color: var(--muted);
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: none;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+
+.discovery-options button:hover,
+.option:hover,
+.tripType button:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.discovery-options button.active,
+.option.active,
+.tripType button.tripTypeActive {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
+  color: var(--ink) !important;
+  box-shadow: 0 0 0 1px var(--accent) !important;
+}
+
+.discovery-field select,
+.discovery-field input,
+.discovery-airport-search input,
+.builder-form select,
+.builder-form input {
+  border-radius: var(--control-radius);
+}
