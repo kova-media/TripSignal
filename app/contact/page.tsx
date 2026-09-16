@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
+import ContactForm from './contact-form';
 import '../legal.css';
 
 export const metadata: Metadata = {
   title: 'Contact',
-  description: 'Contact TripSignal for account, billing, refund, privacy and service questions.',
+  description: 'Contact TripSignal about your account, flight watches, billing, refunds, privacy or service questions.',
 };
 
 export default function ContactPage() {
@@ -16,12 +17,12 @@ export default function ContactPage() {
         <header className="legal-heading">
           <p className="section-kicker">TripSignal</p>
           <h1>Contact</h1>
-          <p>For questions about your account, flight watches, billing, refunds, privacy or the TripSignal service, contact us by email.</p>
+          <p>Have a question about your account, flight watches, billing, refunds, privacy or the TripSignal service? Send us a message and we’ll get back to you.</p>
         </header>
         <div className="legal-body">
-          <h2>Get in touch</h2>
-          <p><a href="mailto:alerts@tripsignal.travel">alerts@tripsignal.travel</a></p>
-          <p>When contacting us about an account or billing issue, use the email address associated with your TripSignal account when possible. Do not send payment card numbers or passwords by email.</p>
+          <h2>Send a message</h2>
+          <p>Use the form below. Your message is sent directly to the TripSignal team. The automated address used for flight alerts is not monitored for incoming mail.</p>
+          <ContactForm />
 
           <h2>Support topics</h2>
           <ul>
