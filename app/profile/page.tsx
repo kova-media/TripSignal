@@ -40,7 +40,7 @@ export default async function ProfilePage() {
 
       <section className={styles.section}>
         <div className={styles.billing}>
-          <div><p className={styles.eyebrow}>TripSignal plan</p><h2 className={styles.billingTitle}>{billing?.subscription_status === 'lifetime' ? 'You have lifetime Pro access.' : subscriptionActive ? 'Your subscription is active.' : 'Upgrade to TripSignal Pro.'}</h2><p className={styles.billingText}>{billing?.subscription_status === 'lifetime' ? 'Unlimited alerts. No payment required. No expiration.' : subscriptionActive && billing?.subscription_current_period_end ? `Renews ${new Date(billing.subscription_current_period_end).toLocaleDateString()}.` : 'Unlimited alerts, with weekly or monthly fare checks, for $19.99/year.'}</p></div>
+          <div><p className={styles.eyebrow}>TripSignal plan</p><h2 className={styles.billingTitle}>{billing?.subscription_status === 'lifetime' ? 'You have lifetime Pro access.' : subscriptionActive ? 'Your subscription is active.' : 'Upgrade to TripSignal Pro.'}</h2><p className={styles.billingText}>{billing?.subscription_status === 'lifetime' ? 'Unlimited alerts. No payment required. No expiration.' : subscriptionActive && billing?.subscription_current_period_end ? `Renews ${new Date(billing.subscription_current_period_end).toLocaleDateString()}.` : 'Unlimited alerts, with daily, weekly, or monthly fare checks, for $19.99/year.'}</p></div>
           <BillingButton active={subscriptionActive} />
         </div>
       </section>
