@@ -13,6 +13,7 @@ import './premium-ui.css';
 import './flighty-ui.css';
 import './destination-cleanup.css';
 import './country-destination-fix.css';
+import './design-system.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
