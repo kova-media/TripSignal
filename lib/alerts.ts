@@ -101,7 +101,7 @@ export async function runAlertSearch(alertId: string, email: string, criteria: A
 
   try {
     const provider = getFlightProvider();
-    const searchCount = criteria.destinationMode === 'airport' ? 4 : 2;
+    const searchCount = criteria.destinationMode === 'airport' ? 4 : 1;
     const results: FlightOffer[] = [];
     for (let i = 0; i < searchCount; i += 1) {
       const offers = await provider.search(buildCriteria(criteria, i));
