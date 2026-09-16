@@ -24,15 +24,8 @@ function formatGoogleTime(date: readonly [number, number, number], time: readonl
   return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`;
 }
 
-function itineraryToOffer(
-  result: Flights,
-  origin: string,
-  destination: string,
-  departureDate: string,
-  returnDate: string,
-): FlightOffer | null {
+function itineraryToOffer(result: Flights, origin: string, destination: string, departureDate: string, returnDate: string, tripType: FlightSearchCriteria['tripType']): FlightOffer | null {
   if (!Number.isFinite(result.price) || result.price <= 0) return null;
-
   const segments: FlightSegment[] = result.flights.map((flight) => ({
     marketingCarrier: result.airlines.join(', ') || 'Unknown airline',
     operatingCarrier: result.airlines.join(', ') || 'Unknown airline',
@@ -41,24 +34,12 @@ function itineraryToOffer(
     departure: formatGoogleTime(flight.departure.date, flight.departure.time),
     arrival: formatGoogleTime(flight.arrival.date, flight.arrival.time),
   }));
-
-  const outboundSegments = result.flights.filter((flight) =>
-    formatGoogleTime(flight.departure.date, flight.departure.time).startsWith(departureDate),
-  );
-  const returnSegments = result.flights.filter((flight) =>
-    formatGoogleTime(flight.departure.date, flight.departure.time).startsWith(returnDate),
-  );
-
+  const outboundSegments = result.flights.filter((flight) => formatGoogleTime(flight.departure.date, flight.departure.time).startsWith(departureDate));
+  const returnSegments = tripType === 'round-trip'
+    ? result.flights.filter((flight) => formatGoogleTime(flight.departure.date, flight.departure.time).startsWith(returnDate))
+    : [];
   return {
-    id: [
-      departureDate,
-      returnDate,
-      origin,
-      destination,
-      result.airlines.join('-'),
-      result.price,
-      segments.map((segment) => `${segment.origin}-${segment.destination}`).join('|'),
-    ].join(':'),
+    id: [tripType, departureDate, returnDate, origin, destination, result.airlines.join('-'), result.price, segments.map((segment) => `${segment.origin}-${segment.destination}`).join('|')].join(':'),
     price: result.price,
     currency: 'USD',
     origin,
@@ -72,32 +53,27 @@ function itineraryToOffer(
   } satisfies FlightOffer;
 }
 
-async function searchOne(
-  origin: string,
-  destination: string,
-  departureDate: string,
-  returnDate: string,
-  criteria: FlightSearchCriteria,
-): Promise<FlightOffer[]> {
+async function searchOne(origin: string, destination: string, departureDate: string, returnDate: string, criteria: FlightSearchCriteria): Promise<FlightOffer[]> {
+  const flights = [{
+    date: departureDate,
+    from_airport: origin,
+    to_airport: destination,
+    max_stops: criteria.maxStops,
+    airlines: criteria.airlines.length > 0 ? criteria.airlines : undefined,
+  }];
+  if (criteria.tripType === 'round-trip') {
+    flights.push({
+      date: returnDate,
+      from_airport: destination,
+      to_airport: origin,
+      max_stops: criteria.maxStops,
+      airlines: criteria.airlines.length > 0 ? criteria.airlines : undefined,
+    });
+  }
   const query = createQuery({
-    flights: [
-      {
-        date: departureDate,
-        from_airport: origin,
-        to_airport: destination,
-        max_stops: criteria.maxStops,
-        airlines: criteria.airlines.length > 0 ? criteria.airlines : undefined,
-      },
-      {
-        date: returnDate,
-        from_airport: destination,
-        to_airport: origin,
-        max_stops: criteria.maxStops,
-        airlines: criteria.airlines.length > 0 ? criteria.airlines : undefined,
-      },
-    ],
+    flights,
     seat: criteria.cabin === 'premium_economy' ? 'premium-economy' : criteria.cabin,
-    trip: 'round-trip',
+    trip: criteria.tripType,
     passengers: new Passengers({ adults: criteria.passengers }),
     currency: 'USD',
     max_stops: criteria.maxStops,
@@ -105,16 +81,11 @@ async function searchOne(
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const results = await getFlights(query, {
-        timeout: 15000,
-        maxRetries: 2,
-        retryDelay: 1500,
-      });
-
+      const results = await getFlights(query, { timeout: 15000, maxRetries: 2, retryDelay: 1500 });
       return results
         .filter((result) => result.price < criteria.maxPrice)
         .filter((result) => criteria.airlines.length === 0 || result.airlines.some((airline) => criteria.airlines.includes(airline)))
-        .map((result) => itineraryToOffer(result, origin, destination, departureDate, returnDate))
+        .map((result) => itineraryToOffer(result, origin, destination, departureDate, returnDate, criteria.tripType))
         .filter((offer): offer is FlightOffer => Boolean(offer))
         .filter((offer) => criteria.maxStops === null || offer.stops <= criteria.maxStops);
     } catch (error) {
@@ -130,7 +101,6 @@ async function searchOne(
       await new Promise((resolve) => setTimeout(resolve, 750));
     }
   }
-
   return [];
 }
 
@@ -147,34 +117,26 @@ class GoogleFlightsProvider implements FlightProvider {
   async search(criteria: FlightSearchCriteria): Promise<FlightOffer[]> {
     const destination = criteria.destination;
     let destinations: string[];
-
-    if (destination.type === 'airport') {
-      destinations = [destination.value];
-    } else if (destination.type === 'airports') {
-      destinations = destination.value;
-    } else if (destination.type === 'region') {
-      destinations = REGION_AIRPORTS[destination.value] ?? [];
-    } else if (destination.type === 'country') {
-      destinations = await getAirportsForCountry(destination.value);
-    } else if (destination.type === 'city') {
-      destinations = [destination.value];
-    } else {
-      destinations = [];
-    }
-
+    if (destination.type === 'airport') destinations = [destination.value];
+    else if (destination.type === 'airports') destinations = destination.value;
+    else if (destination.type === 'region') destinations = REGION_AIRPORTS[destination.value] ?? [];
+    else if (destination.type === 'country') destinations = await getAirportsForCountry(destination.value);
+    else if (destination.type === 'city') destinations = [destination.value];
+    else destinations = [];
     if (destinations.length === 0) return [];
 
     const departureDate = criteria.departureStart;
+    if (criteria.tripType === 'one-way') {
+      const results = await Promise.all(destinations.map((airport) => searchOne(criteria.origin, airport, departureDate, departureDate, criteria)));
+      return results.flat().sort((a, b) => a.price - b.price).slice(0, 25);
+    }
+
     const returnDates = returnTripDays(criteria).map((days) => {
       const departure = new Date(`${departureDate}T00:00:00Z`);
       departure.setUTCDate(departure.getUTCDate() + days);
       return departure.toISOString().slice(0, 10);
     });
-
-    const results = await Promise.all(
-      destinations.flatMap((airport) => returnDates.map((returnDate) => searchOne(criteria.origin, airport, departureDate, returnDate, criteria))),
-    );
-
+    const results = await Promise.all(destinations.flatMap((airport) => returnDates.map((returnDate) => searchOne(criteria.origin, airport, departureDate, returnDate, criteria))));
     return results.flat().sort((a, b) => a.price - b.price).slice(0, 25);
   }
 }
