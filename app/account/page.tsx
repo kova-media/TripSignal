@@ -8,9 +8,16 @@ import styles from './account.module.css';
 
 export const dynamic = 'force-dynamic';
 
+function countryName(code: unknown) {
+  const value = String(code ?? '').trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(value)) return String(code ?? 'Not set');
+  return new Intl.DisplayNames(['en'], { type: 'region' }).of(value) ?? value;
+}
+
 function summarizeCriteria(criteria: Record<string, unknown>) {
   const origin = String(criteria.origin ?? 'Not set');
-  const destination = String(criteria.destination ?? 'Not set');
+  const rawDestination = String(criteria.destination ?? 'Not set');
+  const destination = criteria.destinationMode === 'country' ? countryName(rawDestination) : rawDestination;
   const cabin = criteria.cabin === 'premium_economy' ? 'Premium economy' : criteria.cabin === 'business' ? 'Business' : criteria.cabin === 'first' ? 'First class' : 'Economy';
   const price = Number(criteria.maxPrice ?? 0).toLocaleString();
   return `${origin} → ${destination} · ${cabin} · under $${price}`;
