@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
   openGraph: { type: 'website', siteName: 'TripSignal', title: 'TripSignal | Flight Price Alerts & Fare Monitoring', description: 'Set your route, dates and target price. TripSignal keeps watching flight fares and alerts you when a fare matches.', locale: 'en_US', url: siteUrl?.toString() },
   twitter: { card: 'summary_large_image', title: 'TripSignal | Flight Price Alerts & Fare Monitoring', description: 'Track flight prices and get alerted when fares match your criteria.' },
-  manifest: '/manifest.webmanifest', themeColor: '#F6F7F9',
+  manifest: '/manifest.webmanifest', themeColor: '#0B0F14',
   icons: { icon: '/favicon.svg', shortcut: '/favicon.svg', apple: '/tripsignal-icon-blue.svg' },
 };
 
@@ -42,7 +42,7 @@ const structuredData = {
   ],
 };
 
-const themeScript = `(() => { try { const saved = localStorage.getItem('tripsignal-theme-v2'); document.documentElement.dataset.theme = saved === 'redeye' ? 'redeye' : 'daylight'; } catch { document.documentElement.dataset.theme = 'daylight'; } })();`;
+const themeScript = `(() => { try { const saved = localStorage.getItem('tripsignal-theme-v2'); document.documentElement.dataset.theme = saved === 'daylight' ? 'daylight' : 'redeye'; } catch { document.documentElement.dataset.theme = 'redeye'; } })();`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
