@@ -22,7 +22,8 @@ export async function POST(request: Request) {
       if (userId) {
         await db.query(
           `update users
-           set stripe_customer_id = coalesce($1, stripe_customer_id),
+           set plan = 'pro',
+               stripe_customer_id = coalesce($1, stripe_customer_id),
                stripe_subscription_id = coalesce($2, stripe_subscription_id),
                subscription_status = 'active'
            where id = $3`,
@@ -35,24 +36,27 @@ export async function POST(request: Request) {
       const subscription = event.data.object as Stripe.Subscription;
       const userId = subscription.metadata?.userId;
       const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+      const plan = ['active', 'trialing'].includes(subscription.status) ? 'pro' : 'free';
       if (userId) {
         await db.query(
           `update users
-           set stripe_customer_id = $1,
-               stripe_subscription_id = $2,
-               subscription_status = $3,
-               subscription_current_period_end = to_timestamp($4)
-           where id = $5`,
-          [customerId, subscription.id, subscription.status, subscription.items.data[0]?.current_period_end ?? null, userId],
+           set plan = $1,
+               stripe_customer_id = $2,
+               stripe_subscription_id = $3,
+               subscription_status = $4,
+               subscription_current_period_end = to_timestamp($5)
+           where id = $6`,
+          [plan, customerId, subscription.id, subscription.status, subscription.items.data[0]?.current_period_end ?? null, userId],
         );
       } else {
         await db.query(
           `update users
-           set stripe_subscription_id = $1,
-               subscription_status = $2,
-               subscription_current_period_end = to_timestamp($3)
-           where stripe_customer_id = $4`,
-          [subscription.id, subscription.status, subscription.items.data[0]?.current_period_end ?? null, customerId],
+           set plan = $1,
+               stripe_subscription_id = $2,
+               subscription_status = $3,
+               subscription_current_period_end = to_timestamp($4)
+           where stripe_customer_id = $5`,
+          [plan, subscription.id, subscription.status, subscription.items.data[0]?.current_period_end ?? null, customerId],
         );
       }
     }
@@ -61,7 +65,9 @@ export async function POST(request: Request) {
       const subscription = event.data.object as Stripe.Subscription;
       await db.query(
         `update users
-         set subscription_status = 'canceled', subscription_current_period_end = to_timestamp($1)
+         set plan = case when subscription_status = 'lifetime' then 'pro' else 'free' end,
+             subscription_status = 'canceled',
+             subscription_current_period_end = to_timestamp($1)
          where stripe_subscription_id = $2`,
         [subscription.items.data[0]?.current_period_end ?? null, subscription.id],
       );
