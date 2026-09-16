@@ -27,6 +27,8 @@
   margin-bottom: 8px;
   font-size: 13px;
   font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
   color: var(--muted);
 }
 
@@ -37,7 +39,8 @@
   width: 100%;
 }
 
-.tripType button {
+.tripType button,
+.wrapper :global(.discovery-options button) {
   min-height: 48px;
   width: 100%;
   border: 1px solid var(--line-strong);
@@ -49,12 +52,22 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: none;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
 }
 
-.tripType button.tripTypeActive {
-  background: var(--accent-soft);
-  color: var(--ink);
+.tripType button:hover,
+.wrapper :global(.discovery-options button:hover) {
   border-color: var(--accent);
+  color: var(--ink);
+}
+
+.tripType button.tripTypeActive,
+.wrapper :global(.discovery-options button.active) {
+  background: var(--accent-soft) !important;
+  color: var(--ink) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 1px var(--accent) !important;
 }
 
 .wrapper :global(.discovery-field:has(.discovery-cabin-options)) { order: 6; }
@@ -66,6 +79,32 @@
 .wrapper :global(.discovery-field:has(#discovery-passengers)) { order: 13; }
 .wrapper :global(.discovery-field:has(#discovery-email)) { order: 14; }
 .wrapper :global(.discovery-cta) { order: 15; anchor-name: --trip-create-alert; }
+
+.wrapper :global(.discovery-field select),
+.wrapper :global(.discovery-field input[type="date"]),
+.wrapper :global(.discovery-airport-search input) {
+  min-height: 54px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.wrapper :global(.discovery-field select:focus),
+.wrapper :global(.discovery-field input[type="date"]:focus),
+.wrapper :global(.discovery-airport-search input:focus) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  outline: none;
+}
+
+.wrapper :global(.discovery-cta) {
+  min-height: 50px;
+  border-radius: 12px;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 700;
+}
 
 .oneWay :global(.discovery-field:has(#discovery-trip-length)) {
   display: none;
