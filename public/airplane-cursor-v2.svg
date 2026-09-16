@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-  <g transform="rotate(38 16 16)">
-    <path d="M16 1.5c1.15 0 1.95.82 2.08 2.03l1.03 9.3 8.02 3.55c.64.28 1.02.88 1.02 1.57v.52c0 .64-.55 1.11-1.17 1l-8.15-1.45.55 5.15 3.13 3.12c.5.5.15 1.36-.56 1.36h-2.55L16 24.72l-1.4 2.93h-2.55c-.71 0-1.06-.86-.56-1.36l3.13-3.12.55-5.15-8.15 1.45c-.62.11-1.17-.36-1.17-1v-.52c0-.69.38-1.29 1.02-1.57l8.02-3.55 1.03-9.3C16.05 2.32 16.85 1.5 18 1.5Z" fill="#f7f8fa" stroke="#101820" stroke-width="1.35" stroke-linejoin="round"/>
-    <path d="M16 3.4v18.85" stroke="#b9c4cf" stroke-width=".8" stroke-linecap="round"/>
-    <path d="M8.15 16.75 13.9 15.7M23.85 16.75 18.1 15.7" stroke="#d7dee5" stroke-width=".7" stroke-linecap="round"/>
-    <circle cx="13.35" cy="20.1" r="1" fill="#273442"/>
-    <circle cx="18.65" cy="20.1" r="1" fill="#273442"/>
-  </g>
-</svg>
