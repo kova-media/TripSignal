@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import SiteHeader from '@/components/site-header';
 import AlertActions from './alert-actions';
+import BillingButton from './billing-button';
 import { getCurrentUser } from '@/lib/auth';
 import { getDb, ensureSchema } from '@/lib/db';
 import styles from './account.module.css';
@@ -109,8 +110,8 @@ export default async function AccountPage() {
             </div>
             <div className={styles.empty}>
               <h3 className={styles.emptyTitle}>{plan === 'pro' ? 'Pro is active.' : 'Upgrade to TripSignal Pro.'}</h3>
-              <p className={styles.emptyText}>{plan === 'pro' ? 'Your account has unlimited alerts with weekly or monthly checks.' : 'Get unlimited alerts with weekly or monthly checks for $19.99 per year.'}</p>
-              {plan !== 'pro' && <a className="button button-primary" href="/api/billing/checkout">Upgrade to Pro</a>}
+              <p className={styles.emptyText}>{plan === 'pro' ? 'Your account has unlimited alerts with daily, weekly, or monthly checks.' : 'Get unlimited alerts with daily, weekly, or monthly checks for $19.99 per year.'}</p>
+              {plan !== 'pro' && <BillingButton active={false} />}
             </div>
           </section>
         </div>
