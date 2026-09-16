@@ -69,6 +69,30 @@
 .home-page .discovery-controls .benchmark-head{justify-content:space-between}
 .home-page .discovery-controls .benchmark-labels,.home-page .discovery-controls .benchmark p{text-align:left}
 
+/* Pricing card: two complete plan panels, with the Free plan using the older light treatment. */
+.home-page .pricing-preview-card{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:0!important;padding:0!important;overflow:hidden!important;background:var(--surface)!important}
+.home-page .pricing-tier{min-width:0!important;min-height:360px!important;box-sizing:border-box!important;padding:52px 52px 48px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;background:#fffefa!important;color:#151817!important}
+.home-page .pricing-tier-pro{background:var(--surface)!important;color:var(--ink)!important;border-left:1px solid var(--line)!important}
+.home-page .pricing-tier>span{display:block!important;color:#6f7471!important;font-size:11px!important;font-weight:700!important;text-transform:uppercase!important;letter-spacing:.11em!important}
+.home-page .pricing-tier-pro>span{color:var(--muted)!important}
+.home-page .pricing-tier>strong{display:block!important;margin-top:24px!important;color:#151817!important;font-family:Space Grotesk,sans-serif!important;font-size:64px!important;font-weight:500!important;line-height:.95!important;letter-spacing:-.06em!important}
+.home-page .pricing-tier-pro>strong{color:var(--ink)!important}
+.home-page .pricing-tier>small{display:block!important;margin-top:18px!important;color:#6f7471!important;font-size:14px!important;line-height:1.5!important}
+.home-page .pricing-tier-pro>small{color:var(--muted)!important}
+.home-page .pricing-tier>.button,.home-page .pricing-tier>div{width:100%!important;margin-top:auto!important}
+.home-page .pricing-tier .button{box-sizing:border-box!important;width:100%!important;min-height:54px!important}
+.home-page .pricing-tier:first-child .button{background:#151817!important;color:#fff!important;border-color:#151817!important}
+.home-page .pricing-tier-pro .button{background:var(--ts-blue)!important;color:#fff!important}
+.home-page .pricing-tier .billing-active{display:block!important;margin-top:auto!important;color:var(--ts-blue)!important;font-size:12px!important;font-weight:600!important}
+.home-page .pricing-tier .billing-error{margin:10px 0 0!important;color:#a24f4f!important;font-size:12px!important}
+
+@media (max-width:820px){
+  .home-page .pricing-preview-card{grid-template-columns:1fr!important}
+  .home-page .pricing-tier{min-height:310px!important;padding:42px 30px!important}
+  .home-page .pricing-tier-pro{border-left:0!important;border-top:1px solid var(--line)!important}
+  .home-page .pricing-tier>strong{font-size:56px!important}
+}
+
 @media (max-width:600px){
   .home-page .home-hero-copy{max-width:none}
   .home-page .footer{grid-template-columns:1fr;gap:14px}
@@ -77,4 +101,6 @@
   .home-page .discovery-head{gap:14px}
   .home-page .discovery-layout{grid-template-columns:1fr!important}
   .home-page .discovery-controls{text-align:left!important}
+  .home-page .pricing-tier{min-height:280px!important;padding:34px 22px!important}
+  .home-page .pricing-tier>strong{font-size:50px!important}
 }
