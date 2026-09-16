@@ -17,7 +17,7 @@ type AirportRow = {
 
 const AIRPORTS_URL = 'https://davidmegginson.github.io/ourairports-data/airports.csv';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const MAX_COUNTRY_AIRPORTS = 10;
+const MAX_COUNTRY_AIRPORTS = 5;
 
 let cachePromise: Promise<AirportRow[]> | null = null;
 let cacheLoadedAt = 0;
