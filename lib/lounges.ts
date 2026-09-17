@@ -43,7 +43,12 @@ export function loungeDirectoryLinks(airport: string) {
 }
 
 export function extractAirportContexts(offer: any) {
-  const segments = Array.isArray(offer?.segments) ? offer.segments : [];
+  const allSegments = Array.isArray(offer?.segments) ? offer.segments : [];
+  const departureDate = String(offer?.departureDate ?? '').slice(0, 10);
+  const outboundSegments = departureDate
+    ? allSegments.filter((segment: any) => String(segment?.departure ?? '').slice(0, 10) === departureDate)
+    : allSegments;
+  const segments = outboundSegments.length > 0 ? outboundSegments : allSegments;
   const contexts: Array<{ airport: string; context: LoungeAirportContext; segmentIndex?: number; arrival?: string; departure?: string }> = [];
 
   const firstOrigin = normalizeAirportCode(segments[0]?.origin ?? offer?.origin);
