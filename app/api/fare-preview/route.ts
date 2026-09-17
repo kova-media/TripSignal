@@ -5,42 +5,46 @@ import type { FlightSearchCriteria } from '@/lib/flights/types';
 
 export const dynamic = 'force-dynamic';
 
-function clean(value: string | null) {
-  return String(value ?? '').trim().toUpperCase();
-}
+type FareRow = { price: string; observed_at: string; offer: any };
 
-type FareRow = { price: string; observed_at: string };
+type MatchLevel = 'matching' | 'route' | null;
 
-async function getObservations(db: ReturnType<typeof getDb>, origin: string, destinationMode: string, destination: string, tripType: string, cabin: string) {
-  const result = await db.query<FareRow>(
-    `select fo.price::text, fo.observed_at::text
+function clean(value: string | null) { return String(value ?? '').trim().toUpperCase(); }
+
+async function queryObservations(db: ReturnType<typeof getDb>, where: string, values: string[]) {
+  return db.query<FareRow>(
+    `select fo.price::text, fo.observed_at::text, fo.offer
      from fare_observations fo
      left join alerts a on a.id = fo.alert_id
-     where upper(coalesce(fo.origin, a.criteria->>'origin', '')) = $1
-       and lower(coalesce(fo.destination_mode, a.criteria->>'destinationMode', 'airport')) = $2
-       and upper(coalesce(fo.destination, a.criteria->>'destination', '')) = $3
-       and lower(coalesce(fo.trip_type, a.criteria->>'tripType', 'round-trip')) = $4
-       and lower(coalesce(fo.cabin, a.criteria->>'cabin', 'premium_economy')) = lower($5)
+     where ${where}
      order by fo.observed_at desc
      limit 1000`,
+    values,
+  );
+}
+
+async function getObservations(db: ReturnType<typeof getDb>, origin: string, destinationMode: string, destination: string, tripType: string, cabin: string) {
+  const exact = await queryObservations(db,
+    `upper(coalesce(fo.origin, a.criteria->>'origin', '')) = $1
+     and lower(coalesce(fo.destination_mode, a.criteria->>'destinationMode', 'airport')) = $2
+     and upper(coalesce(fo.destination, a.criteria->>'destination', '')) = $3
+     and lower(coalesce(fo.trip_type, a.criteria->>'tripType', 'round-trip')) = $4
+     and lower(coalesce(fo.cabin, a.criteria->>'cabin', 'premium_economy')) = lower($5)`,
     [origin, destinationMode, destination, tripType, cabin],
   );
 
-  if (result.rows.length) return { rows: result.rows, matchLevel: 'matching' as const };
+  if (exact.rows.length >= 3) return { rows: exact.rows, matchLevel: 'matching' as MatchLevel };
 
-  const route = await db.query<FareRow>(
-    `select fo.price::text, fo.observed_at::text
-     from fare_observations fo
-     left join alerts a on a.id = fo.alert_id
-     where upper(coalesce(fo.origin, a.criteria->>'origin', '')) = $1
-       and lower(coalesce(fo.destination_mode, a.criteria->>'destinationMode', 'airport')) = $2
-       and upper(coalesce(fo.destination, a.criteria->>'destination', '')) = $3
-     order by fo.observed_at desc
-     limit 1000`,
+  const route = await queryObservations(db,
+    `upper(coalesce(fo.origin, a.criteria->>'origin', '')) = $1
+     and lower(coalesce(fo.destination_mode, a.criteria->>'destinationMode', 'airport')) = $2
+     and upper(coalesce(fo.destination, a.criteria->>'destination', '')) = $3`,
     [origin, destinationMode, destination],
   );
 
-  return { rows: route.rows, matchLevel: route.rows.length ? ('route' as const) : null };
+  if (route.rows.length >= 3) return { rows: route.rows, matchLevel: 'route' as MatchLevel };
+  if (exact.rows.length) return { rows: exact.rows, matchLevel: 'matching' as MatchLevel };
+  return { rows: route.rows, matchLevel: route.rows.length ? ('route' as MatchLevel) : null };
 }
 
 function tripDays(value: string): [number, number] {
@@ -60,7 +64,6 @@ async function createLiveObservation(db: ReturnType<typeof getDb>, origin: strin
   const maxStops = maxStopsValue === 'any' || !maxStopsValue ? null : Number(maxStopsValue);
   const passengers = Math.min(9, Math.max(1, Number(passengersValue) || 1));
   const allAirlines = !airlineMode || airlineMode.toLowerCase() === 'all';
-
   const criteria: FlightSearchCriteria = {
     origin,
     destination: destinationMode === 'airport' ? { type: 'airport', value: destination } : { type: 'country', value: destination },
@@ -75,18 +78,32 @@ async function createLiveObservation(db: ReturnType<typeof getDb>, origin: strin
     departureEnd: departureStart,
     passengers,
   };
-
   const offers = await getFlightProvider().search(criteria);
   const lowest = offers.filter((offer) => Number.isFinite(offer.price) && offer.price > 0).sort((a, b) => a.price - b.price)[0];
   if (!lowest) return null;
-
   await db.query(
     `insert into fare_observations (alert_id, observed_at, price, offer, origin, destination_mode, destination, trip_type, cabin)
      values (null, now(), $1, $2::jsonb, $3, $4, $5, $6, $7)`,
     [lowest.price, JSON.stringify(lowest), origin, destinationMode, destination, tripType, criteria.cabin],
   );
+  return { price: String(lowest.price), observed_at: new Date().toISOString(), offer: lowest } satisfies FareRow;
+}
 
-  return { price: String(lowest.price), observed_at: new Date().toISOString() } satisfies FareRow;
+function median(values: number[]) {
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted.length % 2 ? sorted[Math.floor(sorted.length / 2)] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
+}
+
+function routeIntelligence(rows: FareRow[]) {
+  if (rows.length < 5) return null;
+  const stopCounts = new Map<number, number>();
+  for (const row of rows) {
+    const stops = Number(row.offer?.stops);
+    if (!Number.isFinite(stops) || stops < 0) continue;
+    stopCounts.set(stops, (stopCounts.get(stops) ?? 0) + 1);
+  }
+  const common = [...stopCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+  return common ? { commonStops: common[0], commonStopsShare: Math.round((common[1] / rows.length) * 100) } : null;
 }
 
 export async function GET(request: Request) {
@@ -101,6 +118,7 @@ export async function GET(request: Request) {
     const passengers = params.get('passengers') || '1';
     const airlineMode = params.get('airlineMode') || 'all';
     const tripLength = params.get('tripLength') || '1–3 weeks';
+    const target = Number(params.get('target'));
 
     if (!/^[A-Z]{3}$/.test(origin)) return NextResponse.json({ available: false, observations: 0 });
     if (destinationMode === 'airport' && !/^[A-Z]{3}$/.test(destination)) return NextResponse.json({ available: false, observations: 0 });
@@ -112,21 +130,36 @@ export async function GET(request: Request) {
 
     if (!rows.length) {
       const live = await createLiveObservation(db, origin, destinationMode, destination, tripType, cabin.toLowerCase(), maxStops, passengers, airlineMode, tripLength);
-      if (live) {
-        rows = [live];
-        matchLevel = 'matching';
-      }
+      if (live) { rows = [live]; matchLevel = 'matching'; }
     }
 
     const prices = rows.map((row) => Number(row.price)).filter((price) => Number.isFinite(price) && price > 0);
     if (!prices.length) return NextResponse.json({ available: false, observations: 0 });
 
-    const sorted = [...prices].sort((a, b) => a - b);
-    const median = sorted.length % 2 === 1 ? sorted[Math.floor(sorted.length / 2)] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
+    const lowest = Math.min(...prices);
+    const typical = median(prices);
     const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
     const recent = rows.filter((row) => new Date(row.observed_at).getTime() >= cutoff).map((row) => Number(row.price)).filter((price) => Number.isFinite(price) && price > 0);
+    const recentLowest = recent.length ? Math.min(...recent) : lowest;
+    const targetDelta = Number.isFinite(target) && target > 0 ? target - typical : null;
+    const targetPercent = Number.isFinite(target) && target > 0 && typical > 0 ? Math.round((target - typical) / typical * 100) : null;
+    const intelligence = routeIntelligence(rows);
 
-    return NextResponse.json({ available: true, lowest: sorted[0], median, recentLowest: recent.length ? Math.min(...recent) : sorted[0], observations: prices.length, lastObservedAt: rows[0].observed_at, matchLevel, currency: 'USD' });
+    return NextResponse.json({
+      available: true,
+      lowest,
+      recentLowest,
+      highest: Math.max(...prices),
+      median: typical,
+      observations: prices.length,
+      lastObservedAt: rows[0].observed_at,
+      matchLevel,
+      target: Number.isFinite(target) && target > 0 ? target : null,
+      targetDelta,
+      targetPercent,
+      intelligence,
+      currency: 'USD',
+    });
   } catch (error) {
     console.error('TripSignal fare preview error:', error);
     return NextResponse.json({ available: false, observations: 0 }, { status: 500 });
