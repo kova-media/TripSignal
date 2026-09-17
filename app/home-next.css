@@ -64,6 +64,24 @@
 .home-page .fare-example-price span { color: var(--muted); font-size: 13px; }
 .home-page .fare-example-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 13px; }
 .home-page .fare-example-card .button { min-height: 52px; font-size: 14px; }
+
+.fare-history { grid-column: 1 / -1; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
+.fare-history-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 12px; }
+.fare-history-head > div:first-child { display: flex; align-items: baseline; gap: 14px; }
+.fare-history-head span, .fare-history-range { color: var(--muted); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
+.fare-history-head strong { color: var(--ink); font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 550; letter-spacing: -.045em; }
+.fare-history-range { display: flex; gap: 16px; text-transform: none; letter-spacing: 0; }
+.fare-history-chart { position: relative; min-height: 180px; }
+.fare-history-chart svg { display: block; width: 100%; height: 180px; overflow: visible; }
+.fare-history-line { fill: none; stroke: var(--ts-blue); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.fare-history-area { fill: var(--accent-soft); opacity: .55; }
+.fare-history-target { stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 5 5; }
+.fare-history-target-label { position: absolute; right: 0; top: 2px; color: var(--muted); font-size: 10px; }
+.fare-history-axis { display: flex; justify-content: space-between; margin-top: 5px; color: var(--muted); font-size: 10px; }
+.fare-history-empty { display: flex; min-height: 120px; align-items: center; justify-content: center; flex-direction: column; gap: 7px; color: var(--muted); font-size: 12px; text-align: center; }
+.fare-history-empty strong { color: var(--ink); font-size: 13px; font-weight: 600; }
+.fare-history-empty span { max-width: 420px; line-height: 1.55; }
+
 @media (max-width: 980px) { .home-page .trip-extras-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) {
   .home-page .shell { width: min(100% - 40px, 680px); }
@@ -89,5 +107,7 @@
   .home-page .trip-extras { margin-top: 42px; padding-top: 30px; }
   .home-page .trip-extras-heading { align-items: flex-start; flex-direction: column; gap: 16px; }
   .home-page .trip-extras-heading > p { max-width: none; text-align: left; }
+  .fare-history-head { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .fare-history-chart svg { height: 150px; }
 }
 @media (max-width: 620px) { .home-page .shell { width: calc(100vw - 32px); } }
