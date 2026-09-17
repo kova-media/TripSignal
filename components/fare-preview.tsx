@@ -97,9 +97,9 @@ export default function FarePreview() {
         try {
           const response = await fetch(`/api/fare-preview?${params.toString()}`, { signal: controller.signal, cache: 'no-store' });
           const data = (await response.json()) as Preview;
-          if (!controller.signal.aborted) setPreview(data.available ? data : { available: false, observations: 0 });
+          if (!controller.signal.aborted) setPreview(data.available ? data : null);
         } catch {
-          if (!controller.signal.aborted) setPreview({ available: false, observations: 0 });
+          if (!controller.signal.aborted) setPreview(null);
         } finally {
           if (!controller.signal.aborted) setLoading(false);
         }
@@ -126,7 +126,7 @@ export default function FarePreview() {
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }, [preview?.lastObservedAt]);
 
-  if (!host || !hasRoute) return null;
+  if (!host || !hasRoute || (!preview?.available && !loading)) return null;
 
   return createPortal(
     <section className={styles.preview} aria-live="polite">
@@ -147,7 +147,7 @@ export default function FarePreview() {
           <p className={styles.note}>Based on fares TripSignal has actually observed for matching watches. Historical prices are not a guarantee of future fares.</p>
         </>
       ) : (
-        <p className={styles.empty}>{loading ? 'Checking TripSignal’s fare history for this route…' : 'TripSignal does not have historical fare data for this route yet.'}</p>
+        <p className={styles.empty}>Checking TripSignal’s fare history for this route…</p>
       )}
     </section>,
     host,
