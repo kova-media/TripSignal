@@ -19,16 +19,14 @@ const photoUrls: Partial<Record<AffiliateVertical, string>> = {
 };
 
 export default function TripExtras({ context }: { context: AffiliateContext }) {
-  const visible = Boolean(context.destination);
-
   return (
-    <section className={`trip-extras${visible ? ' trip-extras-visible' : ''}`} aria-label="Complete your trip">
+    <section className="trip-extras trip-extras-visible" aria-label="Complete your trip">
       <div className="trip-extras-heading">
         <div>
           <span className="trip-extras-eyebrow">Complete your trip</span>
           <h2>Everything after the flight.</h2>
         </div>
-        <p>Useful travel services for the destination you just selected.</p>
+        <p>Useful travel services for the trip you are planning.</p>
       </div>
 
       <div className="trip-extras-grid">
