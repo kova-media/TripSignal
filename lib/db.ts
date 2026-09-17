@@ -145,6 +145,43 @@ export async function ensureSchema() {
       create index if not exists fare_observations_alert_idx on fare_observations (alert_id, observed_at asc);
       create index if not exists fare_observations_route_idx on fare_observations (origin, destination_mode, destination, trip_type, observed_at desc);
 
+      create table if not exists airport_lounges (
+        id uuid primary key default gen_random_uuid(),
+        airport text not null,
+        name text not null,
+        terminal text,
+        location text,
+        airside boolean,
+        access_methods jsonb not null default '[]'::jsonb,
+        membership_required boolean,
+        day_pass_price text,
+        hourly_price text,
+        max_stay text,
+        amenities jsonb not null default '[]'::jsonb,
+        guest_policy text,
+        hours text,
+        source_name text,
+        source_url text,
+        last_verified_at timestamptz,
+        created_at timestamptz not null default now(),
+        updated_at timestamptz not null default now()
+      );
+
+      create index if not exists airport_lounges_airport_idx on airport_lounges (airport, name);
+      create index if not exists airport_lounges_verified_idx on airport_lounges (last_verified_at desc);
+
+      create table if not exists airport_lounge_reviews (
+        id uuid primary key default gen_random_uuid(),
+        lounge_id uuid not null references airport_lounges(id) on delete cascade,
+        user_id uuid references users(id) on delete set null,
+        rating integer not null check (rating between 1 and 5),
+        title text,
+        body text,
+        created_at timestamptz not null default now()
+      );
+
+      create index if not exists airport_lounge_reviews_lounge_idx on airport_lounge_reviews (lounge_id, created_at desc);
+
       create table if not exists admin_audit_log (
         id uuid primary key default gen_random_uuid(),
         admin_email text not null,
