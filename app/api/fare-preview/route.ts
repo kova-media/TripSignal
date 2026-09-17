@@ -15,15 +15,10 @@ export async function GET(request: Request) {
     const destinationMode = params.get('destinationMode') === 'country' ? 'country' : 'airport';
     const tripType = params.get('tripType') === 'one-way' ? 'one-way' : 'round-trip';
     const cabin = clean(params.get('cabin')) || 'PREMIUM_ECONOMY';
-    const maxStops = params.get('maxStops') ?? '1';
-    const passengers = Number(params.get('passengers') ?? '1');
-    const airlineMode = clean(params.get('airlineMode')) || 'ALL';
-    const tripLength = params.get('tripLength') ?? '1–3 weeks';
 
-    if (!/^[A-Z]{3}$/.test(origin)) return NextResponse.json({ available: false });
-    if (destinationMode === 'airport' && !/^[A-Z]{3}$/.test(destination)) return NextResponse.json({ available: false });
-    if (destinationMode === 'country' && !/^[A-Z]{2}$/.test(destination)) return NextResponse.json({ available: false });
-    if (!Number.isInteger(passengers) || passengers < 1 || passengers > 9) return NextResponse.json({ available: false });
+    if (!/^[A-Z]{3}$/.test(origin)) return NextResponse.json({ available: false, observations: 0 });
+    if (destinationMode === 'airport' && !/^[A-Z]{3}$/.test(destination)) return NextResponse.json({ available: false, observations: 0 });
+    if (destinationMode === 'country' && !/^[A-Z]{2}$/.test(destination)) return NextResponse.json({ available: false, observations: 0 });
 
     await ensureSchema();
     const db = getDb();
@@ -33,20 +28,14 @@ export async function GET(request: Request) {
        from fare_observations fo
        join alerts a on a.id = fo.alert_id
        where upper(coalesce(a.criteria->>'origin', '')) = $1
-         and upper(coalesce(a.criteria->>'destinationMode', 'airport')) = $2
+         and lower(coalesce(a.criteria->>'destinationMode', 'airport')) = $2
          and upper(coalesce(a.criteria->>'destination', '')) = $3
          and lower(coalesce(a.criteria->>'tripType', 'round-trip')) = $4
          and lower(coalesce(a.criteria->>'cabin', 'premium_economy')) = lower($5)
-         and coalesce(a.criteria->>'maxStops', '1') = $6
-         and coalesce((a.criteria->>'passengers')::integer, 1) = $7
-         and upper(coalesce(a.criteria->>'airlineMode', 'ALL')) = $8
-         and coalesce(a.criteria->>'tripLength', '1–3 weeks') = $9
        order by fo.observed_at desc
-       limit 500`,
-      [origin, destinationMode, destination, tripType, cabin, maxStops, passengers, airlineMode, tripLength],
+       limit 1000`,
+      [origin, destinationMode, destination, tripType, cabin],
     );
-
-    if (!result.rowCount) return NextResponse.json({ available: false, observations: 0 });
 
     const prices = result.rows.map((row) => Number(row.price)).filter((price) => Number.isFinite(price) && price > 0);
     if (!prices.length) return NextResponse.json({ available: false, observations: 0 });
@@ -55,7 +44,11 @@ export async function GET(request: Request) {
     const median = sorted.length % 2 === 1
       ? sorted[Math.floor(sorted.length / 2)]
       : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
-    const recent = result.rows.filter((row) => Date.now() - new Date(row.observed_at).getTime() <= 90 * 24 * 60 * 60 * 1000).map((row) => Number(row.price)).filter((price) => Number.isFinite(price) && price > 0);
+    const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+    const recent = result.rows
+      .filter((row) => new Date(row.observed_at).getTime() >= cutoff)
+      .map((row) => Number(row.price))
+      .filter((price) => Number.isFinite(price) && price > 0);
 
     return NextResponse.json({
       available: true,
@@ -68,6 +61,6 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     console.error('TripSignal fare preview error:', error);
-    return NextResponse.json({ available: false }, { status: 500 });
+    return NextResponse.json({ available: false, observations: 0 }, { status: 500 });
   }
 }
