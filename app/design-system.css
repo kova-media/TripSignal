@@ -56,15 +56,15 @@
   border-radius: var(--control-radius) !important;
 }
 
-/* Discovery heading: center the exact statement against the full viewport. */
+/* The discovery section is a grid. Make the heading span the entire grid before centering it. */
 .discovery-head {
   display: block !important;
-  position: relative !important;
-  left: 50% !important;
-  width: 100vw !important;
+  grid-column: 1 / -1 !important;
+  position: static !important;
+  width: 100% !important;
   max-width: none !important;
   margin: 0 !important;
-  transform: translateX(-50%) !important;
+  transform: none !important;
   text-align: center !important;
 }
 
