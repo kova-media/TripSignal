@@ -124,13 +124,26 @@ export async function ensureSchema() {
 
       create table if not exists fare_observations (
         id uuid primary key default gen_random_uuid(),
-        alert_id uuid not null references alerts(id) on delete cascade,
+        alert_id uuid references alerts(id) on delete cascade,
         observed_at timestamptz not null default now(),
         price numeric(10,2) not null,
-        offer jsonb not null
+        offer jsonb not null,
+        origin text,
+        destination_mode text,
+        destination text,
+        trip_type text,
+        cabin text
       );
 
+      alter table fare_observations alter column alert_id drop not null;
+      alter table fare_observations add column if not exists origin text;
+      alter table fare_observations add column if not exists destination_mode text;
+      alter table fare_observations add column if not exists destination text;
+      alter table fare_observations add column if not exists trip_type text;
+      alter table fare_observations add column if not exists cabin text;
+
       create index if not exists fare_observations_alert_idx on fare_observations (alert_id, observed_at asc);
+      create index if not exists fare_observations_route_idx on fare_observations (origin, destination_mode, destination, trip_type, observed_at desc);
 
       create table if not exists admin_audit_log (
         id uuid primary key default gen_random_uuid(),
