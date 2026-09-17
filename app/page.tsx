@@ -20,25 +20,36 @@ function countryName(code: unknown) {
   return new Intl.DisplayNames(['en'], { type: 'region' }).of(value) ?? value;
 }
 
+function formatChecked(value: string | null) {
+  if (!value) return 'Not checked yet';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Not checked yet';
+  const diff = Date.now() - date.getTime();
+  if (diff < 60 * 60 * 1000) return `${Math.max(1, Math.round(diff / 60000))}m ago`;
+  if (diff < 24 * 60 * 60 * 1000) return `${Math.round(diff / 3600000)}h ago`;
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
 export default async function Home() {
   const user = await getCurrentUser();
-  let watches: Array<{ id: string; criteria: any; frequency: string }> = [];
+  let watches: Array<{ id: string; criteria: any; frequency: string; last_checked_at: string | null; latest_fare: number | null }> = [];
   let subscriptionActive = false;
 
   if (user) {
     const sql = getDb();
     await ensureSchema();
-    const result = await sql.query<{ id: string; criteria: any; frequency: string }>(
-      `select id, criteria, frequency
-       from alerts
-       where user_id = $1
-         and active = true
-         and jsonb_typeof(criteria) = 'object'
-         and length(coalesce(criteria->>'origin', '')) = 3
-         and criteria ? 'destination'
-         and criteria ? 'maxPrice'
-         and lower(coalesce(criteria->>'destination', '')) not in ('any destination', 'any airport')
-       order by created_at desc`,
+    const result = await sql.query<{ id: string; criteria: any; frequency: string; last_checked_at: string | null; latest_fare: number | null }>(
+      `select a.id, a.criteria, a.frequency, a.last_checked_at,
+              (select fo.price from fare_observations fo where fo.alert_id = a.id order by fo.observed_at desc limit 1)::float as latest_fare
+       from alerts a
+       where a.user_id = $1
+         and a.active = true
+         and jsonb_typeof(a.criteria) = 'object'
+         and length(coalesce(a.criteria->>'origin', '')) = 3
+         and a.criteria ? 'destination'
+         and a.criteria ? 'maxPrice'
+         and lower(coalesce(a.criteria->>'destination', '')) not in ('any destination', 'any airport')
+       order by a.created_at desc`,
       [user.id],
     );
     watches = result.rows;
@@ -65,7 +76,7 @@ export default async function Home() {
       </section>
       <TripDiscoveryDirect accountEmail={user?.email ?? null} />
       <section className="home-difference shell" id="how-it-works"><div className="home-difference-copy"><p className="section-kicker">Why TripSignal</p><h2>Search once.<br /><em>Let TripSignal keep checking.</em></h2></div><div className="home-steps"><article><span>1</span><h3>Set your watch</h3><p>Choose your route, travel window, cabin and target price.</p></article><article><span>2</span><h3>We keep watching</h3><p>TripSignal checks your watch on the schedule you choose.</p></article><article><span>3</span><h3>Get alerted</h3><p>When a fare matches your criteria, we’ll tell you.</p></article></div></section>
-      <section className="product-preview shell"><div className="preview-heading"><p className="section-kicker">Your flight price watches</p><h2>Set it once.<br /><em>Let it run.</em></h2><p>{user ? 'Each watch has its own rules. TripSignal checks them on schedule and keeps the result simple.' : 'Sign in to see the flight fare watches you have running.'}</p></div>{user ? (watches.length ? (<div className="watch-dashboard"><div className="dashboard-head"><div><span>Active watches</span><strong>{watches.length}</strong></div><span className="dashboard-status"><i /> Monitoring</span></div>{watches.map((watch) => { const c = watch.criteria || {}; const origin = c.origin || 'Not set'; const destination = c.destinationMode === 'country' ? countryName(c.destination) : c.destinationMode === 'region' ? (c.destination || c.region || 'Not set') : (c.destination || 'Not set'); const cabin = c.cabin ? String(c.cabin).replace(/_/g, ' ') : 'Any cabin'; const stops = c.maxStops != null ? `${c.maxStops} stop${c.maxStops === 1 ? '' : 's'} max` : ''; return <article className="watch-row" key={watch.id}><div className="watch-route"><strong>{origin}</strong><span>→</span><strong>{destination}</strong><small>{cabin}{stops ? ` · ${stops}` : ''}</small></div><div className="watch-fare"><span>Frequency</span><strong>{watch.frequency}</strong><small>Active watch</small></div><a className="watch-pill" href="/profile">Manage</a></article>; })}</div>) : <div className="empty-watches"><p>No active watches yet.</p><a className="button button-primary" href="#explore">Start watching</a></div>) : <div className="empty-watches"><p>Sign in to see your watches.</p><a className="button button-primary" href="/signin">Sign in</a></div>}</section>
+      <section className="product-preview shell"><div className="preview-heading"><p className="section-kicker">Your flight price watches</p><h2>Set it once.<br /><em>Let it run.</em></h2><p>{user ? 'Each watch has its own rules. TripSignal checks them on schedule and keeps the result simple.' : 'Sign in to see the flight fare watches you have running.'}</p></div>{user ? (watches.length ? (<div className="watch-dashboard"><div className="dashboard-head"><div><span>Active watches</span><strong>{watches.length}</strong></div><span className="dashboard-status"><i /> Monitoring</span></div>{watches.map((watch) => { const c = watch.criteria || {}; const origin = c.origin || 'Not set'; const destination = c.destinationMode === 'country' ? countryName(c.destination) : c.destinationMode === 'region' ? (c.destination || c.region || 'Not set') : (c.destination || 'Not set'); const cabin = c.cabin ? String(c.cabin).replace(/_/g, ' ') : 'Any cabin'; const stops = c.maxStops != null ? `${c.maxStops} stop${c.maxStops === 1 ? '' : 's'} max` : ''; const target = Number(c.maxPrice); return <article className="watch-row" key={watch.id}><div className="watch-route"><strong>{origin}</strong><span>→</span><strong>{destination}</strong><small>{cabin}{stops ? ` · ${stops}` : ''}</small></div><div className="watch-fare"><span>Latest fare</span><strong>{watch.latest_fare != null ? `$${Math.round(watch.latest_fare).toLocaleString()}` : '—'}</strong><small>{watch.latest_fare != null ? `Target $${Number.isFinite(target) ? Math.round(target).toLocaleString() : '—'}` : 'No fare found yet'}</small></div><div className="watch-fare"><span>Last checked</span><strong>{formatChecked(watch.last_checked_at)}</strong><small>{watch.frequency} · Active watch</small></div><a className="watch-pill" href="/profile">Manage</a></article>; })}</div>) : <div className="empty-watches"><p>No active watches yet.</p><a className="button button-primary" href="#explore">Start watching</a></div>) : <div className="empty-watches"><p>Sign in to see your watches.</p><a className="button button-primary" href="/signin">Sign in</a></div>}</section>
       <section className="pricing-preview shell" aria-label="TripSignal pricing"><div className="pricing-preview-card"><div className="pricing-tier"><span>Free</span><strong>$0</strong><small>1 new watch each month</small><a className="button button-light" href="#explore">Start watching</a></div><div className="pricing-tier pricing-tier-pro"><span>TripSignal Pro</span><strong>$19.99</strong><small>per year · unlimited watches</small>{user ? <BillingButton active={subscriptionActive} /> : <a className="button button-primary" href="/signin?next=%2Faccount">Sign in to upgrade</a>}</div></div></section>
       <section className="home-cta shell"><div><p className="section-kicker">Start watching flight prices</p><h2>Stop searching.<br /><em>Let TripSignal watch.</em></h2></div><a className="button button-primary" href="#explore">Start watching</a></section>
       <footer className="footer shell"><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><div className="footer-links"><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/refunds">Refunds</a><a href="/contact">Contact</a></div><span>© 2026 TripSignal</span></footer>
