@@ -56,32 +56,50 @@
   border-radius: var(--control-radius) !important;
 }
 
-/* The discovery section is a grid. Make the heading span the entire grid before centering it. */
+/* Center the discovery heading in the same 1240px section as the builder below it. */
+.home-page .discovery {
+  width: min(1240px, calc(100% - 56px)) !important;
+  max-width: 1240px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.home-page .discovery-head,
 .discovery-head {
   display: block !important;
   grid-column: 1 / -1 !important;
+  justify-self: stretch !important;
+  align-self: start !important;
   position: static !important;
+  left: auto !important;
+  right: auto !important;
   width: 100% !important;
   max-width: none !important;
-  margin: 0 !important;
+  margin: 0 0 38px !important;
+  padding: 0 !important;
   transform: none !important;
   text-align: center !important;
 }
 
+.home-page .discovery-head > div,
 .discovery-head > div {
   display: block !important;
   width: 100% !important;
   max-width: none !important;
   margin: 0 auto !important;
+  padding: 0 !important;
   text-align: center !important;
 }
 
 /* Only the requested heading remains visible. */
+.home-page .discovery-head .section-kicker,
+.home-page .discovery-head > p,
 .discovery-head .section-kicker,
 .discovery-head > p {
   display: none !important;
 }
 
+.home-page .discovery-head h2,
 .discovery-head h2 {
   display: block !important;
   width: 100% !important;
@@ -94,12 +112,14 @@
   color: transparent !important;
 }
 
+.home-page .discovery-head h2 br,
+.home-page .discovery-head h2 em,
 .discovery-head h2 br,
 .discovery-head h2 em {
   display: none !important;
 }
 
-/* One text block, so there is no independent line spacing. */
+.home-page .discovery-head h2::before,
 .discovery-head h2::before {
   content: 'Tell us where.\A Set the fare';
   display: block !important;
