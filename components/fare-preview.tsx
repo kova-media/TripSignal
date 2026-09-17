@@ -37,6 +37,7 @@ function activeButton(root: HTMLElement, text: string) {
 export default function FarePreview() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [loading, setLoading] = useState(false);
+  const [hasRoute, setHasRoute] = useState(false);
   const [host, setHost] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -69,7 +70,10 @@ export default function FarePreview() {
         const countryCode = read(root, 'discovery-country-code').toUpperCase();
         const destinationMode = countryCode ? 'country' : 'airport';
         const destination = destinationMode === 'country' ? countryCode : airportCode(read(root, 'airport-destination'));
-        if (!origin || !destination) {
+        const routeSelected = Boolean(origin && destination);
+        setHasRoute(routeSelected);
+        if (!routeSelected) {
+          controller?.abort();
           setPreview(null);
           setLoading(false);
           return;
@@ -93,9 +97,9 @@ export default function FarePreview() {
         try {
           const response = await fetch(`/api/fare-preview?${params.toString()}`, { signal: controller.signal, cache: 'no-store' });
           const data = (await response.json()) as Preview;
-          if (!controller.signal.aborted) setPreview(data.available ? data : null);
+          if (!controller.signal.aborted) setPreview(data.available ? data : { available: false, observations: 0 });
         } catch {
-          if (!controller.signal.aborted) setPreview(null);
+          if (!controller.signal.aborted) setPreview({ available: false, observations: 0 });
         } finally {
           if (!controller.signal.aborted) setLoading(false);
         }
@@ -122,7 +126,7 @@ export default function FarePreview() {
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }, [preview?.lastObservedAt]);
 
-  if (!host || (!preview && !loading)) return null;
+  if (!host || !hasRoute) return null;
 
   return createPortal(
     <section className={styles.preview} aria-live="polite">
@@ -131,18 +135,20 @@ export default function FarePreview() {
           <span className={styles.kicker}>FARE HISTORY</span>
           <h3>What TripSignal has seen</h3>
         </div>
-        {loading && <span className={styles.loading}>Updating</span>}
+        {loading && <span className={styles.loading}>Checking</span>}
       </div>
-      {preview ? (
-        <div className={styles.stats}>
-          <div><span>Lowest observed</span><strong>{money(preview.lowest)}</strong><small>{preview.observations?.toLocaleString()} observations</small></div>
-          <div><span>90-day low</span><strong>{money(preview.recentLowest)}</strong><small>{observed ? `Last seen ${observed}` : 'Recent route data'}</small></div>
-          <div><span>Typical observed</span><strong>{money(preview.median)}</strong><small>Median of recorded fares</small></div>
-        </div>
+      {preview?.available ? (
+        <>
+          <div className={styles.stats}>
+            <div><span>Lowest observed</span><strong>{money(preview.lowest)}</strong><small>{preview.observations?.toLocaleString()} observations</small></div>
+            <div><span>90-day low</span><strong>{money(preview.recentLowest)}</strong><small>{observed ? `Last seen ${observed}` : 'Recent route data'}</small></div>
+            <div><span>Typical observed</span><strong>{money(preview.median)}</strong><small>Median of recorded fares</small></div>
+          </div>
+          <p className={styles.note}>Based on fares TripSignal has actually observed for matching watches. Historical prices are not a guarantee of future fares.</p>
+        </>
       ) : (
-        <p className={styles.empty}>Checking TripSignal's fare history for this route…</p>
+        <p className={styles.empty}>{loading ? 'Checking TripSignal’s fare history for this route…' : 'TripSignal does not have historical fare data for this route yet.'}</p>
       )}
-      {preview && <p className={styles.note}>Based on fares TripSignal has actually observed for matching watches. Historical prices are not a guarantee of future fares.</p>}
     </section>,
     host,
   );
