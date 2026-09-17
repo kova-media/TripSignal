@@ -55,3 +55,49 @@
 .builder-form input {
   border-radius: var(--control-radius) !important;
 }
+
+/* Discovery header: one centered statement, with no secondary copy. */
+.discovery-head {
+  display: block !important;
+  text-align: center !important;
+  margin-inline: auto !important;
+}
+
+.discovery-head > div {
+  width: 100% !important;
+  max-width: none !important;
+  margin-inline: auto !important;
+}
+
+.discovery-head > p {
+  display: none !important;
+}
+
+.discovery-head h2 {
+  text-align: center !important;
+  font-size: clamp(48px, 5.6vw, 76px) !important;
+  line-height: .94 !important;
+}
+
+/* Replace the old second line without changing the surrounding layout. */
+.discovery-head h2 {
+  font-size: 0 !important;
+}
+
+.discovery-head h2::before,
+.discovery-head h2::after {
+  display: block;
+  font-size: clamp(48px, 5.6vw, 76px);
+  line-height: .94;
+  letter-spacing: inherit;
+}
+
+.discovery-head h2::before {
+  content: 'Tell us where.';
+  color: var(--ink);
+}
+
+.discovery-head h2::after {
+  content: 'Set the fare';
+  color: var(--muted);
+}
