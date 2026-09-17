@@ -47,9 +47,6 @@ export async function ensureSchema() {
       alter table users add column if not exists subscription_status text not null default 'inactive';
       alter table users add column if not exists subscription_current_period_end timestamptz;
 
-      -- Older Admin grants incorrectly stored lifetime Pro access as canceled.
-      -- Lifetime grants have no Stripe subscription or billing period, so repair
-      -- only that unambiguous legacy state.
       update users
       set subscription_status = 'lifetime'
       where plan = 'pro'
@@ -93,7 +90,6 @@ export async function ensureSchema() {
         created_at timestamptz not null default now()
       );
 
-      -- Upgrade databases created before Daily frequency was supported.
       alter table alerts drop constraint if exists alerts_frequency_check;
       alter table alerts add constraint alerts_frequency_check check (frequency in ('Daily', 'Weekly', 'Monthly'));
 
@@ -125,6 +121,16 @@ export async function ensureSchema() {
 
       create index if not exists alert_runs_alert_idx on alert_runs (alert_id, started_at desc);
       create index if not exists alert_runs_status_idx on alert_runs (status, started_at desc);
+
+      create table if not exists fare_observations (
+        id uuid primary key default gen_random_uuid(),
+        alert_id uuid not null references alerts(id) on delete cascade,
+        observed_at timestamptz not null default now(),
+        price numeric(10,2) not null,
+        offer jsonb not null
+      );
+
+      create index if not exists fare_observations_alert_idx on fare_observations (alert_id, observed_at asc);
 
       create table if not exists admin_audit_log (
         id uuid primary key default gen_random_uuid(),
