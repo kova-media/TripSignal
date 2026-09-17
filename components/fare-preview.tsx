@@ -11,6 +11,7 @@ type Preview = {
   recentLowest?: number;
   observations?: number;
   lastObservedAt?: string;
+  matchLevel?: 'matching' | 'route' | null;
   currency?: string;
 };
 
@@ -103,7 +104,7 @@ export default function FarePreview() {
         } finally {
           if (!controller.signal.aborted) setLoading(false);
         }
-      }, 250);
+      }, 400);
     };
 
     root.addEventListener('input', update);
@@ -126,7 +127,7 @@ export default function FarePreview() {
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }, [preview?.lastObservedAt]);
 
-  if (!host || !hasRoute || (!preview?.available && !loading)) return null;
+  if (!host || !hasRoute) return null;
 
   return createPortal(
     <section className={styles.preview} aria-live="polite">
@@ -140,14 +141,14 @@ export default function FarePreview() {
       {preview?.available ? (
         <>
           <div className={styles.stats}>
-            <div><span>Lowest observed</span><strong>{money(preview.lowest)}</strong><small>{preview.observations?.toLocaleString()} observations</small></div>
+            <div><span>{preview.matchLevel === 'route' ? 'Route low' : 'Lowest observed'}</span><strong>{money(preview.lowest)}</strong><small>{preview.observations?.toLocaleString()} observations</small></div>
             <div><span>90-day low</span><strong>{money(preview.recentLowest)}</strong><small>{observed ? `Last seen ${observed}` : 'Recent route data'}</small></div>
             <div><span>Typical observed</span><strong>{money(preview.median)}</strong><small>Median of recorded fares</small></div>
           </div>
-          <p className={styles.note}>Based on fares TripSignal has actually observed for matching watches. Historical prices are not a guarantee of future fares.</p>
+          <p className={styles.note}>{preview.matchLevel === 'route' ? 'Route history across recorded fare searches. It may include different cabin or trip settings.' : 'Based on fares TripSignal has actually observed for matching watches. Historical prices are not a guarantee of future fares.'}</p>
         </>
       ) : (
-        <p className={styles.empty}>Checking TripSignal’s fare history for this route…</p>
+        <p className={styles.empty}>Searching current fares to start the route history…</p>
       )}
     </section>,
     host,
