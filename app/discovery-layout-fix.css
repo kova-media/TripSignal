@@ -70,12 +70,12 @@ html .home-page .account-bound .discovery-field:has(#discovery-email) {
   display: none !important;
 }
 
-/* The discovery JSX keeps the controls, map, and trip extras as siblings.
-   Make the two-column structure explicit so the controls can span the map
-   and extras rows while the extras stay directly beneath the map. */
+/* Keep the controls in the left column while the map and trip extras form
+   two independent rows in the right column. */
 html .home-page .discovery {
   display: grid !important;
   grid-template-columns: minmax(280px, 0.62fr) minmax(0, 1.38fr) !important;
+  grid-template-rows: auto 620px auto !important;
   column-gap: 0 !important;
   row-gap: 0 !important;
 }
@@ -96,6 +96,8 @@ html .home-page .discovery > .discovery-layout > .discovery-controls {
   padding-right: 34px !important;
   border-right: 1px solid var(--line) !important;
   border-bottom: 0 !important;
+  align-self: stretch !important;
+  min-height: 0 !important;
 }
 
 html .home-page .discovery > .discovery-layout > .discovery-map {
@@ -128,6 +130,7 @@ html .home-page .discovery > .trip-extras {
   padding: 28px 28px 32px !important;
   box-sizing: border-box !important;
   border-top: 1px solid var(--line-strong) !important;
+  align-self: start !important;
 }
 
 @media (max-width: 900px) {
