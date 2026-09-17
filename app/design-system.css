@@ -56,7 +56,7 @@
   border-radius: var(--control-radius) !important;
 }
 
-/* Discovery header: exact copy, centered as a single two-line heading. */
+/* Discovery heading: render one exact two-line statement. */
 .discovery-head {
   display: block !important;
   width: 100% !important;
@@ -82,11 +82,32 @@
   display: none !important;
 }
 
+/* Suppress every character in the source h2 so the old wording cannot leak through. */
 .discovery-head h2 {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  color: transparent !important;
+}
+
+.discovery-head h2 br,
+.discovery-head h2 em {
+  display: none !important;
+}
+
+/* Single generated block prevents the two lines from acquiring independent spacing. */
+.discovery-head h2::before {
+  content: 'Tell us where.\A Set the fare';
   display: block !important;
   width: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
+  white-space: pre !important;
   text-align: center !important;
   font-family: 'Space Grotesk', sans-serif !important;
   font-size: clamp(58px, 6.4vw, 84px) !important;
@@ -94,39 +115,4 @@
   line-height: .88 !important;
   letter-spacing: -.067em !important;
   color: var(--ink) !important;
-}
-
-.discovery-head h2 br {
-  display: none !important;
-}
-
-.discovery-head h2 em {
-  display: block !important;
-  width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  font: inherit !important;
-  font-style: normal !important;
-  color: var(--muted) !important;
-}
-
-/* Source markup still contains the old second-line wording. Hide only that text and render the exact requested replacement. */
-.discovery-head h2 em {
-  font-size: 0 !important;
-  line-height: 0 !important;
-}
-
-.discovery-head h2 em::before {
-  content: 'Set the fare';
-  display: block !important;
-  width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  font-family: 'Space Grotesk', sans-serif !important;
-  font-size: clamp(58px, 6.4vw, 84px) !important;
-  font-weight: 600 !important;
-  line-height: .88 !important;
-  letter-spacing: -.067em !important;
-  text-align: center !important;
-  color: var(--muted) !important;
 }
