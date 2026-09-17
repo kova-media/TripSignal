@@ -70,16 +70,104 @@ html .home-page .account-bound .discovery-field:has(#discovery-email) {
   display: none !important;
 }
 
+/* The discovery JSX keeps the controls, map, and trip extras as siblings.
+   Make the two-column structure explicit so the controls can span the map
+   and extras rows while the extras stay directly beneath the map. */
+html .home-page .discovery {
+  display: grid !important;
+  grid-template-columns: minmax(280px, 0.62fr) minmax(0, 1.38fr) !important;
+  column-gap: 0 !important;
+  row-gap: 0 !important;
+}
+
+html .home-page .discovery > .discovery-head {
+  grid-column: 1 / -1 !important;
+  grid-row: 1 !important;
+}
+
+html .home-page .discovery > .discovery-layout {
+  display: contents !important;
+}
+
+html .home-page .discovery > .discovery-layout > .discovery-controls {
+  grid-column: 1 !important;
+  grid-row: 2 / span 2 !important;
+  min-width: 0 !important;
+  padding-right: 34px !important;
+  border-right: 1px solid var(--line) !important;
+  border-bottom: 0 !important;
+}
+
+html .home-page .discovery > .discovery-layout > .discovery-map {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 620px !important;
+  min-height: 620px !important;
+  max-height: 620px !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+html .home-page .discovery > .discovery-layout > .discovery-map svg {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+html .home-page .discovery > .trip-extras {
+  grid-column: 2 !important;
+  grid-row: 3 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 28px 28px 32px !important;
+  box-sizing: border-box !important;
+  border-top: 1px solid var(--line-strong) !important;
+}
+
 @media (max-width: 900px) {
   .discovery {
     width: min(100% - 40px, 760px) !important;
     max-width: 760px !important;
   }
 
+  html .home-page .discovery,
   html .home-page .discovery-layout,
   .discovery-layout {
+    display: block !important;
+  }
+
+  html .home-page .discovery > .discovery-head {
+    display: block !important;
+  }
+
+  html .home-page .discovery > .discovery-layout {
+    display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 34px !important;
+  }
+
+  html .home-page .discovery > .discovery-layout > .discovery-controls {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+
+  html .home-page .discovery > .discovery-layout > .discovery-map {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    height: 500px !important;
+    min-height: 500px !important;
+    max-height: 500px !important;
+  }
+
+  html .home-page .discovery > .trip-extras {
+    width: 100% !important;
+    margin: 0 !important;
   }
 
   html .home-page .route-map {
