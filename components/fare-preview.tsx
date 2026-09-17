@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './fare-preview.module.css';
 
 type Preview = {
@@ -36,6 +37,23 @@ function activeButton(root: HTMLElement, text: string) {
 export default function FarePreview() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [loading, setLoading] = useState(false);
+  const [host, setHost] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const root = document.querySelector<HTMLElement>('[data-trip-discovery-direct]');
+    const button = root?.querySelector<HTMLElement>('.discovery-cta');
+    if (!root || !button?.parentElement) return;
+    const existing = root.querySelector<HTMLElement>('.fare-preview-host');
+    if (existing) {
+      setHost(existing);
+      return;
+    }
+    const element = document.createElement('div');
+    element.className = 'fare-preview-host';
+    button.parentElement.insertBefore(element, button);
+    setHost(element);
+    return () => element.remove();
+  }, []);
 
   useEffect(() => {
     const root = document.querySelector<HTMLElement>('[data-trip-discovery-direct]');
@@ -104,9 +122,9 @@ export default function FarePreview() {
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }, [preview?.lastObservedAt]);
 
-  if (!preview && !loading) return null;
+  if (!host || (!preview && !loading)) return null;
 
-  return (
+  return createPortal(
     <section className={styles.preview} aria-live="polite">
       <div className={styles.heading}>
         <div>
@@ -125,6 +143,7 @@ export default function FarePreview() {
         <p className={styles.empty}>Checking TripSignal's fare history for this route…</p>
       )}
       {preview && <p className={styles.note}>Based on fares TripSignal has actually observed for matching watches. Historical prices are not a guarantee of future fares.</p>}
-    </section>
+    </section>,
+    host,
   );
 }
