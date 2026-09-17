@@ -21,6 +21,8 @@ export async function runAlertSearch(alertId: string, email: string, criteria: A
   const db = getDb(); const runInserted = await db.query<{ id: string }>('insert into alert_runs (alert_id, status) values ($1, $2) returning id', [alertId, 'running']); const runId = runInserted.rows[0]?.id;
   try {
     const provider = getFlightProvider(); const searchCount = criteria.destinationMode === 'airport' ? 4 : 1; const results: FlightOffer[] = []; for (let i = 0; i < searchCount; i += 1) results.push(...await provider.search(buildCriteria(criteria, i)));
+    const lowest = results.filter((offer) => Number.isFinite(offer.price) && offer.price > 0).sort((a, b) => a.price - b.price)[0];
+    if (lowest) await db.query('insert into fare_observations (alert_id, price, offer) values ($1, $2, $3::jsonb)', [alertId, lowest.price, JSON.stringify(lowest)]);
     const qualifying = results.filter((offer) => offer.price < criteria.maxPrice).sort((a, b) => a.price - b.price).filter((offer, index, array) => index === array.findIndex((candidate) => candidate.id === offer.id)).slice(0, 10); await db.query('update alerts set last_checked_at = now() where id = $1', [alertId]);
     if (qualifying.length === 0) { if (runId) await db.query('update alert_runs set status = $1, finished_at = now(), offers_found = $2 where id = $3', ['success', 0, runId]); return { offers: [], emailed: false }; }
     const ids = qualifying.map((offer) => offer.id); const existing = await db.query<{ offer_id: string }>('select offer_id from signals where alert_id = $1 and offer_id = any($2::text[])', [alertId, ids]); const sentIds = new Set(existing.rows.map((row) => row.offer_id)); const newOffers = qualifying.filter((offer) => !sentIds.has(offer.id));
