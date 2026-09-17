@@ -83,7 +83,7 @@ async function searchOne(origin: string, destination: string, departureDate: str
     try {
       const results = await getFlights(query, { timeout: 15000, maxRetries: 2, retryDelay: 1500 });
       return results
-        .filter((result) => result.price < criteria.maxPrice)
+        .filter((result) => Number.isFinite(result.price) && result.price > 0)
         .filter((result) => criteria.airlines.length === 0 || result.airlines.some((airline) => criteria.airlines.includes(airline)))
         .map((result) => itineraryToOffer(result, origin, destination, departureDate, returnDate, criteria.tripType))
         .filter((offer): offer is FlightOffer => Boolean(offer))
