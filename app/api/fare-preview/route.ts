@@ -7,6 +7,60 @@ function clean(value: string | null) {
   return String(value ?? '').trim().toUpperCase();
 }
 
+type FareRow = { price: string; observed_at: string };
+
+async function getObservations(db: ReturnType<typeof getDb>, origin: string, destinationMode: string, destination: string, tripType: string, cabin: string) {
+  const exact = await db.query<FareRow>(
+    `select fo.price::text, fo.observed_at::text
+     from fare_observations fo
+     join alerts a on a.id = fo.alert_id
+     where upper(coalesce(a.criteria->>'origin', '')) = $1
+       and lower(coalesce(a.criteria->>'destinationMode', 'airport')) = $2
+       and upper(coalesce(a.criteria->>'destination', '')) = $3
+       and lower(coalesce(a.criteria->>'tripType', 'round-trip')) = $4
+       and lower(coalesce(a.criteria->>'cabin', 'premium_economy')) = lower($5)
+     order by fo.observed_at desc
+     limit 1000`,
+    [origin, destinationMode, destination, tripType, cabin],
+  );
+
+  if (exact.rows.length) return exact.rows;
+
+  // Do not make the preview disappear simply because the historical sample
+  // was recorded under a different cabin. Route history is still useful.
+  const route = await db.query<FareRow>(
+    `select fo.price::text, fo.observed_at::text
+     from fare_observations fo
+     join alerts a on a.id = fo.alert_id
+     where upper(coalesce(a.criteria->>'origin', '')) = $1
+       and lower(coalesce(a.criteria->>'destinationMode', 'airport')) = $2
+       and upper(coalesce(a.criteria->>'destination', '')) = $3
+       and lower(coalesce(a.criteria->>'tripType', 'round-trip')) = $4
+     order by fo.observed_at desc
+     limit 1000`,
+    [origin, destinationMode, destination, tripType],
+  );
+
+  if (route.rows.length) return route.rows;
+
+  // If there is no history for this trip type, show the route's recorded
+  // history rather than an empty card. This is explicitly route history,
+  // not a claim about the user's exact watch criteria.
+  const anyTrip = await db.query<FareRow>(
+    `select fo.price::text, fo.observed_at::text
+     from fare_observations fo
+     join alerts a on a.id = fo.alert_id
+     where upper(coalesce(a.criteria->>'origin', '')) = $1
+       and lower(coalesce(a.criteria->>'destinationMode', 'airport')) = $2
+       and upper(coalesce(a.criteria->>'destination', '')) = $3
+     order by fo.observed_at desc
+     limit 1000`,
+    [origin, destinationMode, destination],
+  );
+
+  return anyTrip.rows;
+}
+
 export async function GET(request: Request) {
   try {
     const params = new URL(request.url).searchParams;
@@ -22,22 +76,9 @@ export async function GET(request: Request) {
 
     await ensureSchema();
     const db = getDb();
+    const rows = await getObservations(db, origin, destinationMode, destination, tripType, cabin);
+    const prices = rows.map((row) => Number(row.price)).filter((price) => Number.isFinite(price) && price > 0);
 
-    const result = await db.query<{ price: string; observed_at: string }>(
-      `select fo.price::text, fo.observed_at::text
-       from fare_observations fo
-       join alerts a on a.id = fo.alert_id
-       where upper(coalesce(a.criteria->>'origin', '')) = $1
-         and lower(coalesce(a.criteria->>'destinationMode', 'airport')) = $2
-         and upper(coalesce(a.criteria->>'destination', '')) = $3
-         and lower(coalesce(a.criteria->>'tripType', 'round-trip')) = $4
-         and lower(coalesce(a.criteria->>'cabin', 'premium_economy')) = lower($5)
-       order by fo.observed_at desc
-       limit 1000`,
-      [origin, destinationMode, destination, tripType, cabin],
-    );
-
-    const prices = result.rows.map((row) => Number(row.price)).filter((price) => Number.isFinite(price) && price > 0);
     if (!prices.length) return NextResponse.json({ available: false, observations: 0 });
 
     const sorted = [...prices].sort((a, b) => a - b);
@@ -45,7 +86,7 @@ export async function GET(request: Request) {
       ? sorted[Math.floor(sorted.length / 2)]
       : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
     const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
-    const recent = result.rows
+    const recent = rows
       .filter((row) => new Date(row.observed_at).getTime() >= cutoff)
       .map((row) => Number(row.price))
       .filter((price) => Number.isFinite(price) && price > 0);
@@ -56,7 +97,7 @@ export async function GET(request: Request) {
       median,
       recentLowest: recent.length ? Math.min(...recent) : sorted[0],
       observations: prices.length,
-      lastObservedAt: result.rows[0].observed_at,
+      lastObservedAt: rows[0].observed_at,
       currency: 'USD',
     });
   } catch (error) {
