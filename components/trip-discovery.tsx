@@ -164,8 +164,8 @@ export default function TripDiscovery() {
   }, []);
 
   const budgetValue = Number(budget) || 0;
-  const destinationCoordinates = destinationCoordinate ?? (destinationAirport ? airportCoordinates[destinationAirport] : undefined);
-  const originCoordinates = originCoordinate ?? (origin ? airportCoordinates[origin] : undefined);
+  const destinationCoordinates = destinationAirport ? (airportCoordinates[destinationAirport] ?? destinationCoordinate) : destinationCoordinate;
+  const originCoordinates = origin ? (airportCoordinates[origin] ?? originCoordinate) : originCoordinate;
   const projection = useMemo(() => {
     const base = geoEqualEarth();
     return base.fitExtent([[40, 28], [960, 492]], worldFeatures);
