@@ -29,6 +29,10 @@ function cabin(root: HTMLElement) {
   return value.toLowerCase();
 }
 
+function activeButton(root: HTMLElement, text: string) {
+  return Array.from(root.querySelectorAll<HTMLButtonElement>('button')).some((button) => button.textContent?.trim() === text && button.classList.contains('active'));
+}
+
 export default function FarePreview() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [loading, setLoading] = useState(false);
@@ -44,10 +48,12 @@ export default function FarePreview() {
       window.clearTimeout(timer);
       timer = window.setTimeout(async () => {
         const origin = airportCode(read(root, 'airport-from'));
-        const destinationMode = root.querySelector<HTMLButtonElement>('[data-destination-mode="country"].active') ? 'country' : 'airport';
-        const destination = destinationMode === 'country' ? read(root, 'discovery-country-code').toUpperCase() : airportCode(read(root, 'airport-destination'));
+        const countryCode = read(root, 'discovery-country-code').toUpperCase();
+        const destinationMode = countryCode ? 'country' : 'airport';
+        const destination = destinationMode === 'country' ? countryCode : airportCode(read(root, 'airport-destination'));
         if (!origin || !destination) {
           setPreview(null);
+          setLoading(false);
           return;
         }
 
@@ -55,7 +61,7 @@ export default function FarePreview() {
           origin,
           destination,
           destinationMode,
-          tripType: root.querySelector<HTMLButtonElement>('[data-flight-type="one-way"].active') ? 'one-way' : 'round-trip',
+          tripType: activeButton(root, 'One way') ? 'one-way' : 'round-trip',
           cabin: cabin(root),
           maxStops: read(root, 'discovery-stops'),
           passengers: read(root, 'discovery-passengers'),
