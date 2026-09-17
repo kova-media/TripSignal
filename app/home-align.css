@@ -37,3 +37,5 @@ body:has(.home-page) {
     width: calc(100vw - 32px);
   }
 }
+
+/* Deployment trigger: keep the map and trip extras in the intended hierarchy. */
