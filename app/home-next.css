@@ -42,17 +42,30 @@
 .home-page .discovery-layout { grid-template-columns: minmax(280px, .62fr) minmax(0, 1.38fr) !important; align-items: start; gap: 0 !important; }
 .home-page .route-map { opacity: 1; transform: none !important; width: 100%; max-width: none; height: 620px !important; }
 .home-page .route-map svg { width: 100%; height: 620px !important; max-width: none; max-height: none; }
-.home-page .trip-extras { width: 100%; margin-top: 56px; padding-top: 38px; border-top: 1px solid var(--line-strong); }
+
+/* Complete-your-trip belongs immediately below the map, not as a later homepage section. */
+.home-page .trip-extras {
+  width: 100%;
+  margin-top: 0;
+  padding-top: 34px;
+  border-top: 1px solid var(--line-strong);
+}
 .home-page .trip-extras-heading { display: flex; align-items: end; justify-content: space-between; gap: 36px; margin-bottom: 26px; }
 .home-page .trip-extras-eyebrow { display: block; margin-bottom: 10px; color: var(--ts-blue); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .home-page .trip-extras-heading h2 { margin: 0; color: var(--ink); font-family: 'Space Grotesk', sans-serif; font-size: clamp(34px, 4vw, 52px); font-weight: 550; line-height: .98; letter-spacing: -.055em; }
 .home-page .trip-extras-heading > p { max-width: 290px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; text-align: right; }
-.home-page .trip-extras-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.home-page .trip-extra-card { display: flex; min-height: 168px; flex-direction: column; justify-content: space-between; gap: 18px; padding: 22px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); text-decoration: none; transition: border-color .18s ease, transform .18s ease; }
+.home-page .trip-extras-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.home-page .trip-extras-row { display: contents; }
+.home-page .trip-extra-card { display: flex; min-height: 320px; flex-direction: column; justify-content: flex-start; gap: 0; overflow: hidden; padding: 0; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); text-decoration: none; transition: border-color .18s ease, transform .18s ease; }
 .home-page .trip-extra-card:hover { border-color: var(--ts-blue); transform: translateY(-2px); }
+.home-page .trip-extra-image { position: relative; width: 100%; height: 168px; flex: none; background-position: center; background-size: cover; }
+.home-page .trip-extra-icon { position: absolute; left: 16px; bottom: 14px; display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(255,255,255,.45); border-radius: 10px; background: rgba(15,21,29,.58); color: #fff; backdrop-filter: blur(8px); }
+.home-page .trip-extra-icon svg { width: 22px; height: 22px; }
+.home-page .trip-extra-copy { display: flex; min-height: 152px; flex-direction: column; align-items: flex-start; gap: 8px; padding: 22px 20px 20px; text-align: left; }
 .home-page .trip-extra-card strong { font-size: 16px; font-weight: 650; letter-spacing: -.02em; }
 .home-page .trip-extra-card span { color: var(--muted); font-size: 13px; line-height: 1.55; }
-.home-page .trip-extra-card b { color: var(--ts-blue); font-size: 12px; font-weight: 650; }
+.home-page .trip-extra-card b { margin-top: auto; color: var(--ts-blue); font-size: 12px; font-weight: 650; }
+
 .home-page .fare-example { display: grid; grid-template-columns: minmax(260px, .7fr) minmax(0, 1.3fr); gap: clamp(45px, 8vw, 110px); align-items: center; padding: 0 0 132px; }
 .home-page .fare-example-heading h2 { margin: 0; font-family: 'Space Grotesk', sans-serif; font-size: clamp(43px, 5vw, 68px); font-weight: 550; line-height: .96; letter-spacing: -.065em; }
 .home-page .fare-example-heading h2 em { color: var(--muted); font-style: normal; }
@@ -103,10 +116,13 @@
   .home-page .discovery-layout { grid-template-columns: 1fr !important; gap: 34px !important; }
   .home-page .route-map { order: 2; height: 500px !important; }
   .home-page .route-map svg { height: 500px !important; }
-  .home-page .fare-example-card { padding: 28px; }
-  .home-page .trip-extras { margin-top: 42px; padding-top: 30px; }
+  .home-page .trip-extras { margin-top: 0; padding-top: 30px; }
   .home-page .trip-extras-heading { align-items: flex-start; flex-direction: column; gap: 16px; }
   .home-page .trip-extras-heading > p { max-width: none; text-align: left; }
+  .home-page .trip-extras-grid { grid-template-columns: 1fr; }
+  .home-page .trip-extra-card { min-height: 0; }
+  .home-page .trip-extra-image { height: 180px; }
+  .home-page .trip-extra-copy { min-height: 150px; }
   .fare-history-head { align-items: flex-start; flex-direction: column; gap: 8px; }
   .fare-history-chart svg { height: 150px; }
 }
