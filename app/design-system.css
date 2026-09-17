@@ -57,45 +57,49 @@
 }
 
 /* Discovery header: one centered statement, with no secondary copy. */
-.home-page .discovery-head {
+.discovery-head {
   display: block !important;
   text-align: center !important;
   margin-inline: auto !important;
 }
 
-.home-page .discovery-head > div {
+.discovery-head > div {
   width: 100% !important;
   max-width: none !important;
   margin-inline: auto !important;
 }
 
-.home-page .discovery-head > p {
+.discovery-head > p {
   display: none !important;
 }
 
-.home-page .discovery-head h2 {
-  width: 100% !important;
-  margin-inline: auto !important;
-  text-align: center !important;
+/* Hide the source heading text completely. The visible heading is supplied by the two pseudo-elements below. */
+.discovery-head h2,
+.discovery-head h2 em {
   font-size: 0 !important;
-  line-height: 1 !important;
+  line-height: 0 !important;
+  color: transparent !important;
 }
 
-.home-page .discovery-head h2::before,
-.home-page .discovery-head h2::after {
+.discovery-head h2 {
+  text-align: center !important;
+  margin: 0 !important;
+}
+
+.discovery-head h2::before,
+.discovery-head h2::after {
   display: block !important;
-  width: 100% !important;
   font-size: clamp(48px, 5.6vw, 76px) !important;
   line-height: .94 !important;
-  letter-spacing: -.075em !important;
+  letter-spacing: inherit !important;
 }
 
-.home-page .discovery-head h2::before {
+.discovery-head h2::before {
   content: 'Tell us where.';
-  color: var(--ink);
+  color: var(--ink) !important;
 }
 
-.home-page .discovery-head h2::after {
+.discovery-head h2::after {
   content: 'Set the fare';
-  color: var(--muted);
+  color: var(--muted) !important;
 }
