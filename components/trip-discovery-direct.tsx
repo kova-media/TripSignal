@@ -84,8 +84,8 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
     <div className={styles.tripType} role="group" aria-label="Flight type">
       <span>Flight type</span>
       <div className={styles.tripTypeOptions}>
-        <button type="button" className={tripType === 'round-trip' ? styles.tripTypeActive : ''} onClick={() => setTripType('round-trip')}>Round trip</button>
-        <button type="button" className={tripType === 'one-way' ? styles.tripTypeActive : ''} onClick={() => setTripType('one-way')}>One way</button>
+        <button type="button" data-flight-type="round-trip" className={tripType === 'round-trip' ? styles.tripTypeActive : ''} onClick={() => setTripType('round-trip')}>Round trip</button>
+        <button type="button" data-flight-type="one-way" className={tripType === 'one-way' ? styles.tripTypeActive : ''} onClick={() => setTripType('one-way')}>One way</button>
       </div>
     </div>
   );
