@@ -95,7 +95,7 @@ export default function LoungeGuide({ alertId }: { alertId: string }) {
               )) : (
                 <div className={styles.directoryBox}>
                   <p>No TripSignal lounge records for this airport yet.</p>
-                  <div>{airport.directories.map((directory) => <a key={directory.name} href={directory.url} target="_blank" rel="noreferrer">{directory.name}</a>)}</div>
+                  <div><a href={`/lounges?airport=${airport.airport}`}>Open TripSignal lounge guide</a>{airport.directories.map((directory) => <a key={directory.name} href={directory.url} target="_blank" rel="noreferrer">{directory.name}</a>)}</div>
                 </div>
               )}
             </section>
