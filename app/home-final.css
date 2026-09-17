@@ -11,7 +11,6 @@
 .home-page .route-map svg{width:100%!important;height:100%!important;aspect-ratio:1/1!important;max-width:none!important;max-height:none!important}
 .home-page .footer-links{display:flex;align-items:center;justify-content:center;gap:18px;color:var(--quiet)}
 .home-page .footer-links a:hover{color:var(--ink)}
-
 .home-page .discovery-head{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;margin-inline:auto}
 .home-page .discovery-head h2,.home-page .discovery-head>p{max-width:760px;margin-inline:auto;text-align:center}
 .home-page .discovery-head>p{max-width:620px}
@@ -27,7 +26,6 @@
 .home-page .route-row{text-align:center}
 .home-page .route-row>span:last-child{text-align:center}
 .home-page .route-row small,.home-page .route-row strong,.home-page .route-row b{text-align:center}
-
 .home-page .home-difference{display:flex;flex-direction:column;align-items:center;gap:44px;text-align:center;margin-inline:auto}
 .home-page .home-difference-copy{width:100%;max-width:760px;text-align:center}
 .home-page .home-difference h2{max-width:760px;margin-inline:auto;text-align:center}
@@ -35,7 +33,6 @@
 .home-page .home-steps article{text-align:center}
 .home-page .home-steps span{margin-inline:auto}
 .home-page .home-steps p{max-width:280px;margin-inline:auto}
-
 .home-page .product-preview{text-align:center}
 .home-page .preview-heading{max-width:760px;margin-inline:auto;text-align:center}
 .home-page .preview-heading h2,.home-page .preview-heading>p:last-child{margin-inline:auto;text-align:center}
@@ -45,7 +42,6 @@
 .home-page .watch-route,.home-page .watch-fare{align-items:center}
 .home-page .watch-pill{justify-self:center}
 .home-page .empty-watches{text-align:center}
-
 .home-page .pricing-preview{text-align:center}
 .home-page .pricing-preview-card{max-width:1000px;margin-inline:auto}
 .home-page .pricing-tier{text-align:center}
@@ -55,21 +51,12 @@
 .home-page .pricing-tier:first-child>strong{color:#151817}
 .home-page .pricing-tier:first-child .button{background:#151817;color:#fff}
 .home-page .pricing-tier + .pricing-tier{border-left:1px solid var(--line)}
-
-.home-page .home-cta{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin-inline:auto}
-.home-page .home-cta h2{margin-inline:auto;text-align:center}
-.home-page .home-cta>div{width:100%}
-.home-page .home-cta>.button{margin-inline:auto}
-
-/* Keep the builder's field names left aligned while the surrounding homepage remains centered. */
 .home-page .discovery-controls{text-align:left!important}
 .home-page .discovery-controls label,.home-page .discovery-controls legend,.home-page .discovery-controls .discovery-airport-search>label,.home-page .discovery-controls .discovery-field>label{width:100%;text-align:left!important;align-self:flex-start}
 .home-page .discovery-controls input,.home-page .discovery-controls select{text-align:left}
 .home-page .discovery-controls .discovery-options{justify-content:flex-start}
 .home-page .discovery-controls .benchmark-head{justify-content:space-between}
 .home-page .discovery-controls .benchmark-labels,.home-page .discovery-controls .benchmark p{text-align:left}
-
-/* Pricing card: two complete plan panels, with the Free plan using the older light treatment. */
 .home-page .pricing-preview-card{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:0!important;padding:0!important;overflow:hidden!important;background:var(--surface)!important}
 .home-page .pricing-tier{min-width:0!important;min-height:360px!important;box-sizing:border-box!important;padding:52px 52px 48px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;background:#fffefa!important;color:#151817!important}
 .home-page .pricing-tier-pro{background:var(--surface)!important;color:var(--ink)!important;border-left:1px solid var(--line)!important}
@@ -85,14 +72,18 @@
 .home-page .pricing-tier-pro .button{background:var(--ts-blue)!important;color:#fff!important}
 .home-page .pricing-tier .billing-active{display:block!important;margin-top:auto!important;color:var(--ts-blue)!important;font-size:12px!important;font-weight:600!important}
 .home-page .pricing-tier .billing-error{margin:10px 0 0!important;color:#a24f4f!important;font-size:12px!important}
-
+.home-page .watch-row{grid-template-columns:minmax(0,1.35fr) minmax(130px,.65fr) minmax(130px,.65fr) auto!important;align-items:center!important;gap:24px!important}
+.home-page .watch-fare span{display:block;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.home-page .watch-fare strong{display:block;margin-top:5px;color:var(--ink);font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600;line-height:1;letter-spacing:-.035em}
+.home-page .watch-fare small{display:block;margin-top:5px;color:var(--muted);font-size:10px;line-height:1.4}
 @media (max-width:820px){
   .home-page .pricing-preview-card{grid-template-columns:1fr!important}
   .home-page .pricing-tier{min-height:310px!important;padding:42px 30px!important}
   .home-page .pricing-tier-pro{border-left:0!important;border-top:1px solid var(--line)!important}
   .home-page .pricing-tier>strong{font-size:56px!important}
+  .home-page .watch-row{grid-template-columns:1fr!important;gap:16px!important}
+  .home-page .watch-pill{justify-self:center!important}
 }
-
 @media (max-width:600px){
   .home-page .home-hero-copy{max-width:none}
   .home-page .footer{grid-template-columns:1fr;gap:14px}
