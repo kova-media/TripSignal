@@ -56,11 +56,15 @@
   border-radius: var(--control-radius) !important;
 }
 
-/* Discovery heading: render one exact two-line statement. */
+/* Discovery heading: center the exact statement against the full viewport. */
 .discovery-head {
   display: block !important;
-  width: 100% !important;
-  margin: 0 auto !important;
+  position: relative !important;
+  left: 50% !important;
+  width: 100vw !important;
+  max-width: none !important;
+  margin: 0 !important;
+  transform: translateX(-50%) !important;
   text-align: center !important;
 }
 
@@ -72,17 +76,12 @@
   text-align: center !important;
 }
 
-.discovery-head > div > .section-kicker {
-  text-align: center !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-
+/* Only the requested heading remains visible. */
+.discovery-head .section-kicker,
 .discovery-head > p {
   display: none !important;
 }
 
-/* Suppress every character in the source h2 so the old wording cannot leak through. */
 .discovery-head h2 {
   display: block !important;
   width: 100% !important;
@@ -100,7 +99,7 @@
   display: none !important;
 }
 
-/* Single generated block prevents the two lines from acquiring independent spacing. */
+/* One text block, so there is no independent line spacing. */
 .discovery-head h2::before {
   content: 'Tell us where.\A Set the fare';
   display: block !important;
