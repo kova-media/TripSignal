@@ -14,6 +14,8 @@
   margin-bottom: 16px;
 }
 
+.headingMeta { display: flex; align-items: center; gap: 12px; }
+
 .kicker {
   display: block;
   margin-bottom: 5px;
@@ -31,10 +33,37 @@
   letter-spacing: -.02em;
 }
 
-.loading {
+.loading,
+.freshness {
   color: var(--muted);
   font-size: 11px;
 }
+
+.range {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.range > div { min-width: 0; }
+.range span,
+.range small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+.range strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+.range strong i { color: var(--muted); font-style: normal; font-size: 12px; margin: 0 4px; }
+.range small { margin-top: 5px; }
 
 .stats {
   display: grid;
@@ -46,42 +75,24 @@
   background: var(--line);
 }
 
-.stats > div {
-  min-width: 0;
-  padding: 14px 15px;
-  background: var(--surface, transparent);
-}
+.stats > div { min-width: 0; padding: 14px 15px; background: var(--surface, transparent); }
+.stats span, .stats small { display: block; color: var(--muted); font-size: 11px; }
+.stats strong { display: block; margin: 4px 0 3px; color: var(--ink); font-size: 22px; line-height: 1; letter-spacing: -.04em; }
 
-.stats span,
-.stats small {
-  display: block;
-  color: var(--muted);
-  font-size: 11px;
-}
+.targetBar { margin-top: 13px; }
+.targetBar > div:first-child { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 11px; }
+.targetBar strong { color: var(--ink); font-size: 11px; }
+.bar { height: 5px; margin-top: 7px; overflow: hidden; border-radius: 999px; background: var(--line); }
+.bar span { display: block; height: 100%; border-radius: inherit; background: var(--ink); }
 
-.stats strong {
-  display: block;
-  margin: 4px 0 3px;
-  color: var(--ink);
-  font-size: 22px;
-  line-height: 1;
-  letter-spacing: -.04em;
-}
-
-.empty,
-.note {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.note {
-  margin-top: 11px;
-  font-size: 10px;
-}
+.intelligence { margin: 12px 0 0; color: var(--ink); font-size: 11px; line-height: 1.45; }
+.empty, .note { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.note { margin-top: 11px; font-size: 10px; }
 
 @media (max-width: 700px) {
   .preview { padding: 17px; }
+  .heading { align-items: flex-start; }
+  .headingMeta { flex-direction: column; align-items: flex-end; gap: 3px; }
+  .range { grid-template-columns: 1fr; gap: 12px; }
   .stats { grid-template-columns: 1fr; }
 }
