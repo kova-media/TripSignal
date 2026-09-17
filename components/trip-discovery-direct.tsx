@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import TripDiscovery from '@/components/trip-discovery';
 import DestinationChooser from '@/components/destination-chooser';
+import FarePreview from '@/components/fare-preview';
 import styles from './trip-discovery-direct.module.css';
 
 type DiscoveryDirectProps = { children?: ReactNode; accountEmail?: string | null };
@@ -94,6 +95,7 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
       <TripDiscovery />
       {controlsHost && createPortal(tripTypeSelector, controlsHost)}
       <DestinationChooser onModeChange={setDestinationMode} />
+      <FarePreview />
       {success && <p className={`${styles.message} discovery-direct-success`} role="status">{success}</p>}
       {error && <p className={`${styles.message} ${styles.error} discovery-direct-error`} role="alert">{error}</p>}
       {submitting && <p className={`${styles.message} ${styles.status} discovery-direct-status`} role="status">Creating your alert…</p>}
