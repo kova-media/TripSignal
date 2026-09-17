@@ -31,13 +31,13 @@ export function loungeDirectoryLinks(airport: string) {
   return [
     {
       name: 'Priority Pass',
-      description: 'Check participating lounges, access rules and current conditions.',
-      url: `https://www.prioritypass.com/en-GB/lounges/search?search=${encodeURIComponent(code)}`,
+      description: `Check participating lounges at ${code}, access rules and current conditions.`,
+      url: 'https://www.prioritypass.com/en-GB/airport-lounges',
     },
     {
       name: 'Plaza Premium',
-      description: 'Check paid lounge passes and eligible locations.',
-      url: `https://www.plazapremiumlounge.com/en-uk/landing-pages/eligible-locations#${encodeURIComponent(code.toLowerCase())}`,
+      description: `Check paid lounge passes and eligible locations for ${code}.`,
+      url: 'https://www.plazapremiumlounge.com/en-uk/landing-pages/eligible-locations',
     },
   ];
 }
