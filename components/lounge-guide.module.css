@@ -1,0 +1,21 @@
+.wrap { grid-column: 1 / -1; border-top: 1px solid var(--line, rgba(255,255,255,.1)); margin-top: 4px; padding-top: 10px; }
+.toggle { appearance: none; border: 0; background: transparent; color: var(--text, #fff); width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font: inherit; cursor: pointer; text-align: left; }
+.toggleMeta { color: var(--muted, #8d8d96); font-size: 12px; }
+.panel { padding: 8px 0 2px; display: grid; gap: 10px; }
+.muted, .empty p, .directoryBox p, .detail, .amenities { color: var(--muted, #8d8d96); font-size: 12px; line-height: 1.5; margin: 3px 0 0; }
+.empty, .directoryBox { border: 1px solid var(--line, rgba(255,255,255,.08)); padding: 12px; }
+.empty strong { font-size: 13px; }
+.airport { border: 1px solid var(--line, rgba(255,255,255,.08)); padding: 12px; }
+.airportHead { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
+.airportHead > div { display: flex; align-items: baseline; gap: 8px; }
+.context { text-transform: uppercase; letter-spacing: .12em; font-size: 9px; color: var(--muted, #8d8d96); }
+.airportHead strong { font-size: 16px; letter-spacing: .02em; }
+.connection { font-size: 11px; color: var(--muted, #8d8d96); }
+.lounge { padding: 10px 0; border-top: 1px solid var(--line, rgba(255,255,255,.06)); }
+.lounge:first-of-type { border-top: 0; }
+.loungeTitle { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
+.loungeTitle span { color: var(--muted, #8d8d96); font-size: 11px; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.facts span { border: 1px solid var(--line, rgba(255,255,255,.08)); padding: 4px 7px; font-size: 10px; color: var(--muted, #b4b4bc); }
+.source, .directoryBox a { display: inline-block; margin-top: 8px; color: inherit; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
+.directoryBox > div { display: flex; flex-wrap: wrap; gap: 12px; }
