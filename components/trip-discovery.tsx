@@ -168,27 +168,8 @@ export default function TripDiscovery() {
   const originCoordinates = originCoordinate ?? (origin ? airportCoordinates[origin] : undefined);
   const projection = useMemo(() => {
     const base = geoEqualEarth();
-    if (!originCoordinates || !destinationCoordinates) return base.fitExtent([[40, 28], [960, 492]], worldFeatures);
-
-    const [fromLon, fromLat] = originCoordinates;
-    const [toLon, toLat] = destinationCoordinates;
-    const minLon = Math.min(fromLon, toLon);
-    const maxLon = Math.max(fromLon, toLon);
-    const minLat = Math.min(fromLat, toLat);
-    const maxLat = Math.max(fromLat, toLat);
-    const lonSpan = Math.max(maxLon - minLon, 1);
-    const latSpan = Math.max(maxLat - minLat, 1);
-    const lonPadding = Math.max(8, lonSpan * 0.55);
-    const latPadding = Math.max(5, latSpan * 0.7);
-    const focus = {
-      type: 'FeatureCollection',
-      features: [
-        { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [minLon - lonPadding, minLat - latPadding] } },
-        { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [maxLon + lonPadding, maxLat + latPadding] } },
-      ],
-    };
-    return base.fitExtent([[55, 38], [945, 482]], focus as any);
-  }, [originCoordinates, destinationCoordinates]);
+    return base.fitExtent([[40, 28], [960, 492]], worldFeatures);
+  }, []);
   const path = useMemo(() => geoPath(projection), [projection]);
   const graticule = useMemo(() => geoGraticule().step([20, 20])(), []);
   const originPoint = originCoordinates ? projection(originCoordinates) : undefined;
@@ -231,8 +212,8 @@ export default function TripDiscovery() {
           <div className="discovery-field discovery-email-field"><label htmlFor="discovery-email">Email</label><input id="discovery-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" /></div>
           <button type="button" className="button button-primary discovery-cta" onClick={buildWatch}>Start watching</button>
         </div>
-        <div className="discovery-map" aria-hidden="true">
-          <svg viewBox="0 0 1000 520" role="presentation"><path className="map-graticule" d={path(graticule) ?? ''} /><path className="map-countries" d={path(worldFeatures) ?? ''} />{originPoint && destinationPoint && <path className="map-route" d={projectRoutePath(projection, originCoordinates!, destinationCoordinates!)} />}{originPoint && <circle className="map-point map-point-origin" cx={originPoint[0]} cy={originPoint[1]} r="5" />}{destinationPoint && <circle className="map-point map-point-destination" cx={destinationPoint[0]} cy={destinationPoint[1]} r="5" />}</svg>
+        <div className="discovery-map route-map" aria-hidden="true">
+          <svg viewBox="0 0 1000 520" role="presentation"><path className="map-graticule" d={path(graticule) ?? ''} /><path className="map-countries" d={path(worldFeatures) ?? ''} />{originPoint && destinationPoint && <path className="map-route-preview" d={projectRoutePath(projection, originCoordinates!, destinationCoordinates!)} />}{originPoint && <circle className="map-origin" cx={originPoint[0]} cy={originPoint[1]} r="4.5" />}{destinationPoint && <circle className="map-destination" cx={destinationPoint[0]} cy={destinationPoint[1]} r="4.5" />}</svg>
         </div>
       </div>
       <TripExtras context={affiliateContext} />
