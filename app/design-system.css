@@ -56,9 +56,10 @@
   border-radius: var(--control-radius) !important;
 }
 
-/* Discovery header: one centered statement, with no secondary copy. */
+/* Discovery header: exact two-line statement, large, centered, and tightly stacked. */
 .discovery-head {
   display: block !important;
+  width: 100% !important;
   text-align: center !important;
   margin-inline: auto !important;
 }
@@ -73,33 +74,33 @@
   display: none !important;
 }
 
-/* Hide the source heading text completely. The visible heading is supplied by the two pseudo-elements below. */
-.discovery-head h2,
-.discovery-head h2 em {
+.discovery-head h2 {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
   font-size: 0 !important;
   line-height: 0 !important;
   color: transparent !important;
 }
 
-.discovery-head h2 {
-  text-align: center !important;
-  margin: 0 !important;
-}
-
-.discovery-head h2::before,
-.discovery-head h2::after {
-  display: block !important;
-  font-size: clamp(48px, 5.6vw, 76px) !important;
-  line-height: .94 !important;
-  letter-spacing: inherit !important;
-}
-
 .discovery-head h2::before {
-  content: 'Tell us where.';
-  color: var(--ink) !important;
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  content: 'Tell us where.\A Set the fare' !important;
+  white-space: pre-line !important;
+  text-align: center !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-size: clamp(64px, 7.2vw, 92px) !important;
+  font-weight: 600 !important;
+  line-height: .88 !important;
+  letter-spacing: -.067em !important;
 }
 
-.discovery-head h2::after {
-  content: 'Set the fare';
-  color: var(--muted) !important;
+.discovery-head h2::after,
+.discovery-head h2 em {
+  display: none !important;
 }
