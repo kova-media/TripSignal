@@ -46,6 +46,12 @@ export async function ensureSchema() {
       alter table users add column if not exists stripe_subscription_id text;
       alter table users add column if not exists subscription_status text not null default 'inactive';
       alter table users add column if not exists subscription_current_period_end timestamptz;
+      alter table users add column if not exists referral_code text;
+      alter table users add column if not exists bonus_watches integer not null default 0;
+      alter table users add column if not exists referred_by uuid;
+      alter table users add column if not exists phone text;
+      alter table users add column if not exists sms_opt_in boolean not null default false;
+      create unique index if not exists users_referral_code_idx on users (referral_code) where referral_code is not null;
 
       update users
       set subscription_status = 'lifetime'

@@ -2,6 +2,17 @@ import type { FlightOffer, FlightSearchCriteria } from './flights/types';
 import { getFlightProvider } from './flights/provider';
 import { getDb } from './db';
 import { sendFareSignalEmail } from './email';
+import { isSmsConfigured, sendSmsAlert } from './sms';
+
+async function sendSmsSignal(alertId: string, offer: FlightOffer | undefined) {
+  if (!offer || !isSmsConfigured()) return;
+  const db = getDb();
+  const result = await db.query<{ phone: string | null; sms_opt_in: boolean }>('select u.phone, coalesce(u.sms_opt_in, false) as sms_opt_in from users u join alerts a on a.user_id = u.id where a.id = $1 limit 1', [alertId]);
+  const row = result.rows[0];
+  if (!row?.sms_opt_in || !row.phone) return;
+  const message = `TripSignal: $${Math.round(offer.price).toLocaleString()} ${offer.origin}→${offer.destination} is under your target. Check your email for details.`;
+  await sendSmsAlert(row.phone, message);
+}
 
 type AlertCriteria = {
   origin: string; destinationMode: 'country' | 'airport' | 'region'; destination: string; tripType?: 'round-trip' | 'one-way'; maxPrice: number; airlineMode: string; maxStops: string; tripLength: string; dateRange: string; dateStart?: string; dateEnd?: string; frequency: 'Daily' | 'Weekly' | 'Monthly'; cabin: 'economy' | 'premium_economy' | 'business' | 'first'; passengers?: number;
@@ -22,7 +33,7 @@ export async function runAlertSearch(alertId: string, email: string, criteria: A
     if (qualifying.length === 0) { if (runId) await db.query('update alert_runs set status = $1, finished_at = now(), offers_found = $2 where id = $3', ['success', 0, runId]); return { offers: [], emailed: false }; }
     const ids = qualifying.map((offer) => offer.id); const existing = await db.query<{ offer_id: string }>('select offer_id from signals where alert_id = $1 and offer_id = any($2::text[])', [alertId, ids]); const sentIds = new Set(existing.rows.map((row) => row.offer_id)); const newOffers = qualifying.filter((offer) => !sentIds.has(offer.id));
     if (newOffers.length === 0) { if (runId) await db.query('update alert_runs set status = $1, finished_at = now(), offers_found = $2 where id = $3', ['success', qualifying.length, runId]); return { offers: qualifying, emailed: false }; }
-    await sendFareSignalEmail(email, newOffers, criteria as Parameters<typeof sendFareSignalEmail>[2]); for (const offer of newOffers) await db.query('insert into signals (alert_id, offer_id, offer) values ($1, $2, $3::jsonb) on conflict (alert_id, offer_id) do nothing', [alertId, offer.id, JSON.stringify(offer)]); if (runId) await db.query('update alert_runs set status = $1, finished_at = now(), offers_found = $2, email_sent = true where id = $3', ['success', newOffers.length, runId]); return { offers: newOffers, emailed: true };
+    await sendFareSignalEmail(email, newOffers, criteria as Parameters<typeof sendFareSignalEmail>[2]); await sendSmsSignal(alertId, newOffers[0]).catch((error) => console.error('TripSignal SMS alert failed:', error)); for (const offer of newOffers) await db.query('insert into signals (alert_id, offer_id, offer) values ($1, $2, $3::jsonb) on conflict (alert_id, offer_id) do nothing', [alertId, offer.id, JSON.stringify(offer)]); if (runId) await db.query('update alert_runs set status = $1, finished_at = now(), offers_found = $2, email_sent = true where id = $3', ['success', newOffers.length, runId]); return { offers: newOffers, emailed: true };
   } catch (error) { const message = error instanceof Error ? error.message : 'Alert search failed.'; if (runId) await db.query('update alert_runs set status = $1, finished_at = now(), error_message = $2 where id = $3', ['error', message.slice(0, 2000), runId]).catch(() => undefined); throw error; }
 }
 export async function runDueAlerts() { const db = getDb(); const result = await db.query<{ id: string; email: string; criteria: AlertCriteria; frequency: string }>(`select id, email, criteria, frequency from alerts where active = true and (last_checked_at is null or (frequency = 'Daily' and last_checked_at <= now() - interval '24 hours') or (frequency = 'Weekly' and last_checked_at <= now() - interval '7 days') or (frequency = 'Monthly' and last_checked_at <= now() - interval '30 days')) order by created_at asc`); const summary = { checked: 0, signals: 0, emails: 0, errors: 0 }; for (const alert of result.rows) { summary.checked += 1; try { const run = await runAlertSearch(alert.id, alert.email, alert.criteria); summary.signals += run.offers.length; if (run.emailed) summary.emails += 1; } catch (error) { summary.errors += 1; console.error(`TripSignal alert ${alert.id} failed:`, error); } } return summary; }

@@ -68,5 +68,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.7,
     },
+    {
+      url: `${base}/deals`,
+      changeFrequency: 'daily',
+      priority: 0.7,
+    },
+    {
+      url: `${base}/anywhere`,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
   ];
 }

@@ -10,6 +10,8 @@ import SiteHeaderAuth from '@/components/site-header-auth';
 import DiscoveryWithEmail from '@/components/discovery-with-email';
 import HomeDashboard from '@/components/home-dashboard';
 import ProUpgrade from '@/components/pro-upgrade';
+import SampleAlert from '@/components/sample-alert';
+import Testimonials from '@/components/testimonials';
 
 export default function Home() {
   return (
@@ -28,8 +30,10 @@ export default function Home() {
       <section className="home-difference shell" id="how-it-works"><div className="home-difference-copy"><p className="section-kicker">Why TripSignal</p><h2>Search once.<br /><em>Let TripSignal keep checking.</em></h2></div><div className="home-steps"><article><span>1</span><h3>Set your watch</h3><p>Choose your route, travel window, cabin and target price.</p></article><article><span>2</span><h3>We keep watching</h3><p>TripSignal checks your watch on the schedule you choose.</p></article><article><span>3</span><h3>Get alerted</h3><p>When a fare matches your criteria, we’ll tell you.</p></article></div></section>
       <section className="product-preview shell"><HomeDashboard /></section>
       <section className="pricing-preview shell" aria-label="TripSignal pricing"><div className="pricing-preview-card"><div className="pricing-tier"><span>Free</span><strong>$0</strong><small>1 new watch each month</small><a className="button button-light" href="#explore">Start watching</a></div><div className="pricing-tier pricing-tier-pro"><span>TripSignal Pro</span><strong>$19.99</strong><small>per year · unlimited watches</small><ProUpgrade /></div></div></section>
+      <section className="sample-section shell" aria-label="Sample alert"><div className="sample-head"><p className="section-kicker">What you get</p><h2>This is what a<br /><em>signal looks like.</em></h2><p>One email, the moment a fare drops under your target. No noise, no spam.</p></div><SampleAlert /></section>
+      <Testimonials />
       <section className="home-cta shell"><div><p className="section-kicker">Start watching flight prices</p><h2>Stop searching.<br /><em>Let TripSignal watch.</em></h2></div><a className="button button-primary" href="#explore">Start watching</a></section>
-      <footer className="footer shell"><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><div className="footer-links"><a href="/about">About</a><a href="/guides">Guides</a><a href="/faq">FAQ</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/refunds">Refunds</a><a href="/contact">Contact</a></div><span>© 2026 TripSignal · A Kova Media Group product</span></footer>
+      <footer className="footer shell"><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><div className="footer-links"><a href="/about">About</a><a href="/deals">Deals</a><a href="/anywhere">Anywhere</a><a href="/guides">Guides</a><a href="/faq">FAQ</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/refunds">Refunds</a><a href="/contact">Contact</a></div><span>© 2026 TripSignal · A Kova Media Group product</span></footer>
     </main>
   );
 }

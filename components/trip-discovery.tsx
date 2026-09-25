@@ -1,11 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { geoEqualEarth, geoGraticule, geoInterpolate, geoPath } from 'd3-geo';
-import { feature } from 'topojson-client';
-import worldAtlas from 'world-atlas/countries-110m.json';
+import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import TripExtras from '@/components/trip-extras';
 import type { AffiliateContext } from '@/lib/affiliates';
+
+const DiscoveryMap = dynamic(() => import('@/components/discovery-map'), {
+  ssr: false,
+  loading: () => <div className="discovery-map route-map" aria-hidden="true" />,
+});
 
 type DestinationMode = 'region' | 'airport';
 type Airport = { iata_code: string; name: string; municipality?: string; iso_country?: string; latitude?: number; longitude?: number };
@@ -45,14 +48,6 @@ const airportCoordinates: Record<string, Coordinate> = {
   GRU: [-46.4731, -23.4356], EZE: [-58.5358, -34.8222], SCL: [-70.7858, -33.393], MEX: [-99.0721, 19.4363], CUN: [-86.8515, 21.0365],
   SYD: [151.1772, -33.9461], MEL: [144.843, -37.669], AKL: [174.785, -37.0082],
 };
-
-const worldFeatures = feature(worldAtlas as any, (worldAtlas as any).objects.countries) as any;
-
-function projectRoutePath(projection: ReturnType<typeof geoEqualEarth>, from: Coordinate, to: Coordinate) {
-  const interpolate = geoInterpolate(from, to);
-  const coordinates = Array.from({ length: 41 }, (_, index) => interpolate(index / 40));
-  return geoPath(projection)({ type: 'LineString', coordinates } as any) ?? '';
-}
 
 function cabinParam(cabin: string) {
   if (cabin === 'Premium economy') return 'premium_economy';
@@ -166,14 +161,6 @@ export default function TripDiscovery() {
   const budgetValue = Number(budget) || 0;
   const destinationCoordinates = destinationAirport ? (airportCoordinates[destinationAirport] ?? destinationCoordinate) : destinationCoordinate;
   const originCoordinates = origin ? (airportCoordinates[origin] ?? originCoordinate) : originCoordinate;
-  const projection = useMemo(() => {
-    const base = geoEqualEarth();
-    return base.fitExtent([[40, 28], [960, 492]], worldFeatures);
-  }, []);
-  const path = useMemo(() => geoPath(projection), [projection]);
-  const graticule = useMemo(() => geoGraticule().step([20, 20])(), []);
-  const originPoint = originCoordinates ? projection(originCoordinates) : undefined;
-  const destinationPoint = destinationCoordinates ? projection(destinationCoordinates) : undefined;
 
   const affiliateContext: AffiliateContext = {
     ...(destinationAirport ? { destination: destinationAirport } : {}),
@@ -212,9 +199,7 @@ export default function TripDiscovery() {
           <div className="discovery-field discovery-email-field"><label htmlFor="discovery-email">Email</label><input id="discovery-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" /></div>
           <button type="button" className="button button-primary discovery-cta" onClick={buildWatch}>Start watching</button>
         </div>
-        <div className="discovery-map route-map" aria-hidden="true">
-          <svg viewBox="0 0 1000 520" role="presentation"><path className="map-graticule" d={path(graticule) ?? ''} /><path className="map-countries" d={path(worldFeatures) ?? ''} />{originPoint && destinationPoint && <path className="map-route-preview" d={projectRoutePath(projection, originCoordinates!, destinationCoordinates!)} />}{originPoint && <circle className="map-origin" cx={originPoint[0]} cy={originPoint[1]} r="4.5" />}{destinationPoint && <circle className="map-destination" cx={destinationPoint[0]} cy={destinationPoint[1]} r="4.5" />}</svg>
-        </div>
+        <DiscoveryMap originCoordinates={originCoordinates} destinationCoordinates={destinationCoordinates} />
       </div>
       <TripExtras context={affiliateContext} />
     </section>

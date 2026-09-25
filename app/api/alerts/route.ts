@@ -91,13 +91,14 @@ export async function POST(request: Request) {
     try {
       await client.query('BEGIN');
       await client.query('select pg_advisory_xact_lock(hashtextextended($1, 0))', [userId]);
-      const accountResult = await client.query<{ plan: string }>('select plan from users where id = $1 limit 1', [userId]);
+      const accountResult = await client.query<{ plan: string; bonus_watches: number }>('select plan, coalesce(bonus_watches, 0) as bonus_watches from users where id = $1 limit 1', [userId]);
       const plan = accountResult.rows[0]?.plan ?? 'free';
+      const monthlyLimit = 1 + Number(accountResult.rows[0]?.bonus_watches ?? 0);
       if (plan !== 'pro') {
         const alertCountResult = await client.query<{ count: string }>(`select count(*)::text as count from alerts where user_id = $1 and created_at >= date_trunc('month', now())`, [userId]);
-        if (Number(alertCountResult.rows[0]?.count ?? 0) >= 1) {
+        if (Number(alertCountResult.rows[0]?.count ?? 0) >= monthlyLimit) {
           await client.query('ROLLBACK');
-          return NextResponse.json({ error: 'Free accounts can create one new watch each month. Upgrade to TripSignal Pro to create unlimited watches.', code: 'FREE_ALERT_LIMIT', limit: 1, period: 'month' }, { status: 403 });
+          return NextResponse.json({ error: `Free accounts can create ${monthlyLimit} new watch${monthlyLimit === 1 ? '' : 'es'} each month. Upgrade to TripSignal Pro to create unlimited watches.`, code: 'FREE_ALERT_LIMIT', limit: monthlyLimit, period: 'month' }, { status: 403 });
         }
       }
       const inserted = await client.query<{ id: string }>(`insert into alerts (email, user_id, criteria, frequency) values ($1, $2, $3::jsonb, $4) returning id`, [email, userId, JSON.stringify(criteria), criteria.frequency]);

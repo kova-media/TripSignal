@@ -3,6 +3,9 @@ import SiteHeader from '@/components/site-header';
 import ThemeToggle from '@/components/theme-toggle';
 import AlertActions from '../account/alert-actions';
 import BillingButton from '../account/billing-button';
+import FareChart from '@/components/fare-chart';
+import ReferralPanel from '@/components/referral-panel';
+import SmsSettings from '@/components/sms-settings';
 import { getCurrentUser } from '@/lib/auth';
 import { getDb, ensureSchema } from '@/lib/db';
 import styles from '../account/account.module.css';
@@ -37,6 +40,8 @@ export default async function ProfilePage() {
   const result = await db.query<{ id: string; criteria: Record<string, unknown>; frequency: string; active: boolean }>('select id, criteria, frequency, active from alerts where user_id = $1 order by created_at desc', [user.id]);
   const billingResult = await db.query<{ subscription_status: string; subscription_current_period_end: string | null }>('select subscription_status, subscription_current_period_end from users where id = $1 limit 1', [user.id]);
   const billing = billingResult.rows[0];
+  const phoneResult = await db.query<{ phone: string | null; sms_opt_in: boolean }>('select phone, coalesce(sms_opt_in, false) as sms_opt_in from users where id = $1 limit 1', [user.id]).catch(() => ({ rows: [] as { phone: string | null; sms_opt_in: boolean }[] }));
+  const phone = phoneResult.rows[0] ?? null;
   const subscriptionActive = ['active', 'trialing', 'lifetime'].includes(billing?.subscription_status ?? '');
   const activeCount = result.rows.filter((row) => row.active).length;
 
@@ -54,9 +59,13 @@ export default async function ProfilePage() {
 
       <div className={styles.stats}><div><span>Active watches</span><strong>{activeCount}</strong></div><div><span>Total alerts</span><strong>{result.rows.length}</strong></div></div>
 
-      <section className={styles.section}><div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Your searches</p><h2 className={styles.sectionTitle}>{result.rows.length ? 'Fare watches' : 'Start your first fare watch'}</h2></div></div>{result.rows.length === 0 ? <div className={styles.empty}><h3 className={styles.emptyTitle}>Nothing is being watched yet.</h3><p className={styles.emptyText}>Tell TripSignal what a great fare looks like, then let us do the searching.</p><a className="button button-primary" href="/alerts">Create your first alert</a></div> : <div className={styles.alerts}>{result.rows.map((alert) => <article className={styles.alert} key={alert.id}><div className={styles.alertMain}><p className={styles.route}>{summarizeCriteria(alert.criteria)}</p><div className={styles.meta}><span>{alert.frequency}</span></div></div><div className={styles.alertRight}><span className={`${styles.status} ${!alert.active ? styles.paused : ''}`}><i className={styles.dot} />{alert.active ? 'Watching' : 'Paused'}</span><AlertActions id={alert.id} active={alert.active} /></div></article>)}</div>}</section>
+      <section className={styles.section}><div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Your searches</p><h2 className={styles.sectionTitle}>{result.rows.length ? 'Fare watches' : 'Start your first fare watch'}</h2></div></div>{result.rows.length === 0 ? <div className={styles.empty}><h3 className={styles.emptyTitle}>Nothing is being watched yet.</h3><p className={styles.emptyText}>Tell TripSignal what a great fare looks like, then let us do the searching.</p><a className="button button-primary" href="/alerts">Create your first alert</a></div> : <div className={styles.alerts}>{result.rows.map((alert) => <article className={styles.alert} key={alert.id}><div className={styles.alertMain}><p className={styles.route}>{summarizeCriteria(alert.criteria)}</p><div className={styles.meta}><span>{alert.frequency}</span></div><FareChart alertId={alert.id} /></div><div className={styles.alertRight}><span className={`${styles.status} ${!alert.active ? styles.paused : ''}`}><i className={styles.dot} />{alert.active ? 'Watching' : 'Paused'}</span><AlertActions id={alert.id} active={alert.active} /></div></article>)}</div>}</section>
 
       <section className={styles.section}><div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Appearance</p><h2 className={styles.sectionTitle}>Choose your view</h2></div></div><div className={styles.appearanceRow}><div><h3 className={styles.billingTitle}>Daylight or Redeye</h3><p className={styles.billingText}>Choose the appearance used across TripSignal.</p></div><ThemeToggle /></div></section>
+
+      <section className={styles.section}><div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Referrals</p><h2 className={styles.sectionTitle}>Invite friends, earn watches</h2></div></div><ReferralPanel /></section>
+
+      <section className={styles.section}><div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Notifications</p><h2 className={styles.sectionTitle}>Text me the signal</h2></div></div><SmsSettings initialPhone={phone?.phone ?? null} initialOptIn={phone?.sms_opt_in ?? false} /></section>
     </div></section>
   </main>;
 }

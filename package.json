@@ -2,7 +2,11 @@
   "name": "tripsignal",
   "version": "0.1.0",
   "private": true,
-  "scripts": { "dev": "next dev", "build": "next build", "start": "next start" },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "dependencies": {
     "@types/topojson-client": "^3.1.0",
     "d3-geo": "^3.1.1",
@@ -13,6 +17,7 @@
     "react-dom": "^19.1.0",
     "resend": "^6.26.0",
     "stripe": "^18.5.0",
+    "styled-jsx": "^5.1.7",
     "topojson-client": "^3.1.0",
     "world-atlas": "^2.0.0"
   },
