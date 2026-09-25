@@ -3,7 +3,7 @@
 .brand-symbol{width:30px;height:30px;display:block;color:var(--ink);flex:none}
 .brand-signal{color:var(--accent)}
 .brand-plane{color:var(--ink)}
-.brand-wordmark{display:inline-flex;align-items:baseline;font-family:'Space Grotesk',sans-serif;font-size:21px;line-height:1;font-weight:500;letter-spacing:-.055em}
+.brand-wordmark{display:inline;align-items:baseline;font-family:'Space Grotesk',sans-serif;font-size:21px;line-height:1;font-weight:500;letter-spacing:-.055em}
 .brand-wordmark strong{font-weight:700}
 .brand-wordmark span{font-weight:500}
 .brand-compact .brand-symbol{width:22px;height:22px}

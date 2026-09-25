@@ -43,5 +43,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.4,
     },
+    {
+      url: `${base}/faq`,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
   ];
 }

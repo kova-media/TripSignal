@@ -48,9 +48,9 @@ export default function AccountSetupPage() {
       <section className="shell">
         <div className={styles.setup}>
           <div className={styles.setupPanel}>
-            <p className={`${styles.eyebrow} ${styles.setupEyebrow}`}>Account verified</p>
+            <p className={`${styles.eyebrow} ${styles.setupEyebrow}`}>Secure your account</p>
             <h1 className={styles.setupTitle}>Set your password.</h1>
-            <p className={styles.setupText}>Your email has been verified. Create a password so you can sign in to TripSignal anytime and manage your fare watches.</p>
+            <p className={styles.setupText}>Choose a password for your TripSignal account so you can sign in anytime and manage your fare watches.</p>
             <form onSubmit={submit} className={styles.form}>
               <label className={styles.label}><span>Password</span><input className={styles.input} type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 8 characters" autoComplete="new-password" minLength={8} required /></label>
               <label className={styles.label}><span>Confirm password</span><input className={styles.input} type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Enter your password again" autoComplete="new-password" minLength={8} required /></label>

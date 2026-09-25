@@ -34,6 +34,7 @@ export default function TripExtras({ context }: { context: AffiliateContext }) {
           {extras.map((extra) => <TripExtraCard key={extra.vertical} extra={extra} context={context} />)}
         </div>
       </div>
+      <p className="trip-extras-disclosure">Some links above are affiliate links: if you book through them, TripSignal may earn a commission at no extra cost to you. It helps keep the free plan free.</p>
     </section>
   );
 }

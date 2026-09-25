@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   applicationName: 'TripSignal', category: 'travel', creator: 'TripSignal', publisher: 'TripSignal',
   alternates: siteUrl ? { canonical: '/' } : undefined,
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 } },
-  openGraph: { type: 'website', siteName: 'TripSignal', title: 'TripSignal | Flight Price Alerts & Fare Monitoring', description: 'Set your route, dates and target price. TripSignal keeps watching flight fares and alerts you when a fare matches.', locale: 'en_US', url: siteUrl?.toString() },
-  twitter: { card: 'summary_large_image', title: 'TripSignal | Flight Price Alerts & Fare Monitoring', description: 'Track flight prices and get alerted when fares match your criteria.' },
+  openGraph: { type: 'website', siteName: 'TripSignal', title: 'TripSignal | Flight Price Alerts & Fare Monitoring', description: 'Set your route, dates and target price. TripSignal keeps watching flight fares and alerts you when a fare matches.', locale: 'en_US', url: siteUrl?.toString(), images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'TripSignal — flight price alerts and fare monitoring' }] },
+  twitter: { card: 'summary_large_image', title: 'TripSignal | Flight Price Alerts & Fare Monitoring', description: 'Track flight prices and get alerted when fares match your criteria.', images: ['/og-image.png'] },
   manifest: '/manifest.webmanifest', themeColor: '#0B0F14',
   icons: { icon: '/favicon.svg', shortcut: '/favicon.svg', apple: '/tripsignal-icon-blue.svg' },
 };

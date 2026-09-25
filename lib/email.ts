@@ -127,6 +127,19 @@ export async function sendMagicLinkEmail(email: string, url: string) {
   if (error) throw new Error(error.message);
 }
 
+export async function sendPasswordResetEmail(email: string, url: string) {
+  const resend = getResend();
+  const safeUrl = escapeHtml(url);
+  const { error } = await resend.emails.send({
+    from: getFrom(),
+    to: [email],
+    subject: 'Reset your TripSignal password',
+    text: `Reset your TripSignal password.\n\n${url}\n\nThis link expires in 15 minutes and can only be used once. If you did not request a password reset, you can ignore this email.`,
+    html: `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reset your TripSignal password</title></head><body style="margin:0;background:${LIGHT_BG};color:${INK};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${LIGHT_BG}"><tr><td align="center" style="padding:40px 18px"><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:${CARD};border:1px solid ${LINE}"><tr><td style="height:5px;background:${BLUE};font-size:0;line-height:0">&nbsp;</td></tr><tr><td style="padding:34px 36px 12px"><div style="font-size:19px;font-weight:800;letter-spacing:-.04em">TripSignal</div><div style="margin-top:9px;color:${BLUE};font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase">Account access</div></td></tr><tr><td style="padding:16px 36px 36px"><h1 style="margin:0;color:${INK};font-size:38px;line-height:1.05;letter-spacing:-.055em">Reset your password.</h1><p style="margin:18px 0 0;color:${MUTED};font-size:16px;line-height:1.65">Use the button below to set a new password for your TripSignal account.</p><p style="margin:28px 0 0"><a href="${safeUrl}" style="display:inline-block;background:${BLUE};color:#fff;text-decoration:none;padding:14px 22px;border-radius:7px;font-size:14px;font-weight:700">Set a new password</a></p><p style="margin:28px 0 0;padding-top:20px;border-top:1px solid ${LINE};color:${MUTED};font-size:12px;line-height:1.6">This link expires in 15 minutes and can only be used once. If you did not request a password reset, you can ignore this email.</p></td></tr><tr><td style="padding:20px 36px;border-top:1px solid ${LINE};color:#969b98;font-size:11px;line-height:1.5">TripSignal &middot; automated fare monitoring<br>tripsignal.travel</td></tr></table></td></tr></table></body></html>`,
+  });
+  if (error) throw new Error(error.message);
+}
+
 export async function sendAlertCreatedEmail(email: string, summary: string) {
   const resend = getResend();
   const safeSummary = escapeHtml(summary);

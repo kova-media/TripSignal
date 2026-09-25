@@ -56,6 +56,13 @@
   width: 100% !important;
 }
 
+.trip-extras-disclosure {
+  margin: 14px 0 0 !important;
+  color: var(--quiet) !important;
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+}
+
 .trip-extras-row {
   display: contents !important;
 }
