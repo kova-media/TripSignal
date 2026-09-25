@@ -8,12 +8,25 @@ export default function SignInPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [mode, setMode] = useState<'password' | 'link'>('password');
+  const [linkSent, setLinkSent] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError('');
     try {
+      if (mode === 'link') {
+        const response = await fetch('/api/auth/signin/magic', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Could not send the sign-in link.');
+        setLinkSent(true);
+        return;
+      }
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -24,7 +37,7 @@ export default function SignInPage() {
       const next = new URLSearchParams(window.location.search).get('next');
       window.location.href = next && next.startsWith('/') ? next : '/account';
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid email or password.');
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
     } finally {
       setLoading(false);
     }
@@ -39,20 +52,28 @@ export default function SignInPage() {
       <section className="auth-card shell">
         <div className="auth-panel">
           <h1>Sign in to TripSignal.</h1>
-          <p>Use your TripSignal email and password to access your fare watches.</p>
+          <p>Sign in with your password or a one-time email link to access your fare watches.</p>
           <form onSubmit={submit} className="auth-form">
             <label>
               <span>Email address</span>
               <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" autoComplete="email" required />
             </label>
-            <label>
-              <span>Password</span>
-              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Your password" autoComplete="current-password" required />
-            </label>
-            <p className="auth-forgot"><a href="/reset">Forgot password?</a></p>
+            {mode === 'password' ? (
+              <>
+                <label>
+                  <span>Password</span>
+                  <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Your password" autoComplete="current-password" required />
+                </label>
+                <p className="auth-forgot"><a href="/reset">Forgot password?</a></p>
+              </>
+            ) : (
+              <p className="auth-note">We’ll email you a one-time sign-in link. It expires in 15 minutes.</p>
+            )}
             {error && <p className="auth-error">{error}</p>}
-            <button className="button button-primary auth-submit" type="submit" disabled={loading}>{loading ? 'Signing in…' : 'Sign in'}</button>
+            {linkSent && mode === 'link' && !error && <p className="auth-note">Check your inbox — your sign-in link is on its way.</p>}
+            <button className="button button-primary auth-submit" type="submit" disabled={loading}>{loading ? 'Sending…' : mode === 'link' ? 'Email me a sign-in link' : 'Sign in'}</button>
           </form>
+          <p className="auth-switch">{mode === 'password' ? <a href="#" onClick={(event) => { event.preventDefault(); setMode('link'); setError(''); }}>Email me a sign-in link instead</a> : <a href="#" onClick={(event) => { event.preventDefault(); setMode('password'); setError(''); setLinkSent(false); }}>Use my password instead</a>}</p>
           <p className="auth-switch">Don’t have an account? <a href="/signup">Sign up</a></p>
           <p className="auth-note">By continuing, you agree to TripSignal’s terms and privacy policy.</p>
         </div>

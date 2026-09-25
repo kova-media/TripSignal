@@ -114,6 +114,22 @@ function offerText(offer: FlightOffer) {
   return `${offer.origin} → ${offer.destination} · ${formatDateRange(offer.departureDate, offer.returnDate)} · ${stopLabel(offer.stops)} · $${offer.price.toLocaleString()}`;
 }
 
+export async function sendCronFailureEmail(detail: string) {
+  const recipient = process.env.CONTACT_EMAIL;
+  if (!recipient) return;
+  try {
+    const resend = getResend();
+    await resend.emails.send({
+      from: getFrom(),
+      to: [recipient],
+      subject: 'TripSignal alert worker failed',
+      text: `The scheduled fare-check run failed.\n\n${detail}\n\nCheck the Vercel function logs for the full trace.`,
+    });
+  } catch (emailError) {
+    console.error('TripSignal ops alert email failed:', emailError);
+  }
+}
+
 export async function sendMagicLinkEmail(email: string, url: string) {
   const resend = getResend();
   const safeUrl = escapeHtml(url);
