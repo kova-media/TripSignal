@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Script from 'next/script';
@@ -85,7 +85,7 @@ export default function GodsEyeView() {
   const [layerVisibility, setLayerVisibility] = useState({
     aircraft: true,
     earthquake: true,
-    satellite: true,
+    satellite: false,
     places: false,
   });
   const [entities, setEntities] = useState<GlobeEntity[]>([]);
@@ -128,7 +128,7 @@ export default function GodsEyeView() {
         selectionIndicator: true,
         shouldAnimate: true,
         baseLayer: false,
-        terrain: Cesium.Terrain.fromWorldTerrain(),
+        terrain: new Cesium.EllipsoidTerrainProvider(),
       });
       viewerRef.current = viewer;
       viewer.scene.globe.enableLighting = true;
@@ -330,8 +330,8 @@ export default function GodsEyeView() {
             <div className="gev-panel-heading"><span>DATA LAYERS</span><span>{filteredEntities.length} VISIBLE</span></div>
             <LayerToggle label="Aircraft" detail={`ADS-B · ${feedStatus.aircraft.toUpperCase()}`} color="#60e5d1" checked={layerVisibility.aircraft} onChange={() => toggleLayer('aircraft')} />
             <LayerToggle label="Earthquakes" detail={`USGS · ${feedStatus.earthquakes.toUpperCase()}`} color="#ff8b62" checked={layerVisibility.earthquake} onChange={() => toggleLayer('earthquake')} />
-            <LayerToggle label="Satellites" detail="ORBITAL TRACKING · SETUP REQUIRED" color="#a3b5ff" checked={layerVisibility.satellite} onChange={() => toggleLayer('satellite')} />
-            <LayerToggle label="Places & infrastructure" detail="PUBLIC MAP DATA · PLANNED" color="#d9b76e" checked={layerVisibility.places} onChange={() => toggleLayer('places')} />
+            <LayerToggle label="Satellites" detail="NOT CONNECTED IN THIS BUILD" color="#a3b5ff" checked={layerVisibility.satellite} onChange={() => toggleLayer('satellite')} />
+            <LayerToggle label="Places & infrastructure" detail="NOT CONNECTED IN THIS BUILD" color="#d9b76e" checked={layerVisibility.places} onChange={() => toggleLayer('places')} />
           </section>
           <section className="gev-panel">
             <div className="gev-panel-heading"><span>FEED HEALTH</span><span>{feedUpdated ? 'UPDATED' : 'CHECKING'}</span></div>
