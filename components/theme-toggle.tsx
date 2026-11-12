@@ -16,16 +16,16 @@ function RedeyeIcon() {
 const baseButton: React.CSSProperties = { position:'relative', display:'flex', alignItems:'center', justifyContent:'center', gap:7, minWidth:0, height:36, padding:'4px 10px', border:0, borderRadius:999, background:'transparent', color:'var(--quiet)', fontSize:11, fontWeight:600, letterSpacing:'-0.01em', whiteSpace:'nowrap' };
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>('redeye');
+  const [theme, setTheme] = useState<Theme>('daylight');
 
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(THEME_KEY);
-      const initial: Theme = saved === 'daylight' ? 'daylight' : 'redeye';
+      const initial: Theme = saved === 'redeye' ? 'redeye' : 'daylight';
       setTheme(initial);
       document.documentElement.dataset.theme = initial;
     } catch {
-      document.documentElement.dataset.theme = 'redeye';
+      document.documentElement.dataset.theme = 'daylight';
     }
   }, []);
 

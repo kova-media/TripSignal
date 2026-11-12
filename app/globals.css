@@ -211,6 +211,7 @@ a { color: inherit; text-decoration: none; }
   .brand-symbol { width: 23px; height: 23px; }
   .nav-actions { gap: 8px; }
   .nav-actions .text-button, .nav-actions .text-link { display: none; }
+  .nav-actions .site-header-account, .nav-actions .site-header-signin { display: inline; }
   .theme-option { gap: 5px; padding: 6px 8px; font-size: 9px; }
   .theme-option svg { width: 14px; height: 14px; }
   .nav-actions .button { padding: 10px 13px; font-size: 12px; }
