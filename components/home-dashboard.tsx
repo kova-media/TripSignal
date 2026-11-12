@@ -59,9 +59,7 @@ export default function HomeDashboard() {
   }, []);
 
   const headingCopy =
-    state === 'ready' || state === 'empty'
-      ? 'Each watch has its own rules. TripSignal checks them on schedule and keeps the result simple.'
-      : 'Sign in to see the flight fare watches you have running.';
+    'Each watch has its own rules. TripSignal checks them on schedule and keeps the result simple.';
 
   return (
     <>
