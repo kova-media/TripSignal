@@ -185,7 +185,7 @@ export async function sendMonthlyDigestEmail(email: string, summary: string, low
   if (error) throw new Error(error.message);
 }
 
-export async function sendFareSignalEmail(email: string, offers: FlightOffer[], criteria: AlertEmailCriteria) {
+export async function sendFareSignalEmail(email: string, offers: FlightOffer[], criteria: AlertEmailCriteria, options?: { test?: boolean }) {
   const resend = getResend();
   const first = offers[0];
   if (!first) return;
@@ -198,13 +198,13 @@ export async function sendFareSignalEmail(email: string, offers: FlightOffer[], 
     ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px"><tr><td style="padding:0 0 12px;color:#e7ebe8;font-size:18px;font-weight:700">More signals</td></tr>${offers.slice(1, 4).map((offer) => `<tr><td style="padding:14px 0;border-top:1px solid #2b3542"><a href="${escapeHtml(flightUrl(offer, criteria))}" style="color:#f2f4f1;text-decoration:none;font-weight:700">${escapeHtml(offer.origin)} → ${escapeHtml(offer.destination)}</a><br><span style="color:#8f9995;font-size:13px;line-height:21px">${escapeHtml(formatDateRange(offer.departureDate, offer.returnDate))} · $${offer.price.toLocaleString()} · ${escapeHtml(stopLabel(offer.stops))}</span></td></tr>`).join('')}</table>`
     : '';
 
-  const text = `TripSignal found a qualifying fare.\n\n${offers.map(offerText).join('\n')}\n\nPrices and availability can change. View the signal to continue to Google Flights.`;
+  const text = `${options?.test ? 'This is a test alert from TripSignal — no fare was actually found. It shows what a real signal email looks like, using the last fare we saw for one of your watches.\n\n' : ''}TripSignal found a qualifying fare.\n\n${offers.map(offerText).join('\n')}\n\nPrices and availability can change. View the signal to continue to Google Flights.`;
   const html = `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"><meta name="supported-color-schemes" content="dark light"><style>:root{color-scheme:dark light}@media only screen and (max-width:600px){.email-shell{padding:18px 12px!important}.price{font-size:58px!important;letter-spacing:-3px!important}.route{font-size:27px!important;line-height:34px!important}.details{font-size:12px!important}.cta-cell{display:block!important;text-align:left!important;padding-top:6px!important}.cta-button{display:block!important;text-align:center!important}.footer-copy{font-size:11px!important}}</style></head><body bgcolor="#0b0f0e" style="margin:0;padding:0;background:#0b0f0e;color:#f2f4f1;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0b0f0e" style="width:100%;background:#0b0f0e"><tr><td class="email-shell" align="center" style="padding:32px 16px"><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px"><tr><td style="padding:0 2px 22px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="color:#f2f4f1;font-size:18px;font-weight:800;letter-spacing:-.4px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${BLUE};margin-right:8px"></span>TripSignal</td><td align="right" style="color:${BLUE};font-size:12px;font-weight:700;letter-spacing:.02em">SIGNAL FOUND</td></tr></table></td></tr><tr><td>${card}</td></tr><tr><td>${moreSignals}</td></tr><tr><td style="padding:20px 4px 0;color:#79837f;font-size:12px;line-height:19px">Prices and availability can change. Open the signal as soon as possible to see the current fare. TripSignal does not sell tickets or guarantee fare availability.</td></tr><tr><td class="footer-copy" style="padding:24px 4px 4px;color:#5f6965;font-size:12px;line-height:18px">You received this email because an active TripSignal alert matched a qualifying fare.<br><a href="https://tripsignal.travel" style="color:${BLUE};text-decoration:none">tripsignal.travel</a></td></tr></table></td></tr></table></body></html>`;
 
   const { error } = await resend.emails.send({
     from: getFrom(),
     to: [email],
-    subject: `TripSignal found $${first.price.toLocaleString()} · ${first.origin} → ${first.destination}`,
+    subject: `${options?.test ? '[Test] ' : ''}TripSignal found $${first.price.toLocaleString()} · ${first.origin} → ${first.destination}`,
     text,
     html,
   });

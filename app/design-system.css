@@ -1,7 +1,7 @@
 /* Shared TripSignal control system. Keep every CTA and selector visually consistent. */
 
 :root {
-  --control-radius: 12px;
+  --control-radius: 10px;
   --control-height: 50px;
   --selector-height: 48px;
 }
@@ -92,42 +92,4 @@
 .discovery-head .section-kicker,
 .discovery-head > p {
   display: none !important;
-}
-
-.home-page .discovery-head h2,
-.discovery-head h2 {
-  display: block !important;
-  width: 100vw !important;
-  max-width: none !important;
-  height: auto !important;
-  margin: 0 0 0 calc((100% - 100vw) / 2) !important;
-  padding: 0 !important;
-  text-align: center !important;
-  font-size: 0 !important;
-  line-height: 0 !important;
-  color: transparent !important;
-}
-
-.home-page .discovery-head h2 br,
-.home-page .discovery-head h2 em,
-.discovery-head h2 br,
-.discovery-head h2 em {
-  display: none !important;
-}
-
-.home-page .discovery-head h2::before,
-.discovery-head h2::before {
-  content: 'Tell us where.\A Set the fare';
-  display: block !important;
-  width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  white-space: pre !important;
-  text-align: center !important;
-  font-family: 'Space Grotesk', sans-serif !important;
-  font-size: clamp(58px, 6.4vw, 84px) !important;
-  font-weight: 600 !important;
-  line-height: .88 !important;
-  letter-spacing: -.067em !important;
-  color: var(--ink) !important;
 }

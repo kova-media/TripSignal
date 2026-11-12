@@ -22,6 +22,8 @@ const DEALS_SQL = `
            ) as rn
     from fare_observations
     where origin is not null and destination is not null
+      and ($1::text is null or origin = $1)
+      and ($2::text is null or cabin = $2)
   ),
   latest as (select * from ranked where rn = 1 and observed_at > now() - interval '7 days'),
   previous as (select * from ranked where rn = 2)
@@ -46,8 +48,14 @@ const DEALS_SQL = `
   limit 10
 `;
 
-export async function getDeals(): Promise<Deal[]> {
+export async function getDeals(filters?: { origin?: string; cabin?: string }): Promise<Deal[]> {
   await ensureSchema();
-  const result = await getDb().query<Deal>(DEALS_SQL);
+  const result = await getDb().query<Deal>(DEALS_SQL, [filters?.origin ?? null, filters?.cabin ?? null]);
   return result.rows;
+}
+
+export async function getDealOrigins(): Promise<string[]> {
+  await ensureSchema();
+  const result = await getDb().query<{ origin: string }>(`select distinct origin from fare_observations where origin is not null order by origin asc`);
+  return result.rows.map((row) => row.origin);
 }

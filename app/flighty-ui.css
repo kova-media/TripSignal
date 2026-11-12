@@ -3,7 +3,7 @@
 .home-page .shell { width: min(1320px, calc(100% - 64px)); margin-inline: auto; }
 .home-page .home-hero { display: block !important; min-height: 0 !important; padding: 104px 0 92px !important; }
 .home-page .home-hero-copy { max-width: 880px !important; }
-.home-page .home-hero h1 { max-width: 900px !important; font-size: clamp(64px, 8vw, 112px) !important; line-height: .91 !important; letter-spacing: -.075em !important; }
+.home-page .home-hero h1 { max-width: 900px !important; font-size: clamp(64px, 8vw, 112px) !important; line-height: .91 !important; letter-spacing:-.02em !important; }
 .home-page .home-hero h1 em { color: var(--muted); }
 .home-page .lede { max-width: 650px !important; margin-top: 30px !important; font-size: 20px !important; line-height: 1.55 !important; }
 .home-page .hero-actions { margin-top: 34px !important; }
@@ -13,7 +13,7 @@
 .home-page .hero-note { margin-top: 18px !important; font-size: 13px !important; }
 .home-page .discovery { padding: 22px 0 112px !important; }
 .home-page .discovery-head { display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(280px, 420px) !important; align-items: end !important; gap: 60px !important; margin-bottom: 34px !important; }
-.home-page .discovery-head h2 { font-size: clamp(48px, 5.6vw, 76px) !important; line-height: .94 !important; }
+.home-page .discovery-head h2 { font-size: clamp(48px, 5.6vw, 76px) !important; line-height: 1.02 !important; }
 .home-page .discovery-head > p { margin: 0 !important; font-size: 16px !important; line-height: 1.55 !important; }
 .home-page .discovery-layout { display: grid !important; grid-template-columns: minmax(390px, .78fr) minmax(0, 1.22fr) !important; grid-template-rows: auto auto !important; align-items: stretch !important; border: 1px solid var(--line-strong) !important; border-radius: 24px !important; background: var(--surface) !important; box-shadow: var(--shadow) !important; overflow: hidden !important; }
 .home-page .discovery-controls { grid-column: 1 !important; grid-row: 1 / span 2 !important; padding: 34px !important; border-right: 1px solid var(--line) !important; }
@@ -25,7 +25,7 @@
 .home-page .discovery-options { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
 .home-page .discovery-options button { min-height: 48px !important; border-radius: 12px !important; font-size: 14px !important; }
 .home-page .fare-target-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
-.home-page .fare-target-head strong { color: var(--ink); font-size: 24px !important; letter-spacing: -.04em; }
+.home-page .fare-target-head strong { color: var(--ink); font-size: 24px !important; letter-spacing:-.02em; }
 .home-page .fare-target-slider { display: block !important; width: 100% !important; height: 8px !important; margin: 12px 0 0 !important; appearance: none !important; -webkit-appearance: none !important; background: transparent !important; border: 0 !important; cursor: pointer; }
 .home-page .fare-target-slider::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: var(--line-strong); }
 .home-page .fare-target-slider::-webkit-slider-thumb { width: 18px; height: 18px; margin-top: -6px; -webkit-appearance: none; appearance: none; border: 2px solid var(--surface); border-radius: 50%; background: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,.24); }

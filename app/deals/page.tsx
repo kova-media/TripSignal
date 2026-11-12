@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
-import { getDeals, type Deal } from '@/lib/deals';
+import { getDeals, getDealOrigins, type Deal } from '@/lib/deals';
 import '../legal.css';
 
 export const metadata: Metadata = {
@@ -34,12 +34,19 @@ function priceLabel(value: number) {
   return `$${Math.round(value).toLocaleString()}`;
 }
 
-export default async function DealsPage() {
+const CABINS = ['economy', 'premium_economy', 'business', 'first'];
+
+export default async function DealsPage({ searchParams }: { searchParams?: Promise<{ origin?: string; cabin?: string }> }) {
+  const params = (await searchParams) ?? {};
+  const origin = /^[A-Za-z]{3}$/.test(params.origin ?? '') ? params.origin!.toUpperCase() : undefined;
+  const cabin = CABINS.includes(params.cabin ?? '') ? params.cabin! : undefined;
   let deals: Deal[] = [];
+  let origins: string[] = [];
   try {
-    deals = await getDeals();
+    [deals, origins] = await Promise.all([getDeals({ origin, cabin }), getDealOrigins()]);
   } catch {
     deals = [];
+    origins = [];
   }
 
   const dealsJsonLd = {
@@ -65,6 +72,22 @@ export default async function DealsPage() {
           <p>Routes where TripSignal spotted fares falling in the last 7 days. Real observations from live fare checks — no made-up deals.</p>
         </header>
         <div className="legal-body">
+          <form className="deal-filters" method="get" action="/deals">
+            <label>From
+              <select name="origin" defaultValue={origin ?? ''}>
+                <option value="">Any origin</option>
+                {origins.map((code) => <option key={code} value={code}>{code}</option>)}
+              </select>
+            </label>
+            <label>Cabin
+              <select name="cabin" defaultValue={cabin ?? ''}>
+                <option value="">Any cabin</option>
+                {CABINS.map((code) => <option key={code} value={code}>{cabinLabel(code)}</option>)}
+              </select>
+            </label>
+            <button className="button button-primary" type="submit">Filter</button>
+            {origin || cabin ? <a className="text-link" href="/deals">Clear</a> : null}
+          </form>
           {deals.length ? (
             <div className="deal-list">
               {deals.map((deal) => (
@@ -94,6 +117,11 @@ export default async function DealsPage() {
       </footer>
       <style dangerouslySetInnerHTML={{ __html: `
         .deal-list{display:flex;flex-direction:column;gap:14px;margin-top:8px}
+        .deal-filters{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+        .deal-filters label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:600;color:var(--muted)}
+        .deal-filters select{border:1px solid var(--line-strong);background:var(--surface);border-radius:10px;padding:11px 12px;color:var(--ink);font:inherit;outline:none}
+        .deal-filters select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+        .deal-filters .text-link{align-self:center;padding-bottom:2px}
         .deal-card{display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 22px}
         .deal-route strong{font-size:18px;letter-spacing:-.02em}
         .deal-route small{display:block;color:var(--muted);font-size:13px;margin-top:5px}
