@@ -15,10 +15,11 @@ export default function SignUpPage() {
     setLoading(true);
     setError('');
     try {
+      const ref = new URLSearchParams(window.location.search).get('ref') ?? '';
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, referralCode: ref }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Could not send your verification email.');

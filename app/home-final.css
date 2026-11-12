@@ -62,7 +62,7 @@
 .home-page .pricing-tier-pro{background:var(--surface)!important;color:var(--ink)!important;border-left:1px solid var(--line)!important}
 .home-page .pricing-tier>span{display:block!important;color:#6f7471!important;font-size:11px!important;font-weight:700!important;text-transform:uppercase!important;letter-spacing:.11em!important}
 .home-page .pricing-tier-pro>span{color:var(--muted)!important}
-.home-page .pricing-tier>strong{display:block!important;margin-top:24px!important;color:#151817!important;font-family:Space Grotesk,sans-serif!important;font-size:64px!important;font-weight:500!important;line-height:.95!important;letter-spacing:-.06em!important}
+.home-page .pricing-tier>strong{display:block!important;margin-top:24px!important;color:#151817!important;font-family:Space Grotesk,sans-serif!important;font-size:64px!important;font-weight:500!important;line-height:.95!important;letter-spacing:-.02em!important}
 .home-page .pricing-tier-pro>strong{color:var(--ink)!important}
 .home-page .pricing-tier>small{display:block!important;margin-top:18px!important;color:#6f7471!important;font-size:14px!important;line-height:1.5!important}
 .home-page .pricing-tier-pro>small{color:var(--muted)!important}

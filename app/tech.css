@@ -41,7 +41,7 @@ body { letter-spacing: -.012em; }
 
 .shell { width: min(1240px, calc(100% - 56px)); }
 .site-header { min-height: 76px; border-bottom: 1px solid var(--line); }
-.brand { letter-spacing: -.055em; }
+.brand { letter-spacing:-.02em; }
 .nav-actions { gap: 14px; }
 
 .hero {
@@ -93,7 +93,7 @@ body { letter-spacing: -.012em; }
 
 .preview-route strong,
 .preview-price { font-family: 'Space Grotesk', sans-serif; }
-.preview-route strong { letter-spacing: -.045em; }
+.preview-route strong { letter-spacing:-.02em; }
 
 .steps { gap: 18px; }
 .steps article {
