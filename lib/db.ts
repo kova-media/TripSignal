@@ -100,6 +100,7 @@ export async function ensureSchema() {
       alter table alerts add constraint alerts_frequency_check check (frequency in ('Daily', 'Weekly', 'Monthly'));
 
       alter table alerts add column if not exists user_id uuid references users(id) on delete set null;
+      alter table alerts add column if not exists last_monthly_digest_at timestamptz;
       create index if not exists alerts_user_idx on alerts (user_id, created_at desc);
       create index if not exists alerts_due_idx on alerts (active, last_checked_at, frequency);
 

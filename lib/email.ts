@@ -169,6 +169,22 @@ export async function sendAlertCreatedEmail(email: string, summary: string) {
   if (error) throw new Error(error.message);
 }
 
+export async function sendMonthlyDigestEmail(email: string, summary: string, lowestPrice: number | null, maxPrice: number) {
+  const resend = getResend();
+  const safeSummary = escapeHtml(summary);
+  const lowestLine = lowestPrice == null
+    ? 'We have not recorded a fare for this route yet.'
+    : `The lowest fare we saw was $${lowestPrice.toLocaleString()}.`;
+  const { error } = await resend.emails.send({
+    from: getFrom(),
+    to: [email],
+    subject: `Still watching: no fares under $${maxPrice.toLocaleString()} yet`,
+    text: `Still watching — nothing under your target yet.\n\n${summary}\n\nTripSignal checked this route over the past month and no fares came in under your target of $${maxPrice.toLocaleString()}. ${lowestLine}\n\nWe will keep checking and email you the moment a qualifying fare appears.`,
+    html: `<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Still watching</title></head><body style="margin:0;background:${LIGHT_BG};color:${INK};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${LIGHT_BG}"><tr><td align="center" style="padding:40px 18px"><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:${CARD};border:1px solid ${LINE}"><tr><td style="height:5px;background:${BLUE};font-size:0;line-height:0">&nbsp;</td></tr><tr><td style="padding:34px 36px 12px"><div style="font-size:19px;font-weight:800;letter-spacing:-.04em">TripSignal</div><div style="margin-top:9px;color:${BLUE};font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase">Monthly check-in</div></td></tr><tr><td style="padding:16px 36px 36px"><h1 style="margin:0;color:${INK};font-size:38px;line-height:1.05;letter-spacing:-.055em">Still watching. Nothing under your target yet.</h1><p style="margin:18px 0 0;color:${MUTED};font-size:16px;line-height:1.65">TripSignal checked this route over the past month and no fares came in under your target.</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:26px;border:1px solid ${LINE};background:#f9f9f5"><tr><td style="padding:20px 22px;color:${INK};font-size:17px;line-height:1.55;font-weight:700">${safeSummary}</td></tr></table><p style="margin:24px 0 0;color:${MUTED};font-size:14px;line-height:1.65">${escapeHtml(lowestLine)} We&rsquo;ll keep checking and email you the moment a qualifying fare appears.</p><p style="margin:26px 0 0"><a href="https://tripsignal.travel" style="display:inline-block;background:${BLUE};color:#fff;text-decoration:none;padding:13px 20px;border-radius:7px;font-size:14px;font-weight:700">Open TripSignal</a></p></td></tr><tr><td style="padding:20px 36px;border-top:1px solid ${LINE};color:#969b98;font-size:11px;line-height:1.5">TripSignal &middot; automated fare monitoring<br>tripsignal.travel</td></tr></table></td></tr></table></body></html>`,
+  });
+  if (error) throw new Error(error.message);
+}
+
 export async function sendFareSignalEmail(email: string, offers: FlightOffer[], criteria: AlertEmailCriteria) {
   const resend = getResend();
   const first = offers[0];
