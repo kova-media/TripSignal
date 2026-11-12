@@ -3,9 +3,7 @@
   .site-header {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto auto;
-    grid-template-areas:
-      "brand account signin primary"
-      "theme theme theme theme";
+    grid-template-areas: "brand account signin primary";
     align-items: center;
     gap: 14px 10px;
     padding: 14px 0 16px;
