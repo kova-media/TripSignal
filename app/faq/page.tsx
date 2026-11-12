@@ -4,7 +4,7 @@ import SiteHeader from '@/components/site-header';
 import '../legal.css';
 
 export const metadata: Metadata = {
-  title: 'FAQ',
+  title: 'Flight price alert FAQ',
   description: 'Frequently asked questions about TripSignal flight price alerts: how fare monitoring works, pricing, and how to get the most out of your watches.',
 };
 

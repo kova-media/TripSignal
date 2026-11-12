@@ -20,7 +20,7 @@ export default function Home() {
       <section className="home-hero shell">
         <div className="home-hero-copy">
           <h1>Stop checking flight prices.</h1>
-          <p className="lede">Tell TripSignal where you want to go and what you want to pay. We monitor flight fares for you and alert you when a fare matches your route, travel window and target price.</p>
+          <p className="lede">Tell TripSignal where you want to go and what you want to pay. We monitor flight fares and send you a flight price alert when one matches your route, travel window and target price.</p>
           <div className="hero-actions"><a className="button button-primary" href="#explore">Start watching</a><a className="text-link" href="#how-it-works">How it works</a></div>
           <p className="hero-note">You decide when to book. TripSignal keeps watching.</p>
         </div>

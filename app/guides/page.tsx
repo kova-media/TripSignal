@@ -19,6 +19,11 @@ const guides = [
     title: 'When to book flights for the lowest fare',
     description: 'What the research actually says about booking windows — and why watching beats guessing.',
   },
+  {
+    href: '/guides/cheap-flights-from-kansas-city',
+    title: 'Cheap flights from Kansas City (MCI)',
+    description: 'The Southwest factor, the best booking windows, and the routes where fares from MCI drop most.',
+  },
 ];
 
 const guidesJsonLd = {

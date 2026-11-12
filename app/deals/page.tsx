@@ -5,8 +5,8 @@ import { getDeals, getDealOrigins, type Deal } from '@/lib/deals';
 import '../legal.css';
 
 export const metadata: Metadata = {
-  title: 'Flight deals',
-  description: 'Recent flight fare drops spotted by TripSignal fare monitoring. See which routes got cheaper this week.',
+  title: 'Flight fare drops this week',
+  description: 'The biggest flight fare drops TripSignal spotted in the last 7 days — real fares from live checks, updated daily. Set a watch and get alerted when your route drops.',
 };
 
 function countryName(code: unknown) {
