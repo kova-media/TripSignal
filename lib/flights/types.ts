@@ -2,12 +2,9 @@ export type CabinClass = 'economy' | 'premium_economy' | 'business' | 'first';
 export type FlightTripType = 'round-trip' | 'one-way';
 
 export type DestinationScope =
-  | { type: 'anywhere' }
   | { type: 'region'; value: string }
   | { type: 'country'; value: string }
-  | { type: 'city'; value: string }
-  | { type: 'airport'; value: string }
-  | { type: 'airports'; value: string[] };
+  | { type: 'airport'; value: string };
 
 export interface FlightSearchCriteria {
   origin: string;

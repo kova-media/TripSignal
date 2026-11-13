@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getDb, ensureSchema } from '@/lib/db';
 import { getFlightProvider } from '@/lib/flights/provider';
 import type { FlightSearchCriteria } from '@/lib/flights/types';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +17,8 @@ async function queryObservations(db: ReturnType<typeof getDb>, where: string, va
     `select fo.price::text, fo.observed_at::text, fo.offer
      from fare_observations fo
      left join alerts a on a.id = fo.alert_id
-     where ${where}
+     where (a.id is null or a.deleted_at is null)
+       and ${where}
      order by fo.observed_at desc
      limit 1000`,
     values,
@@ -56,7 +58,7 @@ function tripDays(value: string): [number, number] {
   }
 }
 
-async function createLiveObservation(db: ReturnType<typeof getDb>, origin: string, destinationMode: 'airport' | 'country', destination: string, tripType: 'round-trip' | 'one-way', cabin: string, maxStopsValue: string, passengersValue: string, airlineMode: string, tripLength: string) {
+async function createLiveObservation(_db: ReturnType<typeof getDb>, origin: string, destinationMode: 'airport' | 'country', destination: string, tripType: 'round-trip' | 'one-way', cabin: string, maxStopsValue: string, passengersValue: string, airlineMode: string, tripLength: string) {
   const departure = new Date();
   departure.setUTCDate(departure.getUTCDate() + 30);
   const departureStart = departure.toISOString().slice(0, 10);
@@ -81,11 +83,10 @@ async function createLiveObservation(db: ReturnType<typeof getDb>, origin: strin
   const offers = await getFlightProvider().search(criteria);
   const lowest = offers.filter((offer) => Number.isFinite(offer.price) && offer.price > 0).sort((a, b) => a.price - b.price)[0];
   if (!lowest) return null;
-  await db.query(
-    `insert into fare_observations (alert_id, observed_at, price, offer, origin, destination_mode, destination, trip_type, cabin)
-     values (null, now(), $1, $2::jsonb, $3, $4, $5, $6, $7)`,
-    [lowest.price, JSON.stringify(lowest), origin, destinationMode, destination, tripType, criteria.cabin],
-  );
+  // Preview observations are deliberately NOT persisted: rows with
+  // alert_id = null used to be shared across users, leaking one visitor's
+  // live search into every other visitor's preview. Return the live
+  // result directly instead.
   return { price: String(lowest.price), observed_at: new Date().toISOString(), offer: lowest } satisfies FareRow;
 }
 
@@ -108,6 +109,11 @@ function routeIntelligence(rows: FareRow[]) {
 
 export async function GET(request: Request) {
   try {
+    // Unauthenticated live searches stay usable without sign-in, but are
+    // rate-limited per IP.
+    if (!checkRateLimit(`fare-preview:${getClientIp(request)}`, 30, 60 * 1000)) {
+      return NextResponse.json({ available: false, observations: 0, error: 'Too many requests. Try again shortly.' }, { status: 429 });
+    }
     const params = new URL(request.url).searchParams;
     const origin = clean(params.get('origin'));
     const destination = clean(params.get('destination'));
@@ -129,7 +135,14 @@ export async function GET(request: Request) {
     let { rows, matchLevel } = await getObservations(db, origin, destinationMode, destination, tripType, cabin);
 
     if (!rows.length) {
-      const live = await createLiveObservation(db, origin, destinationMode, destination, tripType, cabin.toLowerCase(), maxStops, passengers, airlineMode, tripLength);
+      // A provider failure (no data / all samples malformed) is a friendly
+      // "no data" answer, not a 500 — the live search simply found nothing.
+      let live: FareRow | null = null;
+      try {
+        live = await createLiveObservation(db, origin, destinationMode, destination, tripType, cabin.toLowerCase(), maxStops, passengers, airlineMode, tripLength);
+      } catch (error) {
+        console.error('TripSignal fare preview live search failed:', error);
+      }
       if (live) { rows = [live]; matchLevel = 'matching'; }
     }
 

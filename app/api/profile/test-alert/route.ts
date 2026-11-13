@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { getDb, ensureSchema } from '@/lib/db';
 import { sendFareSignalEmail } from '@/lib/email';
+import { checkRateLimit } from '@/lib/rate-limit';
 import type { FlightOffer } from '@/lib/flights/types';
 
 type TestCriteria = {
@@ -40,6 +41,10 @@ function sampleOffer(): FlightOffer {
 export async function POST() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Sign in required.' }, { status: 401 });
+  // One test alert per user every 5 minutes — it sends a real email.
+  if (!checkRateLimit(`test-alert:${user.id}`, 1, 5 * 60 * 1000)) {
+    return NextResponse.json({ error: 'Test alerts are limited to one every 5 minutes. Please try again shortly.' }, { status: 429 });
+  }
   await ensureSchema();
   const db = getDb();
   const observed = await db.query<{ offer: FlightOffer; criteria: Record<string, unknown> }>(

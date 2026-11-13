@@ -23,8 +23,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const origin = request.nextUrl.searchParams.get('origin')?.trim() || undefined;
   const departureDate = request.nextUrl.searchParams.get('departureDate')?.trim() || undefined;
   const returnDate = request.nextUrl.searchParams.get('returnDate')?.trim() || undefined;
-  const alertId = request.nextUrl.searchParams.get('alertId')?.trim() || undefined;
-  const signalId = request.nextUrl.searchParams.get('signalId')?.trim() || undefined;
+  // Unvalidated ids used to 500 the whole redirect on a bad UUID. Only
+  // well-formed UUIDs are ever attributed.
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const rawAlertId = request.nextUrl.searchParams.get('alertId')?.trim() || undefined;
+  const rawSignalId = request.nextUrl.searchParams.get('signalId')?.trim() || undefined;
+  let alertId = rawAlertId && uuidPattern.test(rawAlertId) ? rawAlertId : undefined;
+  let signalId = rawSignalId && uuidPattern.test(rawSignalId) ? rawSignalId : undefined;
 
   const metadata = destination ? await resolveDestination(destination) : null;
   const targetUrl = buildAffiliateUrl(vertical, {
@@ -46,24 +51,50 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const user = await getCurrentUser();
   const db = getDb();
 
-  await db.query(
-    `insert into affiliate_clicks
-      (user_id, vertical, provider, destination, origin, departure_date, return_date, alert_id, signal_id, referrer, user_agent)
-     values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-    [
-      user?.id ?? null,
-      vertical,
-      getProviderKey(vertical),
-      destination ?? null,
-      origin ?? null,
-      departureDate ?? null,
-      returnDate ?? null,
-      alertId ?? null,
-      signalId ?? null,
-      request.headers.get('referer'),
-      request.headers.get('user-agent'),
-    ],
-  );
+  // Where a session exists, only attribute clicks on the visitor's own
+  // alerts/signals. Someone else's ids are dropped from the attribution —
+  // the redirect still happens.
+  if (user && (alertId || signalId)) {
+    try {
+      if (alertId) {
+        const owned = await db.query('select id from alerts where id = $1 and user_id = $2 and deleted_at is null limit 1', [alertId, user.id]);
+        if (!owned.rowCount) alertId = undefined;
+      }
+      if (signalId) {
+        const owned = await db.query('select s.id from signals s join alerts a on a.id = s.alert_id where s.id = $1 and a.user_id = $2 and a.deleted_at is null limit 1', [signalId, user.id]);
+        if (!owned.rowCount) signalId = undefined;
+      }
+    } catch (error) {
+      console.error('TripSignal affiliate ownership check failed:', error);
+      alertId = undefined;
+      signalId = undefined;
+    }
+  }
+
+  // Attribution must never block the redirect: any insert failure is
+  // logged and the user still reaches the partner.
+  try {
+    await db.query(
+      `insert into affiliate_clicks
+        (user_id, vertical, provider, destination, origin, departure_date, return_date, alert_id, signal_id, referrer, user_agent)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      [
+        user?.id ?? null,
+        vertical,
+        getProviderKey(vertical),
+        destination ?? null,
+        origin ?? null,
+        departureDate ?? null,
+        returnDate ?? null,
+        alertId ?? null,
+        signalId ?? null,
+        request.headers.get('referer'),
+        request.headers.get('user-agent'),
+      ],
+    );
+  } catch (error) {
+    console.error('TripSignal affiliate click insert failed:', error);
+  }
 
   return NextResponse.redirect(targetUrl, 302);
 }

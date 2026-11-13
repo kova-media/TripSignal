@@ -16,6 +16,7 @@ export default function SiteFooter({ className = '' }: { className?: string }) {
         <a href="/about">About</a>
         <a href="/deals">Deals</a>
         <a href="/anywhere">Anywhere</a>
+        <a href="/lounges">Lounges</a>
         <a href="/guides">Guides</a>
         <a href="/faq">FAQ</a>
         <a href="/terms">Terms</a>

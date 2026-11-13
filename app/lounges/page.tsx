@@ -1,8 +1,14 @@
+import type { Metadata } from 'next';
 import SiteHeader from '@/components/site-header';
 import SiteFooter from '@/components/site-footer';
 import { getDb, ensureSchema } from '@/lib/db';
 import { loungeDirectoryLinks, normalizeAirportCode } from '@/lib/lounges';
 import styles from './lounges.module.css';
+
+export const metadata: Metadata = {
+  title: 'Airport lounge guide',
+  description: 'See which airport lounges can work for a departure or layover, how to get in, what they cost and what is included.',
+};
 
 export const dynamic = 'force-dynamic';
 

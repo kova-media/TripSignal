@@ -83,9 +83,9 @@ export default function AnywherePage() {
         <p className="section-kicker">Anywhere fares</p>
         <h1>Where can your budget take you?</h1>
         <p className="anywhere-lede">
-          Pick a home airport and a region. We scan round-trip fares to every major airport in that
-          region — departing about a month out, trips of 7–14 days — and show the cheapest spots
-          under your max price.
+          Pick a home airport and a region. We scan round-trip fares to a rotating set of major
+          airports in that region — departing about a month out, trips of 7–14 days — and show the
+          cheapest spots under your max price.
         </p>
 
         <form onSubmit={submit} className="anywhere-form">

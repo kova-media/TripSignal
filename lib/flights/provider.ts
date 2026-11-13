@@ -18,6 +18,8 @@ const REGION_AIRPORTS: Record<string, string[]> = {
   Oceania: ['SYD', 'MEL', 'BNE', 'PER', 'AKL'],
 };
 
+export const REGION_NAMES = Object.keys(REGION_AIRPORTS);
+
 // Google Flights has no official API — TripSignal reaches it through
 // fast-flights-ts, an unofficial scraper, and Google rate-limits bursts of
 // it (HTTP 429). Searches therefore run one at a time with a gap between
@@ -111,7 +113,11 @@ async function searchOne(origin: string, destination: string, departureDate: str
       const message = error instanceof Error ? error.message : String(error);
       if (message.includes('RPC response missing flight data')) {
         console.warn(`TripSignal Google Flights returned malformed RPC data for ${origin}-${destination} on ${departureDate}; skipping this sample.`);
-        return [];
+        // Throw instead of returning []: when every sample is malformed the
+        // caller must record an error run, not a success with 0 offers.
+        // A single malformed sample among successful ones is still
+        // absorbed by the per-search catch in search().
+        throw new Error(`Google Flights returned malformed data for ${origin}-${destination} on ${departureDate}.`);
       }
       if (isRateLimited(error) && attempt < maxAttempts - 1) {
         const delay = RATE_LIMIT_RETRY_DELAYS_MS[attempt] ?? 30000;
@@ -139,17 +145,18 @@ class GoogleFlightsProvider implements FlightProvider {
     const destination = criteria.destination;
     let destinations: string[];
     if (destination.type === 'airport') destinations = [destination.value];
-    else if (destination.type === 'airports') destinations = destination.value;
     else if (destination.type === 'region') destinations = REGION_AIRPORTS[destination.value] ?? [];
     else if (destination.type === 'country') destinations = await getAirportsForCountry(destination.value);
-    else if (destination.type === 'city') destinations = [destination.value];
     else destinations = [];
-    if (destinations.length === 0) return [];
+    // Empty destinations used to return [] and record a success run with 0
+    // offers. That is no data, not a success — throw so callers record an
+    // error run and interactive callers can show a friendly "no data" state.
+    if (destinations.length === 0) throw new Error(`No destinations available for ${destination.type} "${destination.value}".`);
 
     // A region or country can fan out to dozens of airports. Check only a
     // subset per run and rotate it daily, so every airport gets covered over
     // time without firing dozens of requests in one check.
-    const multiAirport = destination.type === 'region' || destination.type === 'country' || destination.type === 'airports';
+    const multiAirport = destination.type === 'region' || destination.type === 'country';
     if (multiAirport && destinations.length > MAX_DESTINATIONS_PER_CHECK) {
       const day = Math.floor(Date.now() / 86400000);
       const start = (day * MAX_DESTINATIONS_PER_CHECK) % destinations.length;

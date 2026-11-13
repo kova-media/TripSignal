@@ -79,8 +79,8 @@ export default function ReferralPanel() {
       <p className={styles.eyebrow}>Referrals</p>
       <h2 className={styles.title}>Refer friends, earn watches</h2>
       <p className={styles.text}>
-        Share your link. When a friend signs up and redeems your code, you earn +1 bonus watch
-        every month — on top of your free monthly watch.
+        Share your link. When a friend signs up and redeems your code, you earn +1 bonus watch —
+        a permanent extra watch added to your monthly allowance, on top of your free monthly watch.
       </p>
 
       <label className={styles.label}>

@@ -1,22 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createMagicLink } from '@/lib/auth';
+import { storePendingReferral } from '@/lib/referrals';
 import { sendMagicLinkEmail } from '@/lib/email';
-import { getDb, ensureSchema } from '@/lib/db';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 function validEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-async function applySignupReferral(userId: string, code: string) {
-  await ensureSchema();
-  const db = getDb();
-  const owner = await db.query<{ id: string }>('select id from users where referral_code = $1 limit 1', [code]);
-  const referrerId = owner.rows[0]?.id;
-  if (!referrerId || referrerId === userId) return;
-  const updated = await db.query('update users set referred_by = $2 where id = $1 and referred_by is null', [userId, referrerId]);
-  if (updated.rowCount === 1) {
-    await db.query('update users set bonus_watches = coalesce(bonus_watches, 0) + 1 where id = $1', [referrerId]);
-  }
 }
 
 export async function POST(request: Request) {
@@ -33,11 +22,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
     }
 
-    const { url, userId } = await createMagicLink(email, name);
+    // 5 signups/hour per email and per IP.
+    const ip = getClientIp(request);
+    if (
+      !checkRateLimit(`signup:email:${email}`, 5, 60 * 60 * 1000) ||
+      !checkRateLimit(`signup:ip:${ip}`, 5, 60 * 60 * 1000)
+    ) {
+      return NextResponse.json({ error: 'Too many sign-up attempts. Try again in an hour.' }, { status: 429 });
+    }
+
+    const { url, userId, isNewUser } = await createMagicLink(email, name);
+    // Referral is NOT granted here: the code is only stored, and only
+    // for a newly-created user. The grant happens after the magic link
+    // is clicked (grantPendingReferral, wired into the verify route),
+    // so unverified signups cannot farm referrer bonuses. Re-signup of
+    // an existing account never stores (or grants) a code.
     const referralCode = typeof body.referralCode === 'string' ? body.referralCode.trim().toUpperCase() : '';
-    if (/^[A-Z0-9]{8}$/.test(referralCode)) {
+    if (isNewUser && /^[A-Z0-9]{8}$/.test(referralCode)) {
       try {
-        await applySignupReferral(userId, referralCode);
+        await storePendingReferral(userId, referralCode);
       } catch (error) {
         console.error('TripSignal signup referral error:', error);
       }

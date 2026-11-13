@@ -3,7 +3,7 @@ import Link from 'next/link';
 import SiteHeader from '@/components/site-header';
 import RunButton from './run-button';
 import { getDb, ensureSchema } from '@/lib/db';
-import { requireAdmin, isAdminError } from '@/lib/admin';
+import { requireAdmin, isAdminError, isProUser } from '@/lib/admin';
 import styles from '../admin.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -37,11 +37,11 @@ export default async function AdminHealthPage() {
     if (checks[0]?.status === 'ok') {
       const [runs, due, stuck, signals, users, alerts] = await Promise.all([
         db.query<{ total: string; errors: string; recent: string }>(`select count(*)::text total, count(*) filter (where status = 'error' and started_at >= now() - interval '24 hours')::text errors, count(*) filter (where started_at >= now() - interval '24 hours')::text recent from alert_runs`),
-        db.query<{ count: string }>(`select count(*)::text count from alerts where active = true and (last_checked_at is null or (frequency = 'Daily' and last_checked_at <= now() - interval '24 hours') or (frequency = 'Weekly' and last_checked_at <= now() - interval '7 days') or (frequency = 'Monthly' and last_checked_at <= now() - interval '30 days'))`),
+        db.query<{ count: string }>(`select count(*)::text count from alerts where deleted_at is null and active = true and (last_checked_at is null or (frequency = 'Daily' and last_checked_at <= now() - interval '24 hours') or (frequency = 'Weekly' and last_checked_at <= now() - interval '7 days') or (frequency = 'Monthly' and last_checked_at <= now() - interval '30 days'))`),
         db.query<{ count: string }>(`select count(*)::text count from alert_runs where status = 'running' and started_at <= now() - interval '30 minutes'`),
         db.query<{ total: string; recent: string }>(`select count(*)::text total, count(*) filter (where sent_at >= now() - interval '24 hours')::text recent from signals`),
-        db.query<{ total: string; pro: string }>(`select count(*)::text total, count(*) filter (where plan <> 'free' or subscription_status in ('active','trialing'))::text pro from users`),
-        db.query<{ total: string; active: string }>(`select count(*)::text total, count(*) filter (where active)::text active from alerts`),
+        db.query<{ plan: string }>(`select plan from users`),
+        db.query<{ total: string; active: string }>(`select count(*)::text total, count(*) filter (where active)::text active from alerts where deleted_at is null`),
       ]);
       const run = runs.rows[0];
       const dueCount = Number(due.rows[0]?.count ?? 0);
@@ -50,7 +50,7 @@ export default async function AdminHealthPage() {
       checks.push({ name: 'Alert worker', status: stuckCount ? 'error' : errorCount ? 'warning' : 'ok', detail: `${run?.recent ?? 0} runs in the last 24 hours · ${errorCount} failures · ${dueCount} alerts currently due.` });
       checks.push({ name: 'Worker queue', status: stuckCount ? 'error' : 'ok', detail: stuckCount ? `${stuckCount} running searches have exceeded 30 minutes.` : 'No searches appear stuck.' });
       checks.push({ name: 'Fare signals', status: 'ok', detail: `${signals.rows[0]?.recent ?? 0} signals sent in the last 24 hours · ${signals.rows[0]?.total ?? 0} all time.` });
-      checks.push({ name: 'Accounts', status: 'ok', detail: `${users.rows[0]?.total ?? 0} total accounts · ${users.rows[0]?.pro ?? 0} Pro accounts.` });
+      checks.push({ name: 'Accounts', status: 'ok', detail: `${users.rows.length} total accounts · ${users.rows.filter(isProUser).length} Pro accounts.` });
       checks.push({ name: 'Alerts', status: dueCount ? 'warning' : 'ok', detail: `${alerts.rows[0]?.active ?? 0} active of ${alerts.rows[0]?.total ?? 0} total · ${dueCount} due.` });
     }
 

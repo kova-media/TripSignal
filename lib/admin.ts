@@ -32,3 +32,10 @@ export async function recordAdminAction(
 export function isAdminError(error: unknown) {
   return error instanceof Error && error.message === 'ADMIN_UNAUTHORIZED';
 }
+
+// Single definition of a Pro account, shared by the Operations and Health
+// pages: any plan other than 'free' counts as Pro, regardless of Stripe
+// subscription_status (lifetime grants have no Stripe subscription).
+export function isProUser(row: { plan: string }) {
+  return row.plan !== 'free';
+}

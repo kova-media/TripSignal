@@ -18,8 +18,8 @@ function stripeDashboardUrl(type: 'customers' | 'subscriptions', id: string) {
 
 export default async function AdminUserBillingPage({ params }: { params: Promise<{ id: string }> }) {
   try {
-    await ensureSchema();
     await requireAdmin();
+    await ensureSchema();
     const { id } = await params;
     const db = getDb();
 
@@ -43,6 +43,10 @@ export default async function AdminUserBillingPage({ params }: { params: Promise
     if (!user) notFound();
 
     const stripeConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
+    // The checkout success handler sets plan='pro' and leaves status
+    // 'inactive' until the Stripe webhook arrives, so that combination is a
+    // pending webhook, not a mismatch.
+    const pendingWebhook = user.plan === 'pro' && user.subscription_status === 'inactive';
     const stateMatches = user.subscription_status === 'lifetime'
       ? user.plan === 'pro' && !user.stripe_subscription_id && !user.subscription_current_period_end
       : (user.plan === 'pro' && ['active', 'trialing'].includes(user.subscription_status)) || (user.plan === 'free' && !['active', 'trialing'].includes(user.subscription_status));
@@ -59,7 +63,7 @@ export default async function AdminUserBillingPage({ params }: { params: Promise
 
         <section className={styles.grid}>
           <div className={styles.metric}><span>TripSignal plan</span><strong>{user.plan === 'free' ? 'Free' : 'Pro'}</strong><small>{user.subscription_status}</small></div>
-          <div className={styles.metric}><span>Billing state</span><strong>{stateMatches ? 'In sync' : 'Mismatch'}</strong><small>{stripeConfigured ? 'Stripe configured' : 'Stripe key missing'}</small></div>
+          <div className={styles.metric}><span>Billing state</span><strong>{pendingWebhook ? 'Pending webhook' : stateMatches ? 'In sync' : 'Mismatch'}</strong><small>{pendingWebhook ? 'Pro granted, waiting for Stripe webhook' : stripeConfigured ? 'Stripe configured' : 'Stripe key missing'}</small></div>
           <div className={styles.metric}><span>Customer</span><strong>{user.stripe_customer_id ? 'Linked' : 'Missing'}</strong><small>Stripe customer</small></div>
           <div className={styles.metric}><span>Subscription</span><strong>{user.stripe_subscription_id ? 'Linked' : 'Missing'}</strong><small>{user.subscription_status === 'lifetime' ? 'Lifetime access' : periodEnded ? 'Period ended' : 'Period current'}</small></div>
           <div className={styles.metric}><span>Period ends</span><strong>{user.subscription_current_period_end ? new Date(user.subscription_current_period_end).toLocaleDateString() : 'None'}</strong><small>{formatDate(user.subscription_current_period_end)}</small></div>
@@ -79,7 +83,7 @@ export default async function AdminUserBillingPage({ params }: { params: Promise
           </div>
         </section>
 
-        {!stateMatches && <section className={styles.section}>
+        {!stateMatches && !pendingWebhook && <section className={styles.section}>
           <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Attention</p><h2>Account state mismatch</h2></div></div>
           <div className={styles.errorCard}><strong>TripSignal currently shows {user.plan === 'free' ? 'Free' : 'Pro'} with Stripe status “{user.subscription_status}”.</strong><small>Do not change the account state from this page. Verify the Stripe customer and subscription first.</small></div>
         </section>}

@@ -5,6 +5,7 @@ import AlertActions from './alert-actions';
 import BillingButton from './billing-button';
 import { getCurrentUser } from '@/lib/auth';
 import { getDb, ensureSchema } from '@/lib/db';
+import { isActiveWatch, isValidWatch } from '@/lib/watch';
 import styles from './account.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -30,29 +31,29 @@ function firstName(name: string | null, email: string) {
   return email.split('@')[0];
 }
 
-export default async function AccountPage() {
+export default async function AccountPage({ searchParams }: { searchParams?: Promise<{ billing?: string }> }) {
+  const params = (await searchParams) ?? {};
   const user = await getCurrentUser();
   if (!user) redirect('/signin');
 
   await ensureSchema();
   const db = getDb();
-  const result = await db.query<{ id: string; criteria: Record<string, unknown>; frequency: string; active: boolean; created_at: string }>(
-    `select id, criteria, frequency, active, created_at
+  const result = await db.query<{ id: string; criteria: Record<string, unknown>; frequency: string; active: boolean; created_at: string; deleted_at: string | null; pending_verification: boolean | null }>(
+    `select id, criteria, frequency, active, created_at, deleted_at, pending_verification
      from alerts
-     where user_id = $1
-       and jsonb_typeof(criteria) = 'object'
-       and length(coalesce(criteria->>'origin', '')) = 3
-       and criteria ? 'destination'
-       and criteria ? 'maxPrice'
-       and lower(coalesce(criteria->>'destination', '')) not in ('any destination', 'any airport')
+     where user_id = $1 and deleted_at is null
      order by created_at desc`,
     [user.id],
   );
+  // Same watch definitions as profile and GET /api/watches (lib/watch.ts):
+  // the list shows valid watches (paused ones included), the counts use
+  // the shared active-watch definition.
+  const watches = result.rows.filter(isValidWatch);
   const planResult = await db.query<{ plan: string }>('select plan from users where id = $1 limit 1', [user.id]);
   const plan = planResult.rows[0]?.plan ?? 'free';
 
-  const activeCount = result.rows.filter((row) => row.active).length;
-  const pausedCount = result.rows.length - activeCount;
+  const activeCount = watches.filter(isActiveWatch).length;
+  const pausedCount = watches.length - activeCount;
 
   return (
     <main className={styles.page}>
@@ -72,19 +73,23 @@ export default async function AccountPage() {
 
           <div className={styles.stats}>
             <div><span>Active watches</span><strong>{activeCount}</strong></div>
-            <div><span>Total alerts</span><strong>{result.rows.length}</strong></div>
+            <div><span>Total alerts</span><strong>{watches.length}</strong></div>
             <div><span>Paused</span><strong>{pausedCount}</strong></div>
           </div>
+
+          {params.billing === 'error' ? (
+            <p className={styles.error} style={{ marginTop: 18 }}>We couldn&rsquo;t confirm your Pro payment. If you were charged, it should still go through — check back in a few minutes or try again. If it keeps failing, contact support.</p>
+          ) : null}
 
           <section className={styles.section}>
             <div className={styles.sectionHeading}>
               <div>
                 <p className={styles.eyebrow}>Your searches</p>
-                <h2 className={styles.sectionTitle}>{result.rows.length ? 'Fare watches' : 'Start your first fare watch'}</h2>
+                <h2 className={styles.sectionTitle}>{watches.length ? 'Fare watches' : 'Start your first fare watch'}</h2>
               </div>
             </div>
 
-            {result.rows.length === 0 ? (
+            {watches.length === 0 ? (
               <div className={styles.empty}>
                 <div className={styles.emptyIcon}>↗</div>
                 <h3 className={styles.emptyTitle}>Nothing is being watched yet.</h3>
@@ -93,7 +98,7 @@ export default async function AccountPage() {
               </div>
             ) : (
               <div className={styles.alerts}>
-                {result.rows.map((alert) => (
+                {watches.map((alert) => (
                   <article className={styles.alert} key={alert.id}>
                     <div className={styles.alertMain}>
                       <p className={styles.route}>{summarizeCriteria(alert.criteria)}</p>

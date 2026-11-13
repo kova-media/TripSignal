@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { getDb, ensureSchema } from '@/lib/db';
-import { requireAdmin, isAdminError, recordAdminAction } from '@/lib/admin';
+import { requireAdmin, isAdminError } from '@/lib/admin';
+import type { PoolClient } from 'pg';
 
 type RouteContext = { params: Promise<{ id: string }> };
 type AdminAction = 'demote_to_free' | 'grant_pro';
@@ -10,6 +11,20 @@ const ALERT_FROM_EMAIL = 'TripSignal Alerts <alerts@tripsignal.travel>';
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>'\"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '\"': '&quot;' }[character] ?? character));
+}
+
+async function insertAdminAudit(
+  client: PoolClient,
+  adminEmail: string,
+  action: string,
+  targetId: string,
+  details: Record<string, unknown>,
+) {
+  await client.query(
+    `insert into admin_audit_log (admin_email, action, target_type, target_id, details)
+     values ($1, $2, 'user', $3, $4::jsonb)`,
+    [adminEmail, action, targetId, JSON.stringify(details)],
+  );
 }
 
 async function sendLifetimeProEmail(email: string) {
@@ -69,12 +84,12 @@ export async function POST(request: Request, context: RouteContext) {
           [id],
         );
 
-        await client.query('COMMIT');
-        await recordAdminAction(admin.email, 'grant_pro_free', 'user', id, {
+        await insertAdminAudit(client, admin.email, 'grant_pro_free', id, {
           previousPlan: user.plan,
           previousSubscriptionStatus: user.subscription_status,
           accessType: 'lifetime',
         });
+        await client.query('COMMIT');
 
         let emailSent = true;
         try {
@@ -97,9 +112,9 @@ export async function POST(request: Request, context: RouteContext) {
         return NextResponse.json({ error: 'This account has an active or trialing subscription and cannot be demoted by this action.' }, { status: 400 });
       }
 
-      const alertsResult = await client.query<{ id: string }>(
-        `select id from alerts
-         where user_id = $1 or lower(email) = lower($2)
+      const alertsResult = await client.query<{ id: string; active: boolean }>(
+        `select id, active from alerts
+         where user_id = $1 or (user_id is null and lower(email) = lower($2))
          order by created_at asc, id asc`,
         [id, user.email],
       );
@@ -112,22 +127,30 @@ export async function POST(request: Request, context: RouteContext) {
         [id],
       );
 
-      const extraAlertIds = alertsResult.rows.slice(1).map((row) => row.id);
-      if (extraAlertIds.length) {
-        await client.query(
-          'update alerts set active = false where id = any($1)',
-          [extraAlertIds],
+      // Keep the oldest active alert so the account is never left with
+      // zero active alerts, and only count rows the UPDATE actually changed
+      // (already-paused alerts are not counted).
+      const keepActiveId = alertsResult.rows.find((row) => row.active)?.id;
+      const idsToPause = alertsResult.rows
+        .filter((row) => row.active && row.id !== keepActiveId)
+        .map((row) => row.id);
+      let pausedAlerts = 0;
+      if (idsToPause.length) {
+        const pausedResult = await client.query<{ id: string }>(
+          'update alerts set active = false where id = any($1) and active = true returning id',
+          [idsToPause],
         );
+        pausedAlerts = pausedResult.rows.length;
       }
 
-      await client.query('COMMIT');
-      await recordAdminAction(admin.email, 'demote_user_to_free', 'user', id, {
+      await insertAdminAudit(client, admin.email, 'demote_user_to_free', id, {
         previousPlan: user.plan,
         previousSubscriptionStatus: user.subscription_status,
-        pausedAlerts: extraAlertIds.length,
+        pausedAlerts,
       });
+      await client.query('COMMIT');
 
-      return NextResponse.json({ ok: true, pausedAlerts: extraAlertIds.length });
+      return NextResponse.json({ ok: true, pausedAlerts });
     } catch (error) {
       try { await client.query('ROLLBACK'); } catch {}
       throw error;

@@ -12,6 +12,9 @@ type MagicLinkResult = {
   userId: string;
   email: string;
   url: string;
+  // True only when this call created the user row. Re-signing-in an
+  // existing account must never be treated as a fresh signup.
+  isNewUser: boolean;
 };
 
 function hashToken(token: string) {
@@ -65,29 +68,6 @@ async function createSession(userId: string, email: string) {
   return { id: userId, email };
 }
 
-export async function signUp(email: string, password: string) {
-  await ensureSchema();
-  const db = getDb();
-  const normalizedEmail = email.trim().toLowerCase();
-  const passwordHash = await hashPassword(password);
-  const result = await db.query<{ id: string; email: string }>(
-    `insert into users (email, password_hash) values ($1, $2)
-     on conflict (email) do update set password_hash = coalesce(users.password_hash, excluded.password_hash)
-     returning id, email`,
-    [normalizedEmail, passwordHash],
-  );
-  const user = result.rows[0];
-  if (!user) throw new Error('Could not create account.');
-
-  const existing = await db.query<{ password_hash: string | null }>('select password_hash from users where id = $1', [user.id]);
-  if (!existing.rows[0]?.password_hash) throw new Error('Could not create account.');
-  if (existing.rows[0].password_hash !== passwordHash) {
-    throw new Error('An account with this email already exists. Please sign in instead.');
-  }
-
-  return createSession(user.id, user.email);
-}
-
 export async function setPasswordForCurrentUser(password: string) {
   await ensureSchema();
   const cookieStore = await cookies();
@@ -129,6 +109,8 @@ export async function createMagicLink(email: string, name?: string): Promise<Mag
   const db = getDb();
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedName = name?.trim().replace(/\s+/g, ' ') || '';
+  const preexisting = await db.query<{ id: string }>('select id from users where email = $1 limit 1', [normalizedEmail]);
+  const isNewUser = !preexisting.rows[0];
   const userResult = await db.query<{ id: string }>(
     `insert into users (email, name) values ($1, nullif($2, ''))
      on conflict (email) do update set name = coalesce(users.name, excluded.name)
@@ -138,7 +120,11 @@ export async function createMagicLink(email: string, name?: string): Promise<Mag
   const userId = userResult.rows[0]?.id;
   if (!userId) throw new Error('Could not create account.');
 
-  await db.query('delete from auth_tokens where user_id = $1 or expires_at < now()', [userId]);
+  // Only sweep expired tokens. A fresh link must NOT invalidate tokens
+  // issued earlier — the user may have several live links (e.g. requested
+  // on two devices), and each stays usable until it expires or is
+  // consumed by a successful verification (see consumeMagicLink).
+  await db.query('delete from auth_tokens where expires_at < now()');
   const token = randomBytes(32).toString('hex');
   await db.query(
     `insert into auth_tokens (user_id, token_hash, expires_at)
@@ -150,6 +136,7 @@ export async function createMagicLink(email: string, name?: string): Promise<Mag
     userId,
     email: normalizedEmail,
     url: `${appUrl()}/api/auth/verify?token=${encodeURIComponent(token)}`,
+    isNewUser,
   };
 }
 

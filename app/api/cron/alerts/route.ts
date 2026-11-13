@@ -15,6 +15,15 @@ export async function GET(request: Request) {
   try {
     await ensureSchema();
     const summary = await runDueAlerts();
+    // Per-alert errors are swallowed into a 200 with {errors: N}, so the
+    // old "email only if runDueAlerts() throws" never fired. Email when
+    // the run failed outright or badly: every checked alert failed, or at
+    // least 5 alerts failed.
+    if (summary.errors > 0 && (summary.errors >= summary.checked || summary.errors >= 5)) {
+      await sendCronFailureEmail(
+        `Alert worker completed with ${summary.errors} failed alert${summary.errors === 1 ? '' : 's'} out of ${summary.checked} checked (${summary.signals} signals, ${summary.emails} emails, ${summary.digests} digests).`,
+      );
+    }
     return NextResponse.json({ ok: true, ...summary });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Alert worker failed.';

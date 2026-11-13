@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { consumeMagicLink } from '@/lib/auth';
+import { grantPendingReferral } from '@/lib/referrals';
+import { activatePendingAlerts } from '@/lib/alerts';
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
@@ -9,6 +11,21 @@ export async function GET(request: Request) {
   try {
     const user = await consumeMagicLink(token);
     if (!user) return NextResponse.redirect(new URL('/signin?error=expired', request.url));
+
+    // First successful verification: grant any referral bonus the user signed
+    // up with, and activate alerts created while signed out (they were
+    // pending until the email was proven). Best-effort: a failure here must
+    // not block sign-in.
+    try {
+      await grantPendingReferral(user.id);
+    } catch (error) {
+      console.error('TripSignal referral grant error:', error);
+    }
+    try {
+      await activatePendingAlerts(user.id);
+    } catch (error) {
+      console.error('TripSignal pending-alert activation error:', error);
+    }
 
     const next = params.get('next');
     const safeNext = next && next.startsWith('/') && !next.startsWith('//') ? next : null;

@@ -12,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/account/', '/admin/', '/api/', '/profile/', '/signin', '/reset'],
+        disallow: ['/account/', '/admin/', '/api/', '/profile/', '/signin', '/signup', '/reset'],
       },
     ],
     sitemap: siteUrl ? `${siteUrl.replace(/\/$/, '')}/sitemap.xml` : undefined,

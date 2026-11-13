@@ -12,11 +12,14 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   await ensureSchema();
   const db = getDb();
-  const alert = await db.query<{ id: string; criteria: any }>('select id, criteria from alerts where id = $1 and user_id = $2 limit 1', [id, user.id]);
+  const alert = await db.query<{ id: string; criteria: any }>('select id, criteria from alerts where id = $1 and user_id = $2 and deleted_at is null limit 1', [id, user.id]);
   if (!alert.rows[0]) return NextResponse.json({ error: 'Alert not found.' }, { status: 404 });
 
+  // Only a recent itinerary is a trustworthy basis for lounge guidance —
+  // an observation older than 7 days is treated as no itinerary rather
+  // than shown as current.
   const observation = await db.query<{ offer: any; observed_at: string }>(
-    'select offer, observed_at from fare_observations where alert_id = $1 order by observed_at desc limit 1',
+    'select offer, observed_at from fare_observations where alert_id = $1 and observed_at >= now() - interval \'7 days\' order by observed_at desc limit 1',
     [id],
   );
 

@@ -9,8 +9,13 @@ import FarePreview from '@/components/fare-preview';
 import styles from './trip-discovery-direct.module.css';
 
 type DiscoveryDirectProps = { children?: ReactNode; accountEmail?: string | null };
-type DestinationMode = 'country' | 'airport';
+type DestinationMode = 'country' | 'airport' | 'region';
 type TripType = 'round-trip' | 'one-way';
+
+// Keep in sync with REGION_AIRPORTS in lib/flights/provider.ts (that
+// module pulls in the server-only flight client, so the list is mirrored
+// here rather than imported).
+const REGIONS = ['Europe', 'North America', 'South America', 'Asia', 'Africa', 'Middle East', 'Oceania'];
 
 function valueOf(root: HTMLElement, id: string) { const element = root.querySelector<HTMLInputElement | HTMLSelectElement>(`#${id}`); return element?.value.trim() ?? ''; }
 function selectedCabin(root: HTMLElement) { const active = root.querySelector<HTMLButtonElement>('.discovery-cabin-options button.active'); return active?.textContent?.trim() ?? 'Premium economy'; }
@@ -23,8 +28,21 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
   const [destinationMode, setDestinationMode] = useState<DestinationMode>('airport');
+  const [region, setRegion] = useState(REGIONS[0]!);
   const [tripType, setTripType] = useState<TripType>('round-trip');
   const [controlsHost, setControlsHost] = useState<HTMLElement | null>(null);
+
+  // When a region is chosen the airport/country chooser above is hidden so
+  // the two destination inputs cannot contradict each other.
+  useEffect(() => {
+    const syncChooser = () => {
+      const chooser = document.querySelector<HTMLElement>('.destination-chooser-root');
+      if (chooser) chooser.style.display = destinationMode === 'region' ? 'none' : '';
+    };
+    syncChooser();
+    const timer = window.setTimeout(syncChooser, 100);
+    return () => window.clearTimeout(timer);
+  }, [destinationMode]);
 
   useEffect(() => {
     if (!accountEmail) return;
@@ -63,7 +81,7 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
     const origin = airportCode(valueOf(root, 'airport-from'));
     const destinationInput = valueOf(root, 'airport-destination');
     const countryCode = valueOf(root, 'discovery-country-code');
-    const destination = destinationMode === 'country' ? countryCode : airportCode(destinationInput);
+    const destination = destinationMode === 'region' ? region : destinationMode === 'country' ? countryCode : airportCode(destinationInput);
     const specificDate = valueOf(root, 'discovery-date');
     const dateRange = specificDate ? 'Custom dates' : valueOf(root, 'discovery-window');
     const email = accountEmail ?? valueOf(root, 'discovery-email');
@@ -74,7 +92,13 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
       const response = await fetch('/api/alerts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Could not create alert.');
-      setSuccess(data.signInEmailSent ? 'Alert created. Check your email for your TripSignal sign-in link.' : 'Alert created. TripSignal is now watching this fare.');
+      // Surface the API warning (confirmation email or initial search
+      // failed) instead of reporting plain success regardless.
+      let message = data.pendingVerification
+        ? 'Alert created. Check your email for your TripSignal sign-in link — your alert activates once you sign in.'
+        : data.signInEmailSent ? 'Alert created. Check your email for your TripSignal sign-in link.' : 'Alert created. TripSignal is now watching this fare.';
+      if (data.warning) message += ` Warning: ${data.warning}`;
+      setSuccess(message);
       router.refresh();
     } catch (err) { setError(err instanceof Error ? err.message : 'Could not create alert.'); }
     finally { setSubmitting(false); }
@@ -90,10 +114,30 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
     </div>
   );
 
+  const regionSelector = (
+    <div className={styles.tripType} role="group" aria-label="Destination region">
+      <span>Destination region</span>
+      <select
+        aria-label="Destination region"
+        value={destinationMode === 'region' ? region : ''}
+        onChange={(event) => {
+          const value = event.target.value;
+          if (!value) { setDestinationMode('airport'); return; }
+          setRegion(value);
+          setDestinationMode('region');
+        }}
+        style={{ minHeight: 48, width: '100%', border: '1px solid var(--line-strong)', borderRadius: 12, background: 'var(--surface)', color: 'var(--ink)', padding: '0 14px', font: 'inherit', fontSize: 14, fontWeight: 600 }}
+      >
+        <option value="">No region — use airport or country above</option>
+        {REGIONS.map((name) => <option key={name} value={name}>{name}</option>)}
+      </select>
+    </div>
+  );
+
   return (
     <div className={`${styles.wrapper}${accountEmail ? ' account-bound' : ''}${tripType === 'one-way' ? ` ${styles.oneWay}` : ''}`} data-trip-discovery-direct onClickCapture={handleClick} aria-busy={submitting}>
       <TripDiscovery />
-      {controlsHost && createPortal(tripTypeSelector, controlsHost)}
+      {controlsHost && createPortal(<>{tripTypeSelector}{regionSelector}</>, controlsHost)}
       <DestinationChooser onModeChange={setDestinationMode} />
       <FarePreview />
       {success && <p className={`${styles.message} discovery-direct-success`} role="status">{success}</p>}

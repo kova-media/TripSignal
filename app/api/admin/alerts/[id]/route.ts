@@ -28,14 +28,40 @@ export async function POST(request: Request, context: RouteContext) {
 
     if (action === 'toggle') {
       const nextActive = !alert.active;
-      await db.query('update alerts set active = $1 where id = $2', [nextActive, id]);
-      await recordAdminAction(admin.email, nextActive ? 'resume_alert' : 'pause_alert', 'alert', id);
+      // Mutation and audit write commit in the same transaction, so an audit
+      // failure rolls the toggle back instead of reporting a completed
+      // action as a failure (which could flip the toggle back on retry).
+      const client = await db.connect();
+      try {
+        await client.query('BEGIN');
+        await client.query('update alerts set active = $1 where id = $2', [nextActive, id]);
+        await client.query(
+          `insert into admin_audit_log (admin_email, action, target_type, target_id, details)
+           values ($1, $2, 'alert', $3, null)`,
+          [admin.email, nextActive ? 'resume_alert' : 'pause_alert', id],
+        );
+        await client.query('COMMIT');
+      } catch (error) {
+        try { await client.query('ROLLBACK'); } catch {}
+        throw error;
+      } finally {
+        client.release();
+      }
       return NextResponse.json({ ok: true, active: nextActive });
     }
 
     const run = await runAlertSearch(alert.id, alert.email, alert.criteria);
-    await recordAdminAction(admin.email, 'retry_alert_search', 'alert', id, { offers: run.offers.length, emailed: run.emailed });
-    return NextResponse.json({ ok: true, offers: run.offers.length, emailed: run.emailed });
+    // The search has already committed its own run/signal rows, so an audit
+    // failure must not turn this completed action into a 500: report success
+    // with an auditFailed flag instead.
+    let auditFailed = false;
+    try {
+      await recordAdminAction(admin.email, 'retry_alert_search', 'alert', id, { offers: run.offers.length, emailed: run.emailed });
+    } catch (auditError) {
+      auditFailed = true;
+      console.error('TripSignal admin alert retry audit failed:', auditError);
+    }
+    return NextResponse.json({ ok: true, offers: run.offers.length, emailed: run.emailed, ...(auditFailed ? { auditFailed: true } : {}) });
   } catch (error) {
     if (isAdminError(error)) return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     const message = error instanceof Error ? error.message : 'Admin action failed.';

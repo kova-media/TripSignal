@@ -13,6 +13,15 @@ function formatDate(value: string | Date | null) {
   return new Date(value).toLocaleString('en-US', { timeZone: 'America/Chicago', timeZoneName: 'short' });
 }
 
+function formatOffer(offer: Record<string, unknown>) {
+  const segments = Array.isArray(offer.segments) ? (offer.segments as Array<Record<string, unknown>>) : [];
+  const airline = String(segments[0]?.marketingCarrier ?? 'Flight offer');
+  const origin = String(offer.origin ?? '?');
+  const destination = String(offer.destination ?? 'Anywhere');
+  const price = typeof offer.price === 'number' ? ` · $${offer.price.toLocaleString()}` : '';
+  return { airline, route: `${origin} → ${destination}${price}` };
+}
+
 function formatCriteria(criteria: Record<string, unknown>) {
   const origin = String(criteria.origin ?? '?');
   const destination = String(criteria.destination ?? 'Anywhere');
@@ -23,12 +32,12 @@ function formatCriteria(criteria: Record<string, unknown>) {
 
 export default async function AdminAlertPage({ params }: { params: Promise<{ id: string }> }) {
   try {
-    await ensureSchema();
     await requireAdmin();
+    await ensureSchema();
     const { id } = await params;
     const db = getDb();
 
-    const [alertResult, runsResult, signalsResult] = await Promise.all([
+    const [alertResult, runsResult, signalsResult, runCountResult, signalCountResult] = await Promise.all([
       db.query<{ id: string; email: string; user_id: string | null; criteria: Record<string, unknown>; frequency: string; active: boolean; last_checked_at: string | null; created_at: string }>(
         `select id, email, user_id, criteria, frequency, active, last_checked_at, created_at from alerts where id = $1 limit 1`,
         [id],
@@ -41,6 +50,8 @@ export default async function AdminAlertPage({ params }: { params: Promise<{ id:
         `select id, offer_id, offer, sent_at from signals where alert_id = $1 order by sent_at desc limit 50`,
         [id],
       ),
+      db.query<{ count: string }>(`select count(*)::text count from alert_runs where alert_id = $1`, [id]),
+      db.query<{ count: string }>(`select count(*)::text count from signals where alert_id = $1`, [id]),
     ]);
 
     const alert = alertResult.rows[0];
@@ -62,8 +73,8 @@ export default async function AdminAlertPage({ params }: { params: Promise<{ id:
 
         <section className={styles.grid}>
           <div className={styles.metric}><span>Status</span><strong>{alert.active ? 'Active' : 'Paused'}</strong><small>{alert.frequency} checks</small></div>
-          <div className={styles.metric}><span>Search runs</span><strong>{runsResult.rows.length}</strong><small>{successfulRuns.length} successful · {errors.length} errors</small></div>
-          <div className={styles.metric}><span>Signals</span><strong>{signalsResult.rows.length}</strong><small>Fare notifications</small></div>
+          <div className={styles.metric}><span>Search runs</span><strong>{runCountResult.rows[0]?.count ?? 0}</strong><small>{successfulRuns.length} successful · {errors.length} errors in last {runsResult.rows.length}</small></div>
+          <div className={styles.metric}><span>Signals</span><strong>{signalCountResult.rows[0]?.count ?? 0}</strong><small>Fare notifications</small></div>
           <div className={styles.metric}><span>Last checked</span><strong>{alert.last_checked_at ? new Date(alert.last_checked_at).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }) : 'Never'}</strong><small>{formatDate(alert.last_checked_at)}</small></div>
           <div className={styles.metric}><span>Created</span><strong>{new Date(alert.created_at).toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}</strong><small>{formatDate(alert.created_at)}</small></div>
         </section>
@@ -96,7 +107,7 @@ export default async function AdminAlertPage({ params }: { params: Promise<{ id:
           <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Signals</p><h2>Fare notifications</h2></div><span className={styles.sectionNote}>Last {signalsResult.rows.length}</span></div>
           <div className={styles.table}>
             <div className={styles.tableHead}><span>Offer</span><span>Offer ID</span><span>Sent</span><span>Record</span></div>
-            {signalsResult.rows.map((signal) => <div className={styles.tableRow} key={signal.id}><div><strong>{String(signal.offer.airline ?? signal.offer.airlines ?? 'Flight offer')}</strong><small>{String(signal.offer.route ?? signal.offer.flightNumber ?? '')}</small></div><span>{signal.offer_id}</span><span>{formatDate(signal.sent_at)}</span><span>{signal.id}</span></div>)}
+            {signalsResult.rows.map((signal) => { const offer = formatOffer(signal.offer); return <div className={styles.tableRow} key={signal.id}><div><strong>{offer.airline}</strong><small>{offer.route}</small></div><span>{signal.offer_id}</span><span>{formatDate(signal.sent_at)}</span><span>{signal.id}</span></div>; })}
             {!signalsResult.rows.length && <div className={styles.empty}>No fare signals have been sent for this alert.</div>}
           </div>
         </section>

@@ -3,10 +3,12 @@ import { getDb, ensureSchema } from '@/lib/db';
 import { createMagicLink, getCurrentUser } from '@/lib/auth';
 import { runAlertSearch, summarizeAlert } from '@/lib/alerts';
 import { sendAlertCreatedEmail, sendMagicLinkEmail } from '@/lib/email';
+import { REGION_NAMES } from '@/lib/flights/provider';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 type AlertInput = {
   origin: string;
-  destinationMode: 'country' | 'airport';
+  destinationMode: 'country' | 'airport' | 'region';
   destination: string;
   tripType?: 'round-trip' | 'one-way';
   maxPrice: number;
@@ -29,7 +31,7 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as AlertInput;
     const origin = String(body.origin ?? '').trim().toUpperCase();
-    const destinationMode = body.destinationMode === 'country' ? 'country' : 'airport';
+    const destinationMode = body.destinationMode === 'country' ? 'country' : body.destinationMode === 'region' ? 'region' : 'airport';
     const destination = String(body.destination ?? '').trim();
     const tripType = body.tripType === 'one-way' ? 'one-way' : 'round-trip';
     const maxPrice = Number(body.maxPrice);
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
     if (!/^[A-Z]{3}$/.test(origin)) return NextResponse.json({ error: 'Origin must be a three-letter airport code.' }, { status: 400 });
     if (destinationMode === 'airport' && !/^[A-Za-z]{3}$/.test(destination)) return NextResponse.json({ error: 'Destination airport must be a three-letter airport code.' }, { status: 400 });
     if (destinationMode === 'country' && !/^[A-Za-z]{2}$/.test(destination)) return NextResponse.json({ error: 'Destination country must be a two-letter country code.' }, { status: 400 });
+    if (destinationMode === 'region' && !REGION_NAMES.includes(destination)) return NextResponse.json({ error: `Destination region must be one of: ${REGION_NAMES.join(', ')}.` }, { status: 400 });
     if (!Number.isFinite(maxPrice) || maxPrice <= 0) return NextResponse.json({ error: 'Enter a valid maximum price.' }, { status: 400 });
     if (!Number.isInteger(passengers) || passengers < 1 || passengers > 9) return NextResponse.json({ error: 'Choose between 1 and 9 passengers.' }, { status: 400 });
     if (!['Daily', 'Weekly', 'Monthly'].includes(body.frequency)) return NextResponse.json({ error: 'Choose a valid search frequency.' }, { status: 400 });
@@ -58,7 +61,7 @@ export async function POST(request: Request) {
     const criteria = {
       origin,
       destinationMode,
-      destination: destination.toUpperCase(),
+      destination: destinationMode === 'region' ? destination : destination.toUpperCase(),
       tripType,
       maxPrice,
       airlineMode,
@@ -78,7 +81,23 @@ export async function POST(request: Request) {
     let signInEmailSent = false;
     const email = currentUser?.email ?? String(body.email ?? '').trim().toLowerCase();
     if (!validEmail(email)) return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
+
+    // Throttle the anonymous path: a signed-out caller can otherwise mint
+    // accounts and alerts for any email address at will.
     if (!userId) {
+      const ip = getClientIp(request);
+      if (!checkRateLimit(`alert-anon-email:${email}`, 5, 60 * 60 * 1000) || !checkRateLimit(`alert-anon-ip:${ip}`, 10, 60 * 60 * 1000)) {
+        return NextResponse.json({ error: 'Too many alert requests. Try again later.' }, { status: 429 });
+      }
+    }
+
+    // Signed-out creation no longer goes live: the alert is created inactive
+    // and pending verification, and only becomes active when the owner clicks
+    // the magic link (the coordinator wires activatePendingAlerts into the
+    // verify route). No confirmation email and no initial search run until
+    // then, so nothing is sent to an unverified address.
+    const isAnonymous = !userId;
+    if (isAnonymous) {
       const account = await createMagicLink(email);
       await sendMagicLinkEmail(email, account.url);
       userId = account.userId;
@@ -95,13 +114,20 @@ export async function POST(request: Request) {
       const plan = accountResult.rows[0]?.plan ?? 'free';
       const monthlyLimit = 1 + Number(accountResult.rows[0]?.bonus_watches ?? 0);
       if (plan !== 'pro') {
+        // Counts ALL alerts created this month, including soft-deleted ones —
+        // deleting must not reset the free cap.
         const alertCountResult = await client.query<{ count: string }>(`select count(*)::text as count from alerts where user_id = $1 and created_at >= date_trunc('month', now())`, [userId]);
         if (Number(alertCountResult.rows[0]?.count ?? 0) >= monthlyLimit) {
           await client.query('ROLLBACK');
           return NextResponse.json({ error: `Free accounts can create ${monthlyLimit} new watch${monthlyLimit === 1 ? '' : 'es'} each month. Upgrade to TripSignal Pro to create unlimited watches.`, code: 'FREE_ALERT_LIMIT', limit: monthlyLimit, period: 'month' }, { status: 403 });
         }
       }
-      const inserted = await client.query<{ id: string }>(`insert into alerts (email, user_id, criteria, frequency) values ($1, $2, $3::jsonb, $4) returning id`, [email, userId, JSON.stringify(criteria), criteria.frequency]);
+      const inserted = await client.query<{ id: string }>(
+        isAnonymous
+          ? `insert into alerts (email, user_id, criteria, frequency, active, pending_verification) values ($1, $2, $3::jsonb, $4, false, true) returning id`
+          : `insert into alerts (email, user_id, criteria, frequency) values ($1, $2, $3::jsonb, $4) returning id`,
+        [email, userId, JSON.stringify(criteria), criteria.frequency],
+      );
       alertId = inserted.rows[0]?.id ?? '';
       if (!alertId) throw new Error('Could not create alert.');
       await client.query('COMMIT');
@@ -109,6 +135,10 @@ export async function POST(request: Request) {
       try { await client.query('ROLLBACK'); } catch {}
       throw error;
     } finally { client.release(); }
+
+    if (isAnonymous) {
+      return NextResponse.json({ alertId, active: false, pendingVerification: true, accountCreated: true, signInEmailSent, offers: [], confirmationSent: false });
+    }
 
     let confirmationError = '';
     try { await sendAlertCreatedEmail(email, summarizeAlert(criteria)); }

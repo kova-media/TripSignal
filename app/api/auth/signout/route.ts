@@ -1,20 +1,13 @@
 import { NextResponse } from 'next/server';
 import { clearSession } from '@/lib/auth';
 
-async function signOut() {
+// POST-only: signing out on GET lets any site log the user out with a
+// plain link or image (CSRF logout). The header now submits a POST form.
+export async function POST() {
   try {
     await clearSession();
   } catch (error) {
     console.error('TripSignal sign-out error:', error);
   }
-}
-
-export async function POST() {
-  await signOut();
-  return NextResponse.json({ signedOut: true });
-}
-
-export async function GET() {
-  await signOut();
   return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_APP_URL ?? 'https://tripsignal.travel'));
 }

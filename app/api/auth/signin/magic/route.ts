@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createMagicLink } from '@/lib/auth';
 import { sendMagicLinkEmail } from '@/lib/email';
 import { getDb, ensureSchema } from '@/lib/db';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   let email = '';
@@ -15,18 +16,29 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
   }
 
-  await ensureSchema();
-  const existing = await getDb().query('select id from users where email = $1 limit 1', [email]);
-  if (!existing.rows.length) {
-    return NextResponse.json({ error: 'No TripSignal account found for that email. Sign up first.' }, { status: 404 });
+  // 5 sign-in links/hour per email and per IP.
+  const ip = getClientIp(request);
+  if (
+    !checkRateLimit(`magic:email:${email}`, 5, 60 * 60 * 1000) ||
+    !checkRateLimit(`magic:ip:${ip}`, 5, 60 * 60 * 1000)
+  ) {
+    return NextResponse.json({ error: 'Too many sign-in attempts. Try again in an hour.' }, { status: 429 });
   }
 
-  try {
-    const link = await createMagicLink(email);
-    await sendMagicLinkEmail(email, link.url);
-  } catch (error) {
-    console.error('TripSignal magic sign-in error:', error);
-    return NextResponse.json({ error: 'Could not send the sign-in link. Try again in a moment.' }, { status: 500 });
+  await ensureSchema();
+  const existing = await getDb().query('select id from users where email = $1 limit 1', [email]);
+
+  // Always respond the same way so we don't reveal which emails have
+  // accounts. Unknown emails get no link (and no account is created for
+  // them — createMagicLink would otherwise upsert a user row).
+  if (existing.rows.length > 0) {
+    try {
+      const link = await createMagicLink(email);
+      await sendMagicLinkEmail(email, link.url);
+    } catch (error) {
+      console.error('TripSignal magic sign-in error:', error);
+      return NextResponse.json({ error: 'Could not send the sign-in link. Try again in a moment.' }, { status: 500 });
+    }
   }
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ sent: true });
 }

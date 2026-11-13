@@ -10,12 +10,19 @@ export async function POST() {
 
     await ensureSchema();
     const db = getDb();
-    const result = await db.query<{ stripe_customer_id: string | null; subscription_status: string }>(
-      'select stripe_customer_id, subscription_status from users where id = $1 limit 1',
+    const result = await db.query<{ plan: string; stripe_customer_id: string | null; subscription_status: string }>(
+      'select plan, stripe_customer_id, subscription_status from users where id = $1 limit 1',
       [user.id],
     );
     const billing = result.rows[0];
-    if (billing?.subscription_status === 'active' || billing?.subscription_status === 'trialing') {
+    // Block a duplicate purchase for anyone already Pro — by plan or by
+    // any live/lifetime subscription status — not just active/trialing.
+    if (
+      billing?.plan === 'pro' ||
+      billing?.subscription_status === 'active' ||
+      billing?.subscription_status === 'trialing' ||
+      billing?.subscription_status === 'lifetime'
+    ) {
       return NextResponse.json({ error: 'Your TripSignal subscription is already active.' }, { status: 409 });
     }
 

@@ -18,7 +18,7 @@ export default function AdminUserActions({ userId, plan, subscriptionStatus, ale
     const confirmation = action === 'grant_pro'
       ? 'Grant this account Pro access for free? This does not create a Stripe subscription.'
       : alertCount > 1
-        ? 'Demote this account to Free and pause all but its oldest alert?'
+        ? 'Demote this account to Free and pause all but one active alert?'
         : 'Demote this account to Free?';
 
     if (!window.confirm(confirmation)) return;

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createMagicLink } from '@/lib/auth';
 import { sendPasswordResetEmail } from '@/lib/email';
 import { getDb, ensureSchema } from '@/lib/db';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 function validEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -14,6 +15,15 @@ export async function POST(request: Request) {
 
     if (!validEmail(email)) {
       return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
+    }
+
+    // 5 reset requests/hour per email and per IP.
+    const ip = getClientIp(request);
+    if (
+      !checkRateLimit(`reset:email:${email}`, 5, 60 * 60 * 1000) ||
+      !checkRateLimit(`reset:ip:${ip}`, 5, 60 * 60 * 1000)
+    ) {
+      return NextResponse.json({ error: 'Too many reset attempts. Try again in an hour.' }, { status: 429 });
     }
 
     await ensureSchema();

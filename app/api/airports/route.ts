@@ -77,8 +77,9 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.weight - a.weight);
 
     return NextResponse.json({ airports: merged });
-  } catch {
-    return NextResponse.json({ airports: [] });
+  } catch (error) {
+    console.error('TripSignal airport lookup error:', error);
+    return NextResponse.json({ error: 'Airport lookup is temporarily unavailable.' }, { status: 502 });
   }
 }
 

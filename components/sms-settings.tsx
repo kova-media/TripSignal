@@ -9,9 +9,8 @@ type SmsSettingsProps = {
 };
 
 /**
- * SMS alert preferences for the profile page. Saves via POST /api/profile/phone
- * (not implemented yet — that route is the integration point for persisting
- * `users.phone` / `users.sms_opt_in`).
+ * SMS alert preferences for the profile page. Saves via POST /api/profile/phone,
+ * which persists `users.phone` / `users.sms_opt_in`.
  */
 export default function SmsSettings({ initialPhone = null, initialOptIn = false }: SmsSettingsProps) {
   const [phone, setPhone] = useState(initialPhone ?? '');

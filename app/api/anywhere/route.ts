@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getFlightProvider } from '@/lib/flights/provider';
 import type { FlightOffer, FlightSearchCriteria } from '@/lib/flights/types';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -27,6 +28,12 @@ type AnywhereBody = {
 };
 
 export async function POST(request: Request) {
+  // Unauthenticated interactive search stays usable without sign-in, but is
+  // rate-limited per IP — each call fans out to many Google Flights fetches.
+  if (!checkRateLimit(`anywhere:${getClientIp(request)}`, 10, 60 * 1000)) {
+    return NextResponse.json({ error: 'Too many searches. Try again shortly.' }, { status: 429 });
+  }
+
   let body: AnywhereBody;
   try {
     body = (await request.json()) as AnywhereBody;
@@ -77,9 +84,10 @@ export async function POST(request: Request) {
     offers = await getFlightProvider().search(criteria);
   } catch (error) {
     console.error('TripSignal anywhere search error:', error);
+    // A provider failure (no data / all samples malformed) is a friendly
+    // "no data" answer, not a 5xx.
     return NextResponse.json(
-      { error: 'Fare search is temporarily unavailable. Try again in a moment.' },
-      { status: 502 },
+      { origin, region, departureStart, cabin, results: [], unavailable: true, message: 'No fares could be loaded right now. Try again in a moment.' },
     );
   }
 

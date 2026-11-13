@@ -1,11 +1,3 @@
-type CountryAirport = {
-  iata_code: string;
-  name: string;
-  municipality: string;
-  iso_country: string;
-  type: 'large_airport' | 'medium_airport' | 'small_airport';
-};
-
 type AirportRow = {
   type: string;
   name: string;

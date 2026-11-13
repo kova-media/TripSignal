@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { getDb, ensureSchema } from '@/lib/db';
+import { REGION_NAMES } from '@/lib/flights/provider';
 
 async function getOwnedAlert(id: string, userId: string) {
   await ensureSchema();
   const db = getDb();
-  return db.query<{ id: string; active: boolean; criteria: Record<string, unknown>; frequency: string; email: string }>('select id, active, criteria, frequency, email from alerts where id = $1 and user_id = $2', [id, userId]);
+  // Soft-deleted alerts read as not found.
+  return db.query<{ id: string; active: boolean; criteria: Record<string, unknown>; frequency: string; email: string }>('select id, active, criteria, frequency, email from alerts where id = $1 and user_id = $2 and deleted_at is null', [id, userId]);
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -29,7 +31,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!existing.rowCount) return NextResponse.json({ error: 'Alert not found.' }, { status: 404 });
   if (typeof body.active === 'boolean') {
     const db = getDb();
-    await db.query('update alerts set active = $1 where id = $2 and user_id = $3', [body.active, id, user.id]);
+    await db.query('update alerts set active = $1 where id = $2 and user_id = $3 and deleted_at is null', [body.active, id, user.id]);
     return NextResponse.json({ ok: true, active: body.active });
   }
 
@@ -40,7 +42,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const tripType = body.tripType === 'one-way' ? 'one-way' : 'round-trip';
   const maxPrice = Number(body.maxPrice);
   const passengers = Number(body.passengers ?? 1);
-  const email = String(body.email ?? existing.rows[0].email ?? user.email).trim().toLowerCase();
+  // Alerts may only send to the session user's own verified email. Any
+  // other address is rejected — the worker sends to alerts.email, so
+  // accepting an arbitrary address would redirect signals unverified.
+  const requestedEmail = body.email == null ? null : String(body.email).trim().toLowerCase();
+  if (requestedEmail !== null && requestedEmail !== user.email.toLowerCase()) {
+    return NextResponse.json({ error: 'Alerts can only send to your account email.' }, { status: 400 });
+  }
+  const email = user.email.toLowerCase();
   const frequency = body.frequency === 'Daily' ? 'Daily' : body.frequency === 'Monthly' ? 'Monthly' : body.frequency === 'Weekly' ? 'Weekly' : '';
   const cabin = String(body.cabin ?? 'premium_economy');
   const dateRange = String(body.dateRange ?? 'Next 12 months').trim();
@@ -50,7 +59,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!/^[A-Z]{3}$/.test(origin)) return NextResponse.json({ error: 'Origin must be a three-letter airport code.' }, { status: 400 });
   if (destinationMode === 'airport' && !/^[A-Z]{3}$/.test(destination.toUpperCase())) return NextResponse.json({ error: 'Destination airport must be a three-letter airport code.' }, { status: 400 });
   if (destinationMode === 'country' && !/^[A-Z]{2}$/.test(destination.toUpperCase())) return NextResponse.json({ error: 'Destination country must be a two-letter country code.' }, { status: 400 });
-  if (destinationMode === 'region' && !destination) return NextResponse.json({ error: 'Choose a destination region.' }, { status: 400 });
+  if (destinationMode === 'region' && !REGION_NAMES.includes(destination)) return NextResponse.json({ error: `Destination region must be one of: ${REGION_NAMES.join(', ')}.` }, { status: 400 });
   if (!Number.isFinite(maxPrice) || maxPrice <= 0) return NextResponse.json({ error: 'Enter a valid maximum price.' }, { status: 400 });
   if (!Number.isInteger(passengers) || passengers < 1 || passengers > 9) return NextResponse.json({ error: 'Choose between 1 and 9 passengers.' }, { status: 400 });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
@@ -79,7 +88,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     passengers,
   };
   const db = getDb();
-  await db.query('update alerts set email = $1, criteria = $2::jsonb, frequency = $3 where id = $4 and user_id = $5', [email, JSON.stringify(criteria), frequency, id, user.id]);
+  // Reset last_checked_at so the next worker run re-checks promptly, and
+  // stamp the edit time.
+  await db.query('update alerts set email = $1, criteria = $2::jsonb, frequency = $3, last_checked_at = null, criteria_updated_at = now() where id = $4 and user_id = $5 and deleted_at is null', [email, JSON.stringify(criteria), frequency, id, user.id]);
   return NextResponse.json({ ok: true, alert: { id, email, criteria, frequency } });
 }
 
@@ -90,7 +101,9 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: 'Invalid alert.' }, { status: 400 });
   await ensureSchema();
   const db = getDb();
-  const result = await db.query('delete from alerts where id = $1 and user_id = $2 returning id', [id, user.id]);
+  // Soft delete: the row stays so the monthly creation count (which must
+  // include soft-deleted rows) is not reset by deleting.
+  const result = await db.query('update alerts set deleted_at = now() where id = $1 and user_id = $2 and deleted_at is null returning id', [id, user.id]);
   if (!result.rowCount) return NextResponse.json({ error: 'Alert not found.' }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

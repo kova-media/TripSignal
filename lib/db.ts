@@ -22,8 +22,10 @@ export function getDb() {
 
 export async function ensureSchema() {
   if (!globalForDb.tripsignalSchemaReady) {
+    // Clear the cached promise on rejection so one transient DB blip does
+    // not brick the instance forever — the next call retries the migration.
     const db = getDb();
-    globalForDb.tripsignalSchemaReady = db.query(`
+    const schemaPromise = db.query(`
       create extension if not exists pgcrypto;
 
       create table if not exists users (
@@ -51,6 +53,7 @@ export async function ensureSchema() {
       alter table users add column if not exists referred_by uuid;
       alter table users add column if not exists phone text;
       alter table users add column if not exists sms_opt_in boolean not null default false;
+      alter table users add column if not exists pending_referral_code text;
       create unique index if not exists users_referral_code_idx on users (referral_code) where referral_code is not null;
 
       update users
@@ -101,6 +104,9 @@ export async function ensureSchema() {
 
       alter table alerts add column if not exists user_id uuid references users(id) on delete set null;
       alter table alerts add column if not exists last_monthly_digest_at timestamptz;
+      alter table alerts add column if not exists deleted_at timestamptz;
+      alter table alerts add column if not exists pending_verification boolean not null default false;
+      alter table alerts add column if not exists criteria_updated_at timestamptz;
       create index if not exists alerts_user_idx on alerts (user_id, created_at desc);
       create index if not exists alerts_due_idx on alerts (active, last_checked_at, frequency);
 
@@ -114,6 +120,7 @@ export async function ensureSchema() {
       );
 
       create index if not exists signals_alert_idx on signals (alert_id, sent_at desc);
+      alter table signals add column if not exists sms_failed boolean not null default false;
 
       create table if not exists alert_runs (
         id uuid primary key default gen_random_uuid(),
@@ -148,6 +155,9 @@ export async function ensureSchema() {
       alter table fare_observations add column if not exists destination text;
       alter table fare_observations add column if not exists trip_type text;
       alter table fare_observations add column if not exists cabin text;
+      alter table fare_observations add column if not exists departure_date date;
+      alter table fare_observations add column if not exists return_date date;
+      alter table fare_observations add column if not exists destination_airport text;
 
       create index if not exists fare_observations_alert_idx on fare_observations (alert_id, observed_at asc);
       create index if not exists fare_observations_route_idx on fare_observations (origin, destination_mode, destination, trip_type, observed_at desc);
@@ -222,6 +232,10 @@ export async function ensureSchema() {
       create index if not exists affiliate_clicks_provider_idx on affiliate_clicks (provider, clicked_at desc);
       create index if not exists affiliate_clicks_user_idx on affiliate_clicks (user_id, clicked_at desc);
     `).then(() => undefined);
+    globalForDb.tripsignalSchemaReady = schemaPromise;
+    schemaPromise.catch(() => {
+      if (globalForDb.tripsignalSchemaReady === schemaPromise) globalForDb.tripsignalSchemaReady = undefined;
+    });
   }
 
   await globalForDb.tripsignalSchemaReady;

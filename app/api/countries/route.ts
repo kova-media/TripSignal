@@ -15,6 +15,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ countries: filtered.slice(0, 50) });
   } catch (error) {
     console.error('TripSignal country lookup error:', error);
-    return NextResponse.json({ countries: [] });
+    return NextResponse.json({ error: 'Country lookup is temporarily unavailable.' }, { status: 502 });
   }
 }
