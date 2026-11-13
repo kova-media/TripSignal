@@ -5,7 +5,7 @@ import '../legal.css';
 
 export const metadata: Metadata = {
   title: 'About TripSignal',
-  description: 'TripSignal monitors flight fares around the clock and emails you when a fare matches your criteria. A Kova Media Group product.',
+  description: 'TripSignal monitors flight fares around the clock and emails you when a fare matches your criteria.',
 };
 
 const aboutJsonLd = {
@@ -16,7 +16,7 @@ const aboutJsonLd = {
   description: 'TripSignal is a flight fare monitoring service. Set up a watch and get an email when a fare matches your criteria.',
   publisher: {
     '@type': 'Organization',
-    name: 'Kova Media Group',
+    name: 'TripSignal',
   },
 };
 
@@ -51,11 +51,10 @@ export default function AboutPage() {
             </p>
           </section>
           <section>
-            <h2>Who builds it</h2>
+            <h2>Why it exists</h2>
             <p>
-              TripSignal is a Kova Media Group product. It started as a tool we wanted for
-              ourselves: a simple, honest fare monitor with no ads, no upsells, and no
-              booking markup.
+              TripSignal started as a simple, honest fare monitor with no ads, no upsells,
+              and no booking markup.
             </p>
           </section>
           <p style={{ marginTop: 48 }}>

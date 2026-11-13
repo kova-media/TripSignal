@@ -32,7 +32,7 @@ export default function Home() {
       <section className="sample-section shell" aria-label="Sample alert"><div className="sample-head"><h2>This is the whole email.</h2><p>One email, the moment a fare drops under your target. No noise, no spam.</p></div><SampleAlert /></section>
       <Testimonials />
       <section className="home-cta shell"><div><h2>Set a watch and get on with your life.</h2></div><a className="button button-primary" href="#explore">Start watching</a></section>
-      <footer className="footer shell"><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><div className="footer-links"><a href="/about">About</a><a href="/deals">Deals</a><a href="/anywhere">Anywhere</a><a href="/guides">Guides</a><a href="/faq">FAQ</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/refunds">Refunds</a><a href="/contact">Contact</a></div><span>© 2026 TripSignal · A Kova Media Group product</span></footer>
+      <footer className="footer shell"><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><div className="footer-links"><a href="/about">About</a><a href="/deals">Deals</a><a href="/anywhere">Anywhere</a><a href="/guides">Guides</a><a href="/faq">FAQ</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/refunds">Refunds</a><a href="/contact">Contact</a></div><span>© 2026 TripSignal</span></footer>
     </main>
   );
 }

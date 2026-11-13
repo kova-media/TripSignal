@@ -19,7 +19,7 @@ const articleJsonLd = {
   },
   publisher: {
     '@type': 'Organization',
-    name: 'Kova Media Group',
+    name: 'TripSignal',
   },
   datePublished: '2026-11-12',
   dateModified: '2026-11-12',

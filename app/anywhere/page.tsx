@@ -93,7 +93,6 @@ export default function AnywherePage() {
             <input
               value={origin}
               onChange={(event) => setOrigin(event.target.value.toUpperCase())}
-              placeholder="MCI"
               maxLength={3}
               autoComplete="off"
               required
