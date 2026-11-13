@@ -5,8 +5,10 @@
    wins over the older 1240px caps in tech.css, design-system.css and the
    discovery fixes. */
 @media (min-width: 641px) {
-  .shell {
+  .shell,
+  .home-page .shell {
     width: min(1600px, calc(100% - 64px)) !important;
+    max-width: 1600px !important;
   }
 
   .home-page .discovery,
