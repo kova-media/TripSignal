@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import Brand from '@/components/brand';
+import SiteFooter from '@/components/site-footer';
 import ThemeToggle from '@/components/theme-toggle';
 import styles from '../account.module.css';
 
@@ -61,7 +62,7 @@ export default function AccountSetupPage() {
           </div>
         </div>
       </section>
-      <footer className={`footer shell ${styles.footer}`}><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><span>Travel intelligence, on your terms.</span><span>© 2026 TripSignal</span></footer>
+            <SiteFooter className={styles.footer} />
     </main>
   );
 }

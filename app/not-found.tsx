@@ -1,4 +1,5 @@
 import Brand from '@/components/brand';
+import SiteFooter from '@/components/site-footer';
 
 export default function NotFound() {
   return (
@@ -19,7 +20,7 @@ export default function NotFound() {
         </div>
       </section>
 
-      <footer className="footer shell"><a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a><span>Travel intelligence, on your terms.</span><span>&copy; 2026 TripSignal</span></footer>
+            <SiteFooter />
 
       <style>{`
         .notfound-page{min-height:100vh;display:flex;flex-direction:column}

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
+import SiteFooter from '@/components/site-footer';
 import '../legal.css';
 
 export const metadata: Metadata = {
@@ -57,10 +58,7 @@ export default function TermsPage() {
           <p>Questions about these terms can be sent through the <a href="/contact">TripSignal contact form</a>.</p>
         </div>
       </article>
-      <footer className="legal-footer shell">
-        <a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a>
-        <div className="legal-footer-links"><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/refunds">Refunds</a><a href="/contact">Contact</a></div>
-      </footer>
+            <SiteFooter />
     </main>
   );
 }

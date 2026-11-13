@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
+import SiteFooter from '@/components/site-footer';
 
 const REGIONS = [
   'Europe',
@@ -168,10 +169,7 @@ export default function AnywherePage() {
         )}
       </section>
 
-      <footer className="footer shell">
-        <a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a>
-        <span>© 2026 TripSignal</span>
-      </footer>
+            <SiteFooter />
 
       <style jsx global>{`
         .anywhere-page{min-height:100vh;display:flex;flex-direction:column}

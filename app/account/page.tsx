@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import SiteHeader from '@/components/site-header';
+import SiteFooter from '@/components/site-footer';
 import AlertActions from './alert-actions';
 import BillingButton from './billing-button';
 import { getCurrentUser } from '@/lib/auth';
@@ -123,6 +124,7 @@ export default async function AccountPage() {
           </section>
         </div>
       </section>
-    </main>
+        <SiteFooter />
+</main>
   );
 }

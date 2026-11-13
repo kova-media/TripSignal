@@ -1,4 +1,5 @@
 import SiteHeader from '@/components/site-header';
+import SiteFooter from '@/components/site-footer';
 import { getDb, ensureSchema } from '@/lib/db';
 import { loungeDirectoryLinks, normalizeAirportCode } from '@/lib/lounges';
 import styles from './lounges.module.css';
@@ -65,6 +66,7 @@ export default async function LoungesPage({ searchParams }: { searchParams: Prom
           <div className={styles.empty}><strong>Enter an airport code to start.</strong><p>When a watch has an observed itinerary, TripSignal can also surface the actual layover airport automatically.</p></div>
         )}
       </section>
-    </main>
+        <SiteFooter />
+</main>
   );
 }

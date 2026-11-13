@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import SiteHeader from '@/components/site-header';
+import SiteFooter from '@/components/site-footer';
 import ThemeToggle from '@/components/theme-toggle';
 import AlertActions from '../account/alert-actions';
 import BillingButton from '../account/billing-button';
@@ -82,5 +83,6 @@ export default async function ProfilePage() {
 
       <section className={styles.section}><div className={styles.sectionHeading}><div><p className={styles.eyebrow}>Test</p><h2 className={styles.sectionTitle}>Send yourself a test alert</h2></div></div><p className={styles.billingText} style={{ marginBottom: 18 }}>Proves the email pipeline works without waiting for a real fare drop. It uses the last fare we saw for one of your watches.</p><TestAlertButton /></section>
     </div></section>
-  </main>;
+    <SiteFooter />
+</main>;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
+import SiteFooter from '@/components/site-footer';
 import { getDeals, getDealOrigins, type Deal } from '@/lib/deals';
 import '../legal.css';
 
@@ -111,10 +112,7 @@ export default async function DealsPage({ searchParams }: { searchParams?: Promi
           </p>
         </div>
       </article>
-      <footer className="legal-footer shell">
-        <a className="brand-link" href="/" aria-label="TripSignal home"><Brand compact /></a>
-        <div className="legal-footer-links"><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/refunds">Refunds</a><a href="/faq">FAQ</a><a href="/contact">Contact</a></div>
-      </footer>
+            <SiteFooter />
       <style dangerouslySetInnerHTML={{ __html: `
         .deal-list{display:flex;flex-direction:column;gap:14px;margin-top:8px}
         .deal-filters{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:22px}

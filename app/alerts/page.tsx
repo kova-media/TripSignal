@@ -1,5 +1,6 @@
 import { getCurrentUser } from '@/lib/auth';
 import SiteHeader from '@/components/site-header';
+import SiteFooter from '@/components/site-footer';
 import TripDiscoveryDirect from '@/components/trip-discovery-direct';
 
 export const metadata = {
@@ -23,6 +24,7 @@ export default async function AlertsPage() {
           <TripDiscoveryDirect accountEmail={currentUser?.email ?? null} />
         </div>
       </section>
-    </main>
+        <SiteFooter />
+</main>
   );
 }
