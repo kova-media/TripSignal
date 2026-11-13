@@ -37,7 +37,7 @@ export default async function AdminHealthPage() {
     if (checks[0]?.status === 'ok') {
       const [runs, due, stuck, signals, users, alerts] = await Promise.all([
         db.query<{ total: string; errors: string; recent: string }>(`select count(*)::text total, count(*) filter (where status = 'error' and started_at >= now() - interval '24 hours')::text errors, count(*) filter (where started_at >= now() - interval '24 hours')::text recent from alert_runs`),
-        db.query<{ count: string }>(`select count(*)::text count from alerts where active = true and (last_checked_at is null or (frequency = 'Weekly' and last_checked_at <= now() - interval '7 days') or (frequency = 'Monthly' and last_checked_at <= now() - interval '30 days'))`),
+        db.query<{ count: string }>(`select count(*)::text count from alerts where active = true and (last_checked_at is null or (frequency = 'Daily' and last_checked_at <= now() - interval '24 hours') or (frequency = 'Weekly' and last_checked_at <= now() - interval '7 days') or (frequency = 'Monthly' and last_checked_at <= now() - interval '30 days'))`),
         db.query<{ count: string }>(`select count(*)::text count from alert_runs where status = 'running' and started_at <= now() - interval '30 minutes'`),
         db.query<{ total: string; recent: string }>(`select count(*)::text total, count(*) filter (where sent_at >= now() - interval '24 hours')::text recent from signals`),
         db.query<{ total: string; pro: string }>(`select count(*)::text total, count(*) filter (where plan <> 'free' or subscription_status in ('active','trialing'))::text pro from users`),
@@ -72,7 +72,7 @@ export default async function AdminHealthPage() {
           <div className={styles.metric}><span>Checks</span><strong>{checks.length}</strong><small>Live diagnostics</small></div>
           <div className={styles.metric}><span>Errors</span><strong>{errorChecks.length}</strong><small>Require action</small></div>
           <div className={styles.metric}><span>Warnings</span><strong>{warningChecks.length}</strong><small>Worth reviewing</small></div>
-          <div className={styles.metric}><span>Checked</span><strong>{new Date().toLocaleTimeString()}</strong><small>Server time</small></div>
+          <div className={styles.metric}><span>Checked</span><strong>{new Date().toLocaleTimeString('en-US', { timeZone: 'America/Chicago', timeZoneName: 'short' })}</strong><small>Central time</small></div>
         </section>
 
         <section className={styles.section}>

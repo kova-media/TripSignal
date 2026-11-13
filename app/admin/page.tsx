@@ -8,7 +8,7 @@ import styles from './admin.module.css';
 
 export const dynamic = 'force-dynamic';
 
-function formatDate(value: string | Date | null) { if (!value) return 'Never'; return new Date(value).toLocaleString(); }
+function formatDate(value: string | Date | null) { if (!value) return 'Never'; return new Date(value).toLocaleString('en-US', { timeZone: 'America/Chicago', timeZoneName: 'short' }); }
 function formatCriteria(criteria: Record<string, unknown>) { const origin = String(criteria.origin ?? '?'); const destination = String(criteria.destination ?? 'Anywhere'); const cabin = criteria.cabin === 'premium_economy' ? 'Premium economy' : criteria.cabin === 'business' ? 'Business' : criteria.cabin === 'first' ? 'First' : 'Economy'; return `${origin} → ${destination} · ${cabin} · $${Number(criteria.maxPrice ?? 0).toLocaleString()}`; }
 function pct(value: number, total: number) { return total ? `${Math.round((value / total) * 100)}%` : '0%'; }
 function barWidth(value: number, max: number) { return `${max ? Math.max(3, Math.round((value / max) * 100)) : 0}%`; }

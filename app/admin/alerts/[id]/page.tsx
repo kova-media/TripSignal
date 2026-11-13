@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 
 function formatDate(value: string | Date | null) {
   if (!value) return 'Never';
-  return new Date(value).toLocaleString();
+  return new Date(value).toLocaleString('en-US', { timeZone: 'America/Chicago', timeZoneName: 'short' });
 }
 
 function formatCriteria(criteria: Record<string, unknown>) {
@@ -64,8 +64,8 @@ export default async function AdminAlertPage({ params }: { params: Promise<{ id:
           <div className={styles.metric}><span>Status</span><strong>{alert.active ? 'Active' : 'Paused'}</strong><small>{alert.frequency} checks</small></div>
           <div className={styles.metric}><span>Search runs</span><strong>{runsResult.rows.length}</strong><small>{successfulRuns.length} successful · {errors.length} errors</small></div>
           <div className={styles.metric}><span>Signals</span><strong>{signalsResult.rows.length}</strong><small>Fare notifications</small></div>
-          <div className={styles.metric}><span>Last checked</span><strong>{alert.last_checked_at ? new Date(alert.last_checked_at).toLocaleDateString() : 'Never'}</strong><small>{formatDate(alert.last_checked_at)}</small></div>
-          <div className={styles.metric}><span>Created</span><strong>{new Date(alert.created_at).toLocaleDateString()}</strong><small>{formatDate(alert.created_at)}</small></div>
+          <div className={styles.metric}><span>Last checked</span><strong>{alert.last_checked_at ? new Date(alert.last_checked_at).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }) : 'Never'}</strong><small>{formatDate(alert.last_checked_at)}</small></div>
+          <div className={styles.metric}><span>Created</span><strong>{new Date(alert.created_at).toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}</strong><small>{formatDate(alert.created_at)}</small></div>
         </section>
 
         <section className={styles.section}>
