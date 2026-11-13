@@ -6,11 +6,11 @@ export default function SampleAlert() {
           <span><i />TripSignal</span>
           <strong>Signal found</strong>
         </div>
-        <p className="sample-alert-subject">TripSignal found $612 · MCI → LIS</p>
+        <p className="sample-alert-subject">TripSignal found $612 · Home → Destination</p>
         <div className="sample-alert-card">
           <p className="sample-alert-kicker"><i />Signal found</p>
           <p className="sample-alert-price"><span>$</span>612</p>
-          <p className="sample-alert-route">MCI <span>→</span> LIS</p>
+          <p className="sample-alert-route">Home <span>→</span> Destination</p>
           <p className="sample-alert-dates">Mar 12 – Mar 21, 2027 · 9 days</p>
           <p className="sample-alert-details">TAP Air Portugal · Economy · 1 stop · 14h 20m</p>
           <div className="sample-alert-target">

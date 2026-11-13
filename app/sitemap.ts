@@ -69,16 +69,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
-      url: `${base}/guides/cheap-flights-from-kansas-city`,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${base}/guides/cheap-flights-from-st-louis`,
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
       url: `${base}/deals`,
       changeFrequency: 'daily',
       priority: 0.7,
