@@ -1,0 +1,17 @@
+/* Site-wide container width.
+   The old 1240px cap packed everything into a narrow middle column and left
+   huge empty gutters on wide screens, on the main site and in admin alike.
+   1600px on desktop; phones keep their existing rules. Imported last so it
+   wins over the older 1240px caps in tech.css, design-system.css and the
+   discovery fixes. */
+@media (min-width: 641px) {
+  .shell {
+    width: min(1600px, calc(100% - 64px)) !important;
+  }
+
+  .home-page .discovery,
+  .discovery {
+    width: min(1600px, calc(100% - 64px)) !important;
+    max-width: 1600px !important;
+  }
+}

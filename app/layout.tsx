@@ -14,6 +14,7 @@ import './flighty-ui.css';
 import './destination-cleanup.css';
 import './country-destination-fix.css';
 import './design-system.css';
+import './layout-width.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
   ? new URL(process.env.NEXT_PUBLIC_SITE_URL)
