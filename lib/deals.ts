@@ -12,7 +12,8 @@ export type Deal = {
   observedAt: string;
 };
 
-const DEALS_SQL = `
+function dealsSql(days: number) {
+  return `
   with ranked as (
     select origin, destination_mode, destination, trip_type, cabin,
            price::float as price, observed_at,
@@ -25,7 +26,7 @@ const DEALS_SQL = `
       and ($1::text is null or origin = $1)
       and ($2::text is null or cabin = $2)
   ),
-  latest as (select * from ranked where rn = 1 and observed_at > now() - interval '7 days'),
+  latest as (select * from ranked where rn = 1 and observed_at > now() - interval '${days} days'),
   previous as (select * from ranked where rn = 2)
   select l.origin,
          l.destination_mode as "destinationMode",
@@ -47,10 +48,21 @@ const DEALS_SQL = `
   order by "dropPercent" desc
   limit 10
 `;
+}
+
+const DEALS_SQL = dealsSql(7);
 
 export async function getDeals(filters?: { origin?: string; cabin?: string }): Promise<Deal[]> {
   await ensureSchema();
   const result = await getDb().query<Deal>(DEALS_SQL, [filters?.origin ?? null, filters?.cabin ?? null]);
+  return result.rows;
+}
+
+// Latest drops seen in the last 30 days, shown only when nothing dropped
+// in the last 7 — so the page has something real instead of an empty state.
+export async function getRecentDeals(filters?: { origin?: string; cabin?: string }): Promise<Deal[]> {
+  await ensureSchema();
+  const result = await getDb().query<Deal>(dealsSql(30), [filters?.origin ?? null, filters?.cabin ?? null]);
   return result.rows;
 }
 

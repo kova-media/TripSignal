@@ -78,7 +78,7 @@ h1,h2,h3,h4,
   z-index: 20;
 }
 
-.brand { letter-spacing: -.04em; }
+.brand { letter-spacing:-.02em; }
 .nav-actions { gap: 12px; }
 
 .home-page .home-hero {
@@ -111,7 +111,7 @@ h1,h2,h3,h4,
   margin: 0;
   font-size: clamp(58px, 6.8vw, 92px);
   line-height: .94;
-  letter-spacing: -.065em;
+  letter-spacing:-.02em;
   font-weight: 700;
 }
 
@@ -159,7 +159,7 @@ h1,h2,h3,h4,
 .home-page .hero-live i { background: var(--success); box-shadow: none; }
 .home-page .hero-route-stage { margin: 96px 0 84px; gap: 26px; }
 .home-page .hero-airport strong { color: var(--quiet); font-size: 9px; letter-spacing: .10em; }
-.home-page .hero-airport b { font-size: 46px; letter-spacing: -.06em; }
+.home-page .hero-airport b { font-size: 46px; letter-spacing:-.02em; }
 .home-page .hero-route-line { background: var(--line-strong); }
 .home-page .hero-route-line::before { border-color: var(--surface); background: var(--accent); box-shadow: none; }
 .home-page .hero-route-line span { background: var(--accent); opacity: .45; }
@@ -185,7 +185,7 @@ h1,h2,h3,h4,
   margin: 0;
   font-size: clamp(46px, 5.2vw, 70px);
   line-height: .96;
-  letter-spacing: -.055em;
+  letter-spacing:-.02em;
 }
 
 .home-page .discovery-head > p { max-width: 390px; color: var(--muted); line-height: 1.65; }
@@ -249,7 +249,7 @@ h1,h2,h3,h4,
   align-items: start;
 }
 .home-page .home-difference-copy { position: sticky; top: 110px; }
-.home-page .home-difference h2 { margin: 0; font-size: clamp(48px, 5.2vw, 72px); line-height: .97; letter-spacing: -.055em; }
+.home-page .home-difference h2 { margin: 0; font-size: clamp(48px, 5.2vw, 72px); line-height: .97; letter-spacing:-.02em; }
 .home-page .home-steps article { position: relative; padding: 30px 0 34px 58px; border-top: 1px solid var(--line); }
 .home-page .home-steps article:last-child { border-bottom: 1px solid var(--line); }
 .home-page .home-steps article span { position: absolute; left: 0; top: 30px; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--surface-2); color: var(--muted); font-size: 11px; font-weight: 700; }
@@ -257,7 +257,7 @@ h1,h2,h3,h4,
 .home-page .home-steps article p { max-width: 480px; color: var(--muted); line-height: 1.6; }
 
 .home-page .product-preview { margin-bottom: 150px; padding: 56px; border: 1px solid var(--line); border-radius: 26px; background: var(--surface); box-shadow: var(--shadow); }
-.home-page .preview-heading h2 { margin: 0; font-size: clamp(48px, 5vw, 70px); line-height: .97; letter-spacing: -.055em; }
+.home-page .preview-heading h2 { margin: 0; font-size: clamp(48px, 5vw, 70px); line-height: .97; letter-spacing:-.02em; }
 .home-page .preview-heading > p:last-child { max-width: 520px; margin-top: 22px; color: var(--muted); line-height: 1.6; }
 .home-page .watch-dashboard { margin-top: 52px; border-top: 1px solid var(--line); }
 .home-page .dashboard-head { padding: 22px 0; }
@@ -266,7 +266,7 @@ h1,h2,h3,h4,
 .home-page .pricing-preview { padding-bottom: 150px; }
 .home-page .pricing-preview-card { border: 1px solid var(--line); border-radius: 26px; background: var(--surface); box-shadow: var(--shadow); padding: 44px; }
 .home-page .home-cta { padding: 108px 0 130px; border-top: 1px solid var(--line); }
-.home-page .home-cta h2 { margin: 0; font-size: clamp(50px, 5.5vw, 76px); line-height: .96; letter-spacing: -.06em; }
+.home-page .home-cta h2 { margin: 0; font-size: clamp(50px, 5.5vw, 76px); line-height: .96; letter-spacing:-.02em; }
 .home-page .footer { border-top-color: var(--line); }
 
 html[data-theme="redeye"] .home-page .discovery-field input,
@@ -297,7 +297,7 @@ html[data-theme="redeye"] .home-page .discovery-price { background: #11161c; }
   .home-page .discovery-head h2 { font-size: 47px; }
   .home-page .discovery-controls { padding: 25px 20px; }
   .home-page .discovery-routes { padding-inline: 20px; }
-  .home-page .home-difference { padding-bottom: 100px; }
+  .home-page .home-difference { padding-bottom: 64px; }
   .home-page .product-preview { margin-bottom: 100px; padding: 30px 22px; border-radius: 22px; }
   .home-page .pricing-preview { padding-bottom: 100px; }
   .home-page .pricing-preview-card { padding: 28px 22px; border-radius: 22px; }

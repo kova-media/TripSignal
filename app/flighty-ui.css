@@ -36,7 +36,7 @@
 .home-page .route-map-canvas { min-height: 0 !important; aspect-ratio: 1 / 1 !important; }
 .home-page .route-map svg { width: 100% !important; height: 100% !important; }
 .home-page .route-map-detail { margin: 0 22px 22px !important; }
-.home-page .home-difference { padding: 0 0 112px !important; grid-template-columns: minmax(300px, .75fr) minmax(0, 1.25fr) !important; gap: 84px !important; }
+.home-page .home-difference { padding: 0 0 72px !important; grid-template-columns: minmax(300px, .75fr) minmax(0, 1.25fr) !important; gap: 84px !important; }
 .home-page .home-difference-copy { position: static !important; }
 .home-page .home-difference h2, .home-page .preview-heading h2, .home-page .home-cta h2 { font-size: clamp(48px, 5.4vw, 76px) !important; line-height: .94 !important; }
 .home-page .home-steps article { padding: 28px 0 32px 52px !important; }

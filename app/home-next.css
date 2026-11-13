@@ -8,7 +8,7 @@
 .home-page .discovery-head h2 { font-size: clamp(42px, 5vw, 66px); line-height: .96; letter-spacing:-.02em; }
 .home-page .discovery-head h2 em { color: var(--muted); font-style: italic; }
 .home-page .discovery-head > p { max-width: 470px; margin: 0; font-size: 14px; line-height: 1.7; }
-.home-difference { display: grid; grid-template-columns: minmax(280px, .7fr) minmax(0, 1.3fr); gap: clamp(55px, 9vw, 130px); align-items: end; padding: 0 0 132px; }
+.home-difference { display: grid; grid-template-columns: minmax(280px, .7fr) minmax(0, 1.3fr); gap: clamp(55px, 9vw, 130px); align-items: end; padding: 0 0 72px; }
 .home-difference-copy { min-width: 0; }
 .home-difference h2 { max-width: 590px; margin: 0; color: var(--ink); font-family: 'Space Grotesk', sans-serif; font-size: clamp(43px, 5vw, 68px); font-weight: 550; line-height: .96; letter-spacing:-.02em; }
 .home-difference h2 em { color: var(--muted); font-style: italic; }
@@ -86,7 +86,7 @@
   .home-page .home-hero .lede { font-size: 15px; }
   .home-page .discovery { padding-bottom: 88px; }
   .home-page .discovery-head, .home-difference, .home-page .fare-example { grid-template-columns: 1fr; gap: 36px; }
-  .home-difference { padding-bottom: 92px; }
+  .home-difference { padding-bottom: 64px; }
   .home-steps { grid-template-columns: 1fr; gap: 22px; }
   .home-steps p { max-width: none; }
   .home-page .product-preview { padding-bottom: 92px; }

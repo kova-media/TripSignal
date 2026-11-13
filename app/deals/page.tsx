@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Brand from '@/components/brand';
 import SiteHeader from '@/components/site-header';
 import SiteFooter from '@/components/site-footer';
-import { getDeals, getDealOrigins, type Deal } from '@/lib/deals';
+import { getDeals, getRecentDeals, getDealOrigins, type Deal } from '@/lib/deals';
 import '../legal.css';
 
 export const metadata: Metadata = {
@@ -42,11 +42,14 @@ export default async function DealsPage({ searchParams }: { searchParams?: Promi
   const origin = /^[A-Za-z]{3}$/.test(params.origin ?? '') ? params.origin!.toUpperCase() : undefined;
   const cabin = CABINS.includes(params.cabin ?? '') ? params.cabin! : undefined;
   let deals: Deal[] = [];
+  let recentDeals: Deal[] = [];
   let origins: string[] = [];
   try {
     [deals, origins] = await Promise.all([getDeals({ origin, cabin }), getDealOrigins()]);
+    if (!deals.length) recentDeals = await getRecentDeals({ origin, cabin });
   } catch {
     deals = [];
+    recentDeals = [];
     origins = [];
   }
 
@@ -89,21 +92,29 @@ export default async function DealsPage({ searchParams }: { searchParams?: Promi
             <button className="button button-primary" type="submit">Filter</button>
             {origin || cabin ? <a className="text-link" href="/deals">Clear</a> : null}
           </form>
-          {deals.length ? (
-            <div className="deal-list">
-              {deals.map((deal) => (
-                <article className="deal-card" key={`${deal.origin}-${deal.destination}-${deal.cabin}-${deal.tripType}`}>
-                  <div className="deal-route">
-                    <strong>{deal.origin} → {destinationLabel(deal)}</strong>
-                    <small>{cabinLabel(deal.cabin)} · {tripLabel(deal.tripType)} · spotted {new Date(deal.observedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</small>
-                  </div>
-                  <div className="deal-drop">
-                    <strong>−{deal.dropPercent}%</strong>
-                    <small>{priceLabel(deal.latestPrice)} <s>{priceLabel(deal.previousPrice)}</s></small>
-                  </div>
-                </article>
-              ))}
-            </div>
+          {deals.length || recentDeals.length ? (
+            <>
+              {deals.length ? null : (
+                <>
+                  <h2>Most recent drops</h2>
+                  <p>Nothing dropped in the last 7 days — these are the latest drops we&rsquo;ve spotted, with the date each was seen.</p>
+                </>
+              )}
+              <div className="deal-list">
+                {(deals.length ? deals : recentDeals).map((deal) => (
+                  <article className="deal-card" key={`${deal.origin}-${deal.destination}-${deal.cabin}-${deal.tripType}`}>
+                    <div className="deal-route">
+                      <strong>{deal.origin} → {destinationLabel(deal)}</strong>
+                      <small>{cabinLabel(deal.cabin)} · {tripLabel(deal.tripType)} · spotted {new Date(deal.observedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</small>
+                    </div>
+                    <div className="deal-drop">
+                      <strong>−{deal.dropPercent}%</strong>
+                      <small>{priceLabel(deal.latestPrice)} <s>{priceLabel(deal.previousPrice)}</s></small>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </>
           ) : (
             <p>No fresh deals right now — check back soon.</p>
           )}
