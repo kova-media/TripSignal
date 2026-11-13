@@ -18,6 +18,24 @@ const REGION_AIRPORTS: Record<string, string[]> = {
   Oceania: ['SYD', 'MEL', 'BNE', 'PER', 'AKL'],
 };
 
+// Google Flights has no official API — TripSignal reaches it through
+// fast-flights-ts, an unofficial scraper, and Google rate-limits bursts of
+// it (HTTP 429). Searches therefore run one at a time with a gap between
+// them, and a 429 backs off and retries instead of failing the whole alert
+// check outright.
+const SEARCH_DELAY_MS = 1200;
+const MAX_DESTINATIONS_PER_CHECK = 12;
+const RATE_LIMIT_RETRY_DELAYS_MS = [5000, 15000, 30000];
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRateLimited(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes('429') || message.toLowerCase().includes('too many requests');
+}
+
 function formatGoogleTime(date: readonly [number, number, number], time: readonly [number, number]) {
   const [year = 0, month = 1, day = 1] = date;
   const [hour = 0, minute = 0] = time;
@@ -79,7 +97,8 @@ async function searchOne(origin: string, destination: string, departureDate: str
     max_stops: criteria.maxStops,
   });
 
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  const maxAttempts = 4; // first try + up to 3 retries when Google rate-limits
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
     try {
       const results = await getFlights(query, { timeout: 15000, maxRetries: 2, retryDelay: 1500 });
       return results
@@ -90,15 +109,17 @@ async function searchOne(origin: string, destination: string, departureDate: str
         .filter((offer) => criteria.maxStops === null || offer.stops <= criteria.maxStops);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      const malformedRpcResponse = message.includes('RPC response missing flight data');
-      if (!malformedRpcResponse || attempt === 1) {
-        if (malformedRpcResponse) {
-          console.warn(`TripSignal Google Flights returned malformed RPC data for ${origin}-${destination} on ${departureDate}; skipping this sample.`);
-          return [];
-        }
-        throw error;
+      if (message.includes('RPC response missing flight data')) {
+        console.warn(`TripSignal Google Flights returned malformed RPC data for ${origin}-${destination} on ${departureDate}; skipping this sample.`);
+        return [];
       }
-      await new Promise((resolve) => setTimeout(resolve, 750));
+      if (isRateLimited(error) && attempt < maxAttempts - 1) {
+        const delay = RATE_LIMIT_RETRY_DELAYS_MS[attempt] ?? 30000;
+        console.warn(`TripSignal Google Flights rate-limited ${origin}-${destination} on ${departureDate}; retrying in ${delay / 1000}s (attempt ${attempt + 2}/${maxAttempts}).`);
+        await sleep(delay);
+        continue;
+      }
+      throw error;
     }
   }
   return [];
@@ -125,19 +146,52 @@ class GoogleFlightsProvider implements FlightProvider {
     else destinations = [];
     if (destinations.length === 0) return [];
 
-    const departureDate = criteria.departureStart;
-    if (criteria.tripType === 'one-way') {
-      const results = await Promise.all(destinations.map((airport) => searchOne(criteria.origin, airport, departureDate, departureDate, criteria)));
-      return results.flat().sort((a, b) => a.price - b.price).slice(0, 25);
+    // A region or country can fan out to dozens of airports. Check only a
+    // subset per run and rotate it daily, so every airport gets covered over
+    // time without firing dozens of requests in one check.
+    const multiAirport = destination.type === 'region' || destination.type === 'country' || destination.type === 'airports';
+    if (multiAirport && destinations.length > MAX_DESTINATIONS_PER_CHECK) {
+      const day = Math.floor(Date.now() / 86400000);
+      const start = (day * MAX_DESTINATIONS_PER_CHECK) % destinations.length;
+      destinations = Array.from({ length: MAX_DESTINATIONS_PER_CHECK }, (_, i) => destinations[(start + i) % destinations.length]!);
     }
 
-    const returnDates = returnTripDays(criteria).map((days) => {
+    const departureDate = criteria.departureStart;
+    const allReturnDays = returnTripDays(criteria);
+    // Fewer return dates when several airports are involved: min and max trip
+    // lengths only. Single-airport checks keep all three.
+    const returnDays = multiAirport
+      ? Array.from(new Set([allReturnDays[0]!, allReturnDays[allReturnDays.length - 1]!]))
+      : allReturnDays;
+    const returnDates = returnDays.map((days) => {
       const departure = new Date(`${departureDate}T00:00:00Z`);
       departure.setUTCDate(departure.getUTCDate() + days);
       return departure.toISOString().slice(0, 10);
     });
-    const results = await Promise.all(destinations.flatMap((airport) => returnDates.map((returnDate) => searchOne(criteria.origin, airport, departureDate, returnDate, criteria))));
-    return results.flat().sort((a, b) => a.price - b.price).slice(0, 25);
+
+    // One search at a time with a gap between them. Firing them all in
+    // parallel is what got TripSignal rate-limited. A single failed search
+    // skips that airport/date instead of failing the whole check.
+    const jobs: Array<{ airport: string; returnDate: string }> = criteria.tripType === 'one-way'
+      ? destinations.map((airport) => ({ airport, returnDate: departureDate }))
+      : destinations.flatMap((airport) => returnDates.map((returnDate) => ({ airport, returnDate })));
+    const results: FlightOffer[][] = [];
+    let failures = 0;
+    for (let i = 0; i < jobs.length; i += 1) {
+      const job = jobs[i]!;
+      try {
+        results.push(await searchOne(criteria.origin, job.airport, departureDate, job.returnDate, criteria));
+      } catch (error) {
+        failures += 1;
+        console.warn(`TripSignal search failed for ${criteria.origin}-${job.airport} on ${departureDate}:`, error instanceof Error ? error.message : error);
+      }
+      if (i < jobs.length - 1) await sleep(SEARCH_DELAY_MS);
+    }
+    const offers = results.flat();
+    if (offers.length === 0 && failures > 0) {
+      throw new Error('All flight searches failed (Google Flights rate-limited TripSignal).');
+    }
+    return offers.sort((a, b) => a.price - b.price).slice(0, 25);
   }
 }
 
