@@ -69,6 +69,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
+      url: `${base}/guides/mistake-fares`,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${base}/guides/how-fare-alerts-work`,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${base}/guides/cheap-southwest-flights`,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
       url: `${base}/deals`,
       changeFrequency: 'daily',
       priority: 0.7,
