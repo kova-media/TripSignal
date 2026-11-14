@@ -25,8 +25,16 @@ export const REGION_NAMES = Object.keys(REGION_AIRPORTS);
 // it (HTTP 429). Searches therefore run one at a time with a gap between
 // them, and a 429 backs off and retries instead of failing the whole alert
 // check outright.
-const SEARCH_DELAY_MS = 1200;
-const MAX_DESTINATIONS_PER_CHECK = 12;
+//
+// Nov 14, 2026 (free mitigation): Google kept rate-limiting TripSignal even
+// after the 1.2s gaps / 12-airport cap, and the Nov 14 cron run failed 6 of
+// 6. The site shares Vercel's egress IPs with every other scraper on the
+// platform, so the only free lever is to ask less, more slowly: 6 airports
+// per region check instead of 12, 3s between requests instead of 1.2s. That
+// halves the requests per run. If this still fails, the real fix is a paid
+// flight-data API, not more scraping.
+const SEARCH_DELAY_MS = 3000;
+const MAX_DESTINATIONS_PER_CHECK = 6;
 const RATE_LIMIT_RETRY_DELAYS_MS = [5000, 15000, 30000];
 
 function sleep(ms: number) {
