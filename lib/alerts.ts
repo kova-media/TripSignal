@@ -112,7 +112,16 @@ export async function runAlertSearch(alertId: string, email: string, criteria: A
     return { offers: newOffers, emailed: true };
   } catch (error) { const message = error instanceof Error ? error.message : 'Alert search failed.'; if (runId) await db.query('update alert_runs set status = $1, finished_at = now(), error_message = $2 where id = $3', ['error', message.slice(0, 2000), runId]).catch(() => undefined); throw error; }
 }
-export async function runDueAlerts() { const db = getDb(); const result = await db.query<{ id: string; email: string; criteria: AlertCriteria; frequency: string }>(`select id, email, criteria, frequency from alerts where active = true and pending_verification = false and deleted_at is null and (last_checked_at is null or (frequency = 'Daily' and last_checked_at <= now() - interval '24 hours') or (frequency = 'Weekly' and last_checked_at <= now() - interval '7 days') or (frequency = 'Monthly' and last_checked_at <= now() - interval '30 days')) order by created_at asc`); const summary = { checked: 0, signals: 0, emails: 0, errors: 0, digests: 0, skipped: 0 }; const client = await db.connect();
+export async function runDueAlerts() { const db = getDb();
+  // Stale-run cleanup (Nov 19, 2026): a run killed mid-flight (function
+  // timeout) leaves its alert_runs row stuck on 'running' forever — the
+  // catch in runAlertSearch never gets to mark it. The advisory lock dies
+  // with the session, so a stuck row blocks nothing, but it makes the
+  // diagnostics page report a broken worker queue. Anything still
+  // 'running' after 30 minutes (the same threshold diagnostics uses) is
+  // dead: mark it failed so the log and the queue check stay truthful.
+  await db.query(`update alert_runs set status = 'error', finished_at = now(), error_message = 'Search never finished (timed out).' where status = 'running' and started_at <= now() - interval '30 minutes'`).catch(() => undefined);
+  const result = await db.query<{ id: string; email: string; criteria: AlertCriteria; frequency: string }>(`select id, email, criteria, frequency from alerts where active = true and pending_verification = false and deleted_at is null and (last_checked_at is null or (frequency = 'Daily' and last_checked_at <= now() - interval '24 hours') or (frequency = 'Weekly' and last_checked_at <= now() - interval '7 days') or (frequency = 'Monthly' and last_checked_at <= now() - interval '30 days')) order by created_at asc`); const summary = { checked: 0, signals: 0, emails: 0, errors: 0, digests: 0, skipped: 0 }; const client = await db.connect();
   // Soft time budget (Nov 14, 2026): with slower gaps between searches, a
   // run where searches succeed takes much longer than one where they fail
   // fast. Stop starting new alerts once ~200s have passed so the function
