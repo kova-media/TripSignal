@@ -18,8 +18,13 @@ export async function GET(request: Request) {
     // Per-alert errors are swallowed into a 200 with {errors: N}, so the
     // old "email only if runDueAlerts() throws" never fired. Email when
     // the run failed outright or badly: every checked alert failed, or at
-    // least 5 alerts failed.
-    if (summary.errors > 0 && (summary.errors >= summary.checked || summary.errors >= 5)) {
+    // least 5 alerts failed — EXCEPT the known daily failure, where
+    // every error was only Google Flights rate-limiting the site's
+    // server address (Damian's Nov 19 call: quiet just that one, keep
+    // the email for anything else). A run with any non-rate-limit
+    // error still emails, and so does a run where runDueAlerts throws.
+    const allRateLimited = summary.errors > 0 && summary.rateLimitedErrors === summary.errors;
+    if (!allRateLimited && summary.errors > 0 && (summary.errors >= summary.checked || summary.errors >= 5)) {
       await sendCronFailureEmail(
         `Alert worker completed with ${summary.errors} failed alert${summary.errors === 1 ? '' : 's'} out of ${summary.checked} checked (${summary.signals} signals, ${summary.emails} emails, ${summary.digests} digests).`,
       );
