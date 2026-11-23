@@ -27,7 +27,7 @@ const airlines = [
   { code: 'TP', name: 'TAP Air Portugal' }, { code: 'SK', name: 'SAS' }, { code: 'AY', name: 'Finnair' }, { code: 'TK', name: 'Turkish Airlines' },
 ];
 
-const cabinMax: Record<string, number> = { Economy: 1500, 'Premium economy': 2500, Business: 4000, 'First class': 6000 };
+const cabinMax: Record<string, number> = { Economy: 2000, 'Premium economy': 2500, Business: 4000, 'First class': 6000 };
 
 const airportCoordinates: Record<string, Coordinate> = {
   MCI: [-94.7139, 39.2976], ATL: [-84.4277, 33.6407], BOS: [-71.0096, 42.3656], BWI: [-76.6684, 39.1754], CLT: [-80.9431, 35.214],

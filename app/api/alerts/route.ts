@@ -1,10 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { getDb, ensureSchema } from '@/lib/db';
 import { createMagicLink, getCurrentUser } from '@/lib/auth';
 import { runAlertSearch, summarizeAlert } from '@/lib/alerts';
 import { sendAlertCreatedEmail, sendMagicLinkEmail } from '@/lib/email';
 import { REGION_NAMES } from '@/lib/flights/provider';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
+
+// The first fare check runs after the response (see below) and a region
+// search can take minutes, so give this route the full Hobby window.
+export const maxDuration = 300;
 
 type AlertInput = {
   origin: string;
@@ -140,16 +144,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ alertId, active: false, pendingVerification: true, accountCreated: true, signInEmailSent, offers: [], confirmationSent: false });
     }
 
-    let confirmationError = '';
-    try { await sendAlertCreatedEmail(email, summarizeAlert(criteria)); }
-    catch (error) { confirmationError = error instanceof Error ? error.message : 'Confirmation email failed.'; console.error('TripSignal confirmation email error:', error); }
+    // The confirmation email and the first fare check run after the
+    // response is sent, so creating an alert returns right away instead
+    // of hanging on "Creating your alert…" while a search runs. If the
+    // background check is ever cut short, the daily worker still checks
+    // the alert on schedule, and any fares found are emailed as usual.
+    after(async () => {
+      try { await sendAlertCreatedEmail(email, summarizeAlert(criteria)); }
+      catch (error) { console.error('TripSignal confirmation email error:', error); }
+      try { await runAlertSearch(alertId, email, criteria); }
+      catch (error) { console.error('TripSignal initial alert search error:', error); }
+    });
 
-    let searchError = '';
-    let offers: Awaited<ReturnType<typeof runAlertSearch>>['offers'] = [];
-    try { offers = (await runAlertSearch(alertId, email, criteria)).offers; }
-    catch (error) { searchError = error instanceof Error ? error.message : 'Initial fare search failed.'; console.error('TripSignal initial alert search error:', error); }
-
-    return NextResponse.json({ alertId, active: true, accountCreated: !currentUser, signInEmailSent, offers, confirmationSent: !confirmationError, warning: confirmationError || searchError || undefined });
+    return NextResponse.json({ alertId, active: true, accountCreated: !currentUser, signInEmailSent, offers: [] });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Could not create alert.';
     console.error('TripSignal alert creation error:', error);
