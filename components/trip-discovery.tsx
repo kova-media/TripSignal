@@ -94,7 +94,7 @@ function AirportSearch({ label, value, code, onSelect, placeholder }: { label: s
   return (
     <div className="discovery-airport-search">
       <label htmlFor={`airport-${label.toLowerCase().replace(/\s+/g, '-')}`}>{label}</label>
-      <input id={`airport-${label.toLowerCase().replace(/\s+/g, '-')}`} value={query} onChange={(event) => { setQuery(event.target.value); setOpen(true); }} onFocus={() => { if (query.trim().length >= 2) setOpen(true); }} placeholder={placeholder} autoComplete="off" aria-autocomplete="list" aria-expanded={open} />
+      <input id={`airport-${label.toLowerCase().replace(/\s+/g, '-')}`} value={query} onChange={(event) => { setQuery(event.target.value); setOpen(true); }} onFocus={() => { if (query.trim().length >= 2) setOpen(true); }} onBlur={() => { window.setTimeout(() => setOpen(false), 150); }} placeholder={placeholder} autoComplete="off" aria-autocomplete="list" aria-expanded={open} />
       {code ? <small>{code} selected</small> : <small>Search by city or airport name</small>}
       {open && (loading || results.length > 0) && (
         <div className="discovery-airport-results" role="listbox">
