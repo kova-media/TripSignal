@@ -25,7 +25,11 @@ function read(root: HTMLElement, id: string) {
 }
 
 function airportCode(value: string) {
-  return value.match(/\(([A-Za-z]{3})\)$/)?.[1]?.toUpperCase() ?? '';
+  const trimmed = value.trim();
+  // Accept a bare three-letter code typed on its own ("BNA") as well as
+  // the "City (BNA)" form a dropdown selection produces.
+  if (/^[A-Za-z]{3}$/.test(trimmed)) return trimmed.toUpperCase();
+  return trimmed.match(/\(([A-Za-z]{3})\)$/)?.[1]?.toUpperCase() ?? '';
 }
 
 function cabin(root: HTMLElement) {
@@ -71,7 +75,7 @@ export default function FarePreview() {
         const origin = airportCode(read(root, 'airport-from'));
         const countryCode = read(root, 'discovery-country-code').toUpperCase();
         const destinationMode = countryCode ? 'country' : 'airport';
-        const destination = destinationMode === 'country' ? countryCode : airportCode(read(root, 'airport-destination'));
+        const destination = destinationMode === 'country' ? countryCode : airportCode(read(root, 'airport-destination')) || airportCode(read(root, 'airport-to'));
         const routeSelected = Boolean(origin && destination);
         setHasRoute(routeSelected);
         if (!routeSelected) { controller?.abort(); setPreview(null); setLoading(false); return; }

@@ -19,7 +19,14 @@ const REGIONS = ['Europe', 'North America', 'South America', 'Asia', 'Africa', '
 
 function valueOf(root: HTMLElement, id: string) { const element = root.querySelector<HTMLInputElement | HTMLSelectElement>(`#${id}`); return element?.value.trim() ?? ''; }
 function selectedCabin(root: HTMLElement) { const active = root.querySelector<HTMLButtonElement>('.discovery-cabin-options button.active'); return active?.textContent?.trim() ?? 'Premium economy'; }
-function airportCode(inputValue: string) { const match = inputValue.match(/\(([A-Za-z]{3})\)$/); return match?.[1]?.toUpperCase() ?? ''; }
+function airportCode(inputValue: string) {
+  const trimmed = inputValue.trim();
+  // Accept a bare three-letter code typed on its own ("BNA") as well as
+  // the "City (BNA)" form a dropdown selection produces.
+  if (/^[A-Za-z]{3}$/.test(trimmed)) return trimmed.toUpperCase();
+  const match = trimmed.match(/\(([A-Za-z]{3})\)$/);
+  return match?.[1]?.toUpperCase() ?? '';
+}
 function cabinParam(cabin: string) { if (cabin === 'Premium economy') return 'premium_economy'; if (cabin === 'First class') return 'first'; return cabin.toLowerCase(); }
 
 export default function TripDiscoveryDirect({ children, accountEmail }: DiscoveryDirectProps) {
@@ -81,7 +88,7 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
     const origin = airportCode(valueOf(root, 'airport-from'));
     const destinationInput = valueOf(root, 'airport-destination');
     const countryCode = valueOf(root, 'discovery-country-code');
-    const destination = destinationMode === 'region' ? region : destinationMode === 'country' ? countryCode : airportCode(destinationInput);
+    const destination = destinationMode === 'region' ? region : destinationMode === 'country' ? countryCode : airportCode(destinationInput) || airportCode(valueOf(root, 'airport-to'));
     const specificDate = valueOf(root, 'discovery-date');
     const dateRange = specificDate ? 'Custom dates' : valueOf(root, 'discovery-window');
     const email = accountEmail ?? valueOf(root, 'discovery-email');
@@ -136,7 +143,7 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
 
   return (
     <div className={`${styles.wrapper}${accountEmail ? ' account-bound' : ''}${tripType === 'one-way' ? ` ${styles.oneWay}` : ''}`} data-trip-discovery-direct onClickCapture={handleClick} aria-busy={submitting}>
-      <TripDiscovery />
+      <TripDiscovery hideDestinationSearch />
       {controlsHost && createPortal(<>{tripTypeSelector}{regionSelector}</>, controlsHost)}
       <DestinationChooser onModeChange={setDestinationMode} />
       <FarePreview />
