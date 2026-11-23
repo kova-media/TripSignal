@@ -590,11 +590,12 @@ class FlightPowersProvider implements FlightProvider {
     // fetch per date pair. Trip lengths: min and max for a single airport,
     // the midpoint only when several airports are involved.
     //
-    // Google only shows fares 330 days ahead: clamp the scan to that
-    // horizon, or the API refuses the whole request with a 422 (the first
-    // live run Nov 23 failed 5 of 6 alerts this way — sampled departure
-    // dates near the end of a 12-month window sit past it).
-    const horizon = addDays(new Date().toISOString().slice(0, 10), 330);
+    // The site searches at most 9 months ahead (Damian, Nov 23): clamp
+    // the scan to that horizon, or the API refuses the whole request with
+    // a 422 — it only shows fares 330 days ahead, and sampled departure
+    // dates near the end of a 12-month window sat past it (the first live
+    // run Nov 23 failed 5 of 6 alerts this way).
+    const horizon = addDays(new Date().toISOString().slice(0, 10), 270);
     const scanFrom = criteria.departureStart <= horizon ? criteria.departureStart : horizon;
     let rangeEnd = addDays(scanFrom, 60);
     if (rangeEnd > criteria.departureEnd) rangeEnd = criteria.departureEnd;

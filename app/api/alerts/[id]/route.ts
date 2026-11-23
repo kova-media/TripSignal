@@ -52,7 +52,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const email = user.email.toLowerCase();
   const frequency = body.frequency === 'Daily' ? 'Daily' : body.frequency === 'Monthly' ? 'Monthly' : body.frequency === 'Weekly' ? 'Weekly' : '';
   const cabin = String(body.cabin ?? 'premium_economy');
-  const dateRange = String(body.dateRange ?? 'Next 12 months').trim();
+  const dateRange = String(body.dateRange ?? 'Next 9 months').trim();
   const dateStart = body.dateStart ? String(body.dateStart).trim() : undefined;
   const dateEnd = body.dateEnd ? String(body.dateEnd).trim() : undefined;
 

@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const tripType = body.tripType === 'one-way' ? 'one-way' : 'round-trip';
     const maxPrice = Number(body.maxPrice);
     const passengers = Number(body.passengers ?? 1);
-    const dateRange = String(body.dateRange ?? 'Next 12 months').trim();
+    const dateRange = String(body.dateRange ?? 'Next 9 months').trim();
     const dateStart = body.dateStart ? String(body.dateStart).trim() : undefined;
     const dateEnd = body.dateEnd ? String(body.dateEnd).trim() : undefined;
     const rawAirlineMode = String(body.airlineMode ?? 'all').trim();
