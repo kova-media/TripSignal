@@ -589,32 +589,48 @@ class FlightPowersProvider implements FlightProvider {
     // scan below costs a handful of requests where the scraper spent one
     // fetch per date pair. Trip lengths: min and max for a single airport,
     // the midpoint only when several airports are involved.
-    const rangeEnd = addDays(criteria.departureStart, 60) < criteria.departureEnd
-      ? addDays(criteria.departureStart, 60)
-      : criteria.departureEnd;
+    //
+    // Google only shows fares 330 days ahead: clamp the scan to that
+    // horizon, or the API refuses the whole request with a 422 (the first
+    // live run Nov 23 failed 5 of 6 alerts this way — sampled departure
+    // dates near the end of a 12-month window sit past it).
+    const horizon = addDays(new Date().toISOString().slice(0, 10), 330);
+    const scanFrom = criteria.departureStart <= horizon ? criteria.departureStart : horizon;
+    let rangeEnd = addDays(scanFrom, 60);
+    if (rangeEnd > criteria.departureEnd) rangeEnd = criteria.departureEnd;
+    if (rangeEnd > horizon) rangeEnd = horizon;
     const nightsList: Array<number | null> = criteria.tripType === 'one-way'
       ? [null]
       : multiAirport
         ? [Math.round((criteria.minTripDays + criteria.maxTripDays) / 2)]
         : Array.from(new Set([criteria.minTripDays, criteria.maxTripDays]));
 
+    // Calendar calls run in parallel: they are independent, the plan
+    // allows 1,000 requests an hour, and the vendor documents parallel
+    // date scans. Each call still records its own failure instead of
+    // failing the whole check.
     let failures = 0;
     let lastError = '';
     let calendarCalls = 0;
     const hits: Array<{ airport: string; departureDate: string; returnDate: string | null; price: number }> = [];
+    const calendarJobs: Array<Promise<void>> = [];
     for (const airport of destinations) {
       for (const nights of nightsList) {
-        try {
-          const rows = await cheapestDates(this.apiKey, criteria.origin, airport, criteria.departureStart, rangeEnd, nights, criteria.passengers);
-          calendarCalls += 1;
-          for (const row of rows) hits.push({ airport, ...row });
-        } catch (error) {
-          failures += 1;
-          lastError = error instanceof Error ? error.message : String(error);
-          console.warn(`TripSignal FlightPowers calendar failed for ${criteria.origin}-${airport}:`, lastError);
-        }
+        calendarJobs.push(
+          cheapestDates(this.apiKey, criteria.origin, airport, scanFrom, rangeEnd, nights, criteria.passengers)
+            .then((rows) => {
+              calendarCalls += 1;
+              for (const row of rows) hits.push({ airport, ...row });
+            })
+            .catch((error: unknown) => {
+              failures += 1;
+              lastError = error instanceof Error ? error.message : String(error);
+              console.warn(`TripSignal FlightPowers calendar failed for ${criteria.origin}-${airport}:`, lastError);
+            }),
+        );
       }
     }
+    await Promise.all(calendarJobs);
 
     // Confirm only dates under the target, cheapest first, at most three
     // per airport — a confirm is a second request, so this is what keeps
