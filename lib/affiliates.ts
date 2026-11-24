@@ -66,20 +66,93 @@ const destinationMetadataByIata: Record<string, { city: string; countryCode: str
   SYD: { city: 'Sydney', countryCode: 'AU' }, MEL: { city: 'Melbourne', countryCode: 'AU' }, AKL: { city: 'Auckland', countryCode: 'NZ' },
 };
 
-const klookHotelCities: Record<string, { id: number; page: string }> = {
-  amsterdam: { id: 90, page: '90-amsterdam-hotels' },
-  bangkok: { id: 27, page: '27-bangkok-hotels' },
-  barcelona: { id: 108, page: '108-barcelones-hotels' },
-  budapest: { id: 307, page: '307-budapest-hotels' },
-  london: { id: 106, page: '106-london-hotels' },
-  paris: { id: 107, page: '107-paris-hotels' },
-  prague: { id: 333, page: '333-prague-hotels' },
-  rome: { id: 92, page: '92-rome-hotels' },
-  seoul: { id: 13, page: '13-seoul-hotels' },
-  tokyo: { id: 28, page: '28-tokyo-hotels' },
-  vienna: { id: 91, page: '91-vienna-hotels' },
-  warsaw: { id: 351, page: '351-warsaw-hotels' },
+const klookCities: Record<string, { id: number; page: string; dest: string }> = {
+  amsterdam: { id: 90, page: '90-amsterdam-hotels', dest: 'amsterdam' },
+  bangkok: { id: 27, page: '27-bangkok-hotels', dest: 'bangkok' },
+  barcelona: { id: 108, page: '108-barcelones-hotels', dest: 'barcelona' },
+  budapest: { id: 307, page: '307-budapest-hotels', dest: 'budapest' },
+  london: { id: 106, page: '106-london-hotels', dest: 'london' },
+  paris: { id: 107, page: '107-paris-hotels', dest: 'paris' },
+  prague: { id: 333, page: '333-prague-hotels', dest: 'prague' },
+  rome: { id: 92, page: '92-rome-hotels', dest: 'rome' },
+  seoul: { id: 13, page: '13-seoul-hotels', dest: 'seoul' },
+  tokyo: { id: 28, page: '28-tokyo-hotels', dest: 'tokyo' },
+  vienna: { id: 91, page: '91-vienna-hotels', dest: 'vienna' },
+  warsaw: { id: 351, page: '351-warsaw-hotels', dest: 'warsaw' },
 };
+
+// DiscoverCars "all locations" place id per city, from their autocomplete
+// endpoint (discovercars.com/en/search/autocomplete/<city>), Nov 24 2026.
+// The id doubles as the city id. Only the 12 Klook cities are mapped;
+// other cities fall back to the city page link below.
+const discoverCarsLocationIds: Record<string, number> = {
+  amsterdam: 1335,
+  bangkok: 1529,
+  barcelona: 465,
+  budapest: 245,
+  london: 570,
+  paris: 1022,
+  prague: 174,
+  rome: 315,
+  seoul: 1252,
+  tokyo: 203793,
+  vienna: 143,
+  warsaw: 391,
+};
+
+// Yesim eSIM country page slug per destination country code, verified
+// Nov 24 2026 (each https://yesim.app/country/<slug>/ returns 200).
+const yesimCountrySlugs: Record<string, string> = {
+  NL: 'netherlands',
+  TH: 'thailand',
+  ES: 'spain',
+  HU: 'hungary',
+  GB: 'united-kingdom',
+  FR: 'france',
+  CZ: 'czech-republic',
+  IT: 'italy',
+  KR: 'south-korea',
+  JP: 'japan',
+  AT: 'austria',
+  PL: 'poland',
+};
+
+// EKTA country pages, from ektatraveling.com/sitemap-countries.xml
+// (Nov 24 2026). Europe: /travel-insurance-for-europe/<slug>/,
+// Asia: /travel-insurance-for-asia/<slug>/.
+const ektaCountryPages: Record<string, { region: 'europe' | 'asia'; slug: string }> = {
+  NL: { region: 'europe', slug: 'netherlands' },
+  TH: { region: 'asia', slug: 'thailand' },
+  ES: { region: 'europe', slug: 'spain' },
+  HU: { region: 'europe', slug: 'hungary' },
+  GB: { region: 'europe', slug: 'united-kingdom' },
+  FR: { region: 'europe', slug: 'france' },
+  CZ: { region: 'europe', slug: 'czech-republic' },
+  IT: { region: 'europe', slug: 'italy' },
+  KR: { region: 'asia', slug: 'south-korea' },
+  JP: { region: 'asia', slug: 'japan' },
+  AT: { region: 'europe', slug: 'austria' },
+  PL: { region: 'europe', slug: 'poland' },
+};
+
+// Klook's Europe rail product only covers European destinations; other
+// destinations fall back to the generic Klook transport link.
+const europeanCountryCodes = new Set([
+  'AT', 'BE', 'CH', 'CZ', 'DE', 'DK', 'ES', 'FR', 'GB', 'GR', 'HR', 'HU', 'IE', 'IT', 'NL', 'PL', 'PT',
+]);
+
+// Yesim deep link generated in Travelpayouts (Nov 24, 2026) for the Spain
+// eSIM page. Same tp.media wrapper pattern as Klook: swapping `u` to
+// another country page keeps tracking intact.
+function wrapYesimDeepLink(destinationUrl: string) {
+  const url = new URL('https://tp.media/r');
+  url.searchParams.set('campaign_id', '224');
+  url.searchParams.set('marker', travelpayoutsMarker);
+  url.searchParams.set('p', '5998');
+  url.searchParams.set('trs', '572527');
+  url.searchParams.set('u', destinationUrl);
+  return url.toString();
+}
 
 // Klook deep link generated in Travelpayouts (Nov 24, 2026) for the
 // Barcelona hotels page. The old tpo.mx short link pointed at Klook's
@@ -148,7 +221,7 @@ function buildDestinationDeepLink(vertical: AffiliateVertical, context: Affiliat
   if (!city || !countryCode) return null;
 
   if (vertical === 'hotels') {
-    const hotelCity = klookHotelCities[city.toLowerCase()];
+    const hotelCity = klookCities[city.toLowerCase()];
     if (!hotelCity) return null;
     if (context.departureDate && context.returnDate) {
       // With dates, link straight to Klook's search-results page: it is
@@ -179,11 +252,65 @@ function buildDestinationDeepLink(vertical: AffiliateVertical, context: Affiliat
     if (!countrySlug) return null;
     const citySlug = slugify(city);
     if (!citySlug) return null;
+    const locationId = discoverCarsLocationIds[city.toLowerCase()];
+    if (locationId && context.departureDate && context.returnDate) {
+      // With dates, link straight to DiscoverCars' search-results page:
+      // the city page's form ignores pickup_date/dropoff_date in the URL.
+      // The search carries everything in one base64 `sq` param (dates,
+      // 11:00 AM pickup/drop-off, US residence, driver age 35 — the
+      // site's own defaults, found Nov 24 by searching on DiscoverCars
+      // and reading the resulting URL). The search id in the path is
+      // ignored — a made-up id still returns the right results.
+      const sq = Buffer.from(JSON.stringify({
+        PickUpLocationId: locationId,
+        DropOffLocationId: locationId,
+        PickUpDateTime: `${context.departureDate}T11:00:00`,
+        DropOffDateTime: `${context.returnDate}T11:00:00`,
+        ResidenceCountry: 'US',
+        DriverAge: 35,
+        Hash: '',
+      })).toString('base64');
+      const url = new URL(`https://www.discovercars.com/search/${crypto.randomUUID()}`);
+      url.searchParams.set('sq', sq);
+      url.searchParams.set('searchVersion', '2');
+      url.searchParams.set('a_aid', 'Damian');
+      return url.toString();
+    }
+    // No dates (window-only alert) or an unmapped city: the city page,
+    // which fills in the location; dates are picked on DiscoverCars.
     const url = new URL(`https://www.discovercars.com/${countrySlug}/${citySlug}`);
     url.searchParams.set('a_aid', 'Damian');
     if (context.departureDate) url.searchParams.set('pickup_date', context.departureDate);
     if (context.returnDate) url.searchParams.set('dropoff_date', context.returnDate);
     return url.toString();
+  }
+
+  if (vertical === 'activities') {
+    const klookCity = klookCities[city.toLowerCase()];
+    if (!klookCity) return null;
+    // Klook's city hub page (things to do in the city). Verified Nov 24
+    // for all 12 cities via redirect traces through the wrapper.
+    const destination = new URL(`https://www.klook.com/destination/c${klookCity.id}-${klookCity.dest}/`);
+    return wrapKlookDeepLink(destination.toString());
+  }
+
+  if (vertical === 'trains_buses') {
+    // Klook sells specific train routes, so a train search needs a
+    // second city the traveler hasn't entered — an origin-only search
+    // silently substitutes Paris and errors out (verified Nov 24). The
+    // best destination-aware link is Klook's Europe rail search page
+    // (a working search form) for European destinations; elsewhere the
+    // generic Klook transport link stands.
+    if (!europeanCountryCodes.has(countryCode)) return null;
+    return wrapKlookDeepLink('https://www.klook.com/en-US/rails-4/364891-europe/search/');
+  }
+
+  if (vertical === 'sim') {
+    const slug = yesimCountrySlugs[countryCode];
+    if (!slug) return null;
+    // Yesim's country eSIM page, via the Yesim Travelpayouts wrapper
+    // (campaign 224, generated Nov 24 for Spain; `u` swaps per country).
+    return wrapYesimDeepLink(`https://yesim.app/country/${slug}/`);
   }
 
   if (vertical === 'transfers') {
@@ -196,6 +323,23 @@ function buildDestinationDeepLink(vertical: AffiliateVertical, context: Affiliat
     url.searchParams.set('type', 'click');
     url.searchParams.set('custom_url', customUrl.toString());
     return url.toString();
+  }
+
+  if (vertical === 'insurance') {
+    const ekta = ektaCountryPages[countryCode];
+    if (!ekta) {
+      // No country page for this destination: EKTA's homepage directly.
+      // (The tracked EKTA link is dead — see below — so no falling back
+      // to the generic provider link, which returns a 400.)
+      return 'https://ektatraveling.com/';
+    }
+    // EKTA's Travelpayouts program is INACTIVE as of Nov 24, 2026 and
+    // its tracked link (ektatraveling.tpo.mx/EXezz7j8) returns a 400, so
+    // this is a DIRECT link to the destination country's EKTA page — it
+    // works for the traveler but earns no commission. EKTA's site also
+    // has no quote form anymore (checked Nov 24), so dates can't be
+    // prefilled; the country page shows the plans for that destination.
+    return `https://ektatraveling.com/travel-insurance-for-${ekta.region}/${ekta.slug}/`;
   }
 
   return null;
