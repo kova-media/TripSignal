@@ -81,25 +81,6 @@ const klookCities: Record<string, { id: number; page: string; dest: string }> = 
   warsaw: { id: 351, page: '351-warsaw-hotels', dest: 'warsaw' },
 };
 
-// DiscoverCars "all locations" place id per city, from their autocomplete
-// endpoint (discovercars.com/en/search/autocomplete/<city>), Nov 24 2026.
-// The id doubles as the city id. Only the 12 Klook cities are mapped;
-// other cities fall back to the city page link below.
-const discoverCarsLocationIds: Record<string, number> = {
-  amsterdam: 1335,
-  bangkok: 1529,
-  barcelona: 465,
-  budapest: 245,
-  london: 570,
-  paris: 1022,
-  prague: 174,
-  rome: 315,
-  seoul: 1252,
-  tokyo: 203793,
-  vienna: 143,
-  warsaw: 391,
-};
-
 // Yesim eSIM country page slug per destination country code, verified
 // Nov 24 2026 (each https://yesim.app/country/<slug>/ returns 200).
 const yesimCountrySlugs: Record<string, string> = {
@@ -252,36 +233,15 @@ function buildDestinationDeepLink(vertical: AffiliateVertical, context: Affiliat
     if (!countrySlug) return null;
     const citySlug = slugify(city);
     if (!citySlug) return null;
-    const locationId = discoverCarsLocationIds[city.toLowerCase()];
-    if (locationId && context.departureDate && context.returnDate) {
-      // With dates, link straight to DiscoverCars' search-results page:
-      // the city page's form ignores pickup_date/dropoff_date in the URL.
-      // The search carries everything in one base64 `sq` param (dates,
-      // 11:00 AM pickup/drop-off, US residence, driver age 35 — the
-      // site's own defaults, found Nov 24 by searching on DiscoverCars
-      // and reading the resulting URL). The search id in the path is
-      // ignored — a made-up id still returns the right results.
-      const sq = Buffer.from(JSON.stringify({
-        PickUpLocationId: locationId,
-        DropOffLocationId: locationId,
-        PickUpDateTime: `${context.departureDate}T11:00:00`,
-        DropOffDateTime: `${context.returnDate}T11:00:00`,
-        ResidenceCountry: 'US',
-        DriverAge: 35,
-        Hash: '',
-      })).toString('base64');
-      const url = new URL(`https://www.discovercars.com/search/${crypto.randomUUID()}`);
-      url.searchParams.set('sq', sq);
-      url.searchParams.set('searchVersion', '2');
-      url.searchParams.set('a_aid', 'Damian');
-      return url.toString();
-    }
-    // No dates (window-only alert) or an unmapped city: the city page,
-    // which fills in the location; dates are picked on DiscoverCars.
+    // The city page fills in the location. Dates are NOT passed: the
+    // page's form ignores pickup_date/dropoff_date, and DiscoverCars'
+    // /search/ results URL only works with a server-issued search id
+    // tied to the visitor's session — a link built with a made-up id
+    // 404s for a fresh visitor (verified Nov 24; an earlier test only
+    // passed because that browser already had a DiscoverCars session).
+    // So the traveler picks the dates on DiscoverCars.
     const url = new URL(`https://www.discovercars.com/${countrySlug}/${citySlug}`);
     url.searchParams.set('a_aid', 'Damian');
-    if (context.departureDate) url.searchParams.set('pickup_date', context.departureDate);
-    if (context.returnDate) url.searchParams.set('dropoff_date', context.returnDate);
     return url.toString();
   }
 
