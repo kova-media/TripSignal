@@ -65,19 +65,19 @@ const destinationMetadataByIata: Record<string, { city: string; countryCode: str
   SYD: { city: 'Sydney', countryCode: 'AU' }, MEL: { city: 'Melbourne', countryCode: 'AU' }, AKL: { city: 'Auckland', countryCode: 'NZ' },
 };
 
-const klookHotelCityIds: Record<string, number> = {
-  amsterdam: 90,
-  bangkok: 27,
-  barcelona: 108,
-  budapest: 307,
-  london: 106,
-  paris: 107,
-  prague: 333,
-  rome: 92,
-  seoul: 13,
-  tokyo: 28,
-  vienna: 91,
-  warsaw: 351,
+const klookHotelCityPages: Record<string, string> = {
+  amsterdam: '90-amsterdam-hotels',
+  bangkok: '27-bangkok-hotels',
+  barcelona: '108-barcelones-hotels',
+  budapest: '307-budapest-hotels',
+  london: '106-london-hotels',
+  paris: '107-paris-hotels',
+  prague: '333-prague-hotels',
+  rome: '92-rome-hotels',
+  seoul: '13-seoul-hotels',
+  tokyo: '28-tokyo-hotels',
+  vienna: '91-vienna-hotels',
+  warsaw: '351-warsaw-hotels',
 };
 
 const kiwitaxiPromoId = '647';
@@ -131,12 +131,24 @@ function buildDestinationDeepLink(vertical: AffiliateVertical, context: Affiliat
   if (!city || !countryCode) return null;
 
   if (vertical === 'hotels') {
-    const cityId = klookHotelCityIds[city.toLowerCase()];
-    if (!cityId) return null;
-    const url = new URL(affiliateDestination);
-    url.searchParams.set('city_id', String(cityId));
-    if (context.departureDate) url.searchParams.set('checkin', context.departureDate);
-    if (context.returnDate) url.searchParams.set('checkout', context.returnDate);
+    const cityPage = klookHotelCityPages[city.toLowerCase()];
+    if (!cityPage) return null;
+    // Klook deep link generated in Travelpayouts (Nov 24, 2026) for the
+    // Barcelona hotels page. The old tpo.mx short link pointed at Klook's
+    // generic /hotels/ page and dropped city/date params; this tp.media
+    // wrapper carries the full city page as `u`. Verified Nov 24: swapping
+    // `u` to any of the 12 city pages above lands on that city's page with
+    // tracking intact, and checkin/checkout params on the destination
+    // survive to the final Klook URL.
+    const destination = new URL(`https://www.klook.com/hotels/city/${cityPage}/`);
+    if (context.departureDate) destination.searchParams.set('checkin', context.departureDate);
+    if (context.returnDate) destination.searchParams.set('checkout', context.returnDate);
+    const url = new URL('https://tp.media/r');
+    url.searchParams.set('campaign_id', '137');
+    url.searchParams.set('marker', travelpayoutsMarker);
+    url.searchParams.set('p', '4110');
+    url.searchParams.set('trs', '572527');
+    url.searchParams.set('u', destination.toString());
     return url.toString();
   }
 
