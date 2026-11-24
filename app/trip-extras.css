@@ -37,7 +37,7 @@
   font-size: clamp(28px, 3vw, 42px) !important;
   font-weight: 650 !important;
   line-height: .98 !important;
-  letter-spacing: -.055em !important;
+  letter-spacing:-.02em !important;
 }
 
 .trip-extras-heading > p {
@@ -132,20 +132,19 @@
   display: flex !important;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid rgba(255,255,255,.38) !important;
-  border-radius: 10px !important;
-  background: rgba(12,17,20,.42) !important;
+  width: 40px;
+  height: 40px;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: var(--accent) !important;
   color: #fff !important;
-  backdrop-filter: blur(8px);
 }
 
 .trip-extra-icon svg {
-  width: 20px !important;
-  height: 20px !important;
+  width: 22px !important;
+  height: 22px !important;
   color: #fff !important;
-  stroke-width: 1.8;
+  stroke-width: 2.6;
 }
 
 .trip-extra-copy {

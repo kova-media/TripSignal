@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     const dateEnd = body.dateEnd ? String(body.dateEnd).trim() : undefined;
     const rawAirlineMode = String(body.airlineMode ?? 'all').trim();
     const airlineMode = rawAirlineMode.toLowerCase() === 'all' ? 'all' : rawAirlineMode.toUpperCase();
-    const cabin = body.cabin ?? 'premium_economy';
+    const cabin = body.cabin ?? 'economy';
 
     if (!/^[A-Z]{3}$/.test(origin)) return NextResponse.json({ error: 'Origin must be a three-letter airport code.' }, { status: 400 });
     if (destinationMode === 'airport' && !/^[A-Za-z]{3}$/.test(destination)) return NextResponse.json({ error: 'Destination airport must be a three-letter airport code.' }, { status: 400 });

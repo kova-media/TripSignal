@@ -141,7 +141,7 @@ export default function TripDiscovery({ hideDestinationSearch = false }: { hideD
   const [typedDestination, setTypedDestination] = useState('');
   const [destinationSearch, setDestinationSearch] = useState('');
   const [destinationCoordinate, setDestinationCoordinate] = useState<Coordinate | undefined>();
-  const [cabin, setCabin] = useState('Premium economy');
+  const [cabin, setCabin] = useState('Economy');
   const [budget, setBudget] = useState('1000');
   const [passengers, setPassengers] = useState('1');
   const [specificDate, setSpecificDate] = useState('');
@@ -149,7 +149,7 @@ export default function TripDiscovery({ hideDestinationSearch = false }: { hideD
   const [stops, setStops] = useState('1');
   const [tripLength, setTripLength] = useState('1–3 weeks');
   const [dateRange, setDateRange] = useState('Next 9 months');
-  const [frequency, setFrequency] = useState<Frequency>('Weekly');
+  const [frequency, setFrequency] = useState<Frequency>('Monthly');
   const [email, setEmail] = useState('');
 
   useEffect(() => {
