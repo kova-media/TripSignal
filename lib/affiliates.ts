@@ -257,12 +257,24 @@ function buildDestinationDeepLink(vertical: AffiliateVertical, context: Affiliat
   if (vertical === 'trains_buses') {
     // Klook sells specific train routes, so a train search needs a
     // second city the traveler hasn't entered — an origin-only search
-    // silently substitutes Paris and errors out (verified Nov 24). The
-    // best destination-aware link is Klook's Europe rail search page
-    // (a working search form) for European destinations; elsewhere the
-    // generic Klook transport link stands.
+    // is not possible (verified Nov 24: it auto-fills Paris and the
+    // search errors). The best destination-aware link is Klook's Europe
+    // rail search page for European destinations, with the trip's
+    // departure date and passenger count prefilled (verified Nov 24:
+    // the date is accepted; the route still defaults to London-Paris
+    // and the traveler picks their real route). Elsewhere the generic
+    // Klook transport link stands.
     if (!europeanCountryCodes.has(countryCode)) return null;
-    return wrapKlookDeepLink('https://www.klook.com/en-US/rails-4/364891-europe/search/');
+    const search = new URL('https://www.klook.com/en-US/rails-4/364891-europe/search/');
+    if (context.departureDate) search.searchParams.set('departure_date', context.departureDate);
+    search.searchParams.set('departure_time', '08:00');
+    search.searchParams.set('passengers', JSON.stringify([{
+      count: Number(context.passengers) || 1,
+      passenger_type: 'adult',
+      name: 'Adult',
+      ages: [],
+    }]));
+    return wrapKlookDeepLink(search.toString());
   }
 
   if (vertical === 'sim') {
