@@ -23,6 +23,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const origin = request.nextUrl.searchParams.get('origin')?.trim() || undefined;
   const departureDate = request.nextUrl.searchParams.get('departureDate')?.trim() || undefined;
   const returnDate = request.nextUrl.searchParams.get('returnDate')?.trim() || undefined;
+  const rawPassengers = request.nextUrl.searchParams.get('passengers')?.trim() || undefined;
+  const passengers = rawPassengers && /^[1-9]$/.test(rawPassengers) ? rawPassengers : undefined;
   // Unvalidated ids used to 500 the whole redirect on a bad UUID. Only
   // well-formed UUIDs are ever attributed.
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -39,6 +41,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     origin,
     departureDate,
     returnDate,
+    passengers,
     alertId,
     signalId,
   });

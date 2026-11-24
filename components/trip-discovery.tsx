@@ -202,6 +202,7 @@ export default function TripDiscovery({ hideDestinationSearch = false }: { hideD
   const affiliateContext: AffiliateContext = {
     ...(typedDestination ? { destination: typedDestination } : {}),
     ...(origin ? { origin } : {}),
+    ...(passengers ? { passengers } : {}),
     // A specific date gives a real stay: check-in on that date, check-out
     // at the midpoint of the trip length. A window alone ("Next 3 months")
     // has no exact dates, so no dates are sent.

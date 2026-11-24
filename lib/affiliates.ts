@@ -7,6 +7,7 @@ export interface AffiliateContext {
   origin?: string;
   departureDate?: string;
   returnDate?: string;
+  passengers?: string;
   alertId?: string;
   signalId?: string;
 }
@@ -65,20 +66,36 @@ const destinationMetadataByIata: Record<string, { city: string; countryCode: str
   SYD: { city: 'Sydney', countryCode: 'AU' }, MEL: { city: 'Melbourne', countryCode: 'AU' }, AKL: { city: 'Auckland', countryCode: 'NZ' },
 };
 
-const klookHotelCityPages: Record<string, string> = {
-  amsterdam: '90-amsterdam-hotels',
-  bangkok: '27-bangkok-hotels',
-  barcelona: '108-barcelones-hotels',
-  budapest: '307-budapest-hotels',
-  london: '106-london-hotels',
-  paris: '107-paris-hotels',
-  prague: '333-prague-hotels',
-  rome: '92-rome-hotels',
-  seoul: '13-seoul-hotels',
-  tokyo: '28-tokyo-hotels',
-  vienna: '91-vienna-hotels',
-  warsaw: '351-warsaw-hotels',
+const klookHotelCities: Record<string, { id: number; page: string }> = {
+  amsterdam: { id: 90, page: '90-amsterdam-hotels' },
+  bangkok: { id: 27, page: '27-bangkok-hotels' },
+  barcelona: { id: 108, page: '108-barcelones-hotels' },
+  budapest: { id: 307, page: '307-budapest-hotels' },
+  london: { id: 106, page: '106-london-hotels' },
+  paris: { id: 107, page: '107-paris-hotels' },
+  prague: { id: 333, page: '333-prague-hotels' },
+  rome: { id: 92, page: '92-rome-hotels' },
+  seoul: { id: 13, page: '13-seoul-hotels' },
+  tokyo: { id: 28, page: '28-tokyo-hotels' },
+  vienna: { id: 91, page: '91-vienna-hotels' },
+  warsaw: { id: 351, page: '351-warsaw-hotels' },
 };
+
+// Klook deep link generated in Travelpayouts (Nov 24, 2026) for the
+// Barcelona hotels page. The old tpo.mx short link pointed at Klook's
+// generic /hotels/ page and dropped city/date params; this tp.media
+// wrapper carries the full Klook URL as `u`. Verified Nov 24: swapping
+// `u` to any of the 12 city pages above lands on that city's page with
+// tracking intact.
+function wrapKlookDeepLink(destinationUrl: string) {
+  const url = new URL('https://tp.media/r');
+  url.searchParams.set('campaign_id', '137');
+  url.searchParams.set('marker', travelpayoutsMarker);
+  url.searchParams.set('p', '4110');
+  url.searchParams.set('trs', '572527');
+  url.searchParams.set('u', destinationUrl);
+  return url.toString();
+}
 
 const kiwitaxiPromoId = '647';
 const travelpayoutsMarker = process.env.TRIPSIGNAL_TRAVELPOUTS_MARKER ?? '776063';
@@ -131,25 +148,30 @@ function buildDestinationDeepLink(vertical: AffiliateVertical, context: Affiliat
   if (!city || !countryCode) return null;
 
   if (vertical === 'hotels') {
-    const cityPage = klookHotelCityPages[city.toLowerCase()];
-    if (!cityPage) return null;
-    // Klook deep link generated in Travelpayouts (Nov 24, 2026) for the
-    // Barcelona hotels page. The old tpo.mx short link pointed at Klook's
-    // generic /hotels/ page and dropped city/date params; this tp.media
-    // wrapper carries the full city page as `u`. Verified Nov 24: swapping
-    // `u` to any of the 12 city pages above lands on that city's page with
-    // tracking intact, and checkin/checkout params on the destination
-    // survive to the final Klook URL.
-    const destination = new URL(`https://www.klook.com/hotels/city/${cityPage}/`);
-    if (context.departureDate) destination.searchParams.set('checkin', context.departureDate);
-    if (context.returnDate) destination.searchParams.set('checkout', context.returnDate);
-    const url = new URL('https://tp.media/r');
-    url.searchParams.set('campaign_id', '137');
-    url.searchParams.set('marker', travelpayoutsMarker);
-    url.searchParams.set('p', '4110');
-    url.searchParams.set('trs', '572527');
-    url.searchParams.set('u', destination.toString());
-    return url.toString();
+    const hotelCity = klookHotelCities[city.toLowerCase()];
+    if (!hotelCity) return null;
+    if (context.departureDate && context.returnDate) {
+      // With dates, link straight to Klook's search-results page: it is
+      // the only Klook URL that honors dates (check_in/check_out — found
+      // Nov 24 by picking dates on Klook and reading the resulting URL).
+      // The city page's date picker ignores URL dates entirely.
+      const adults = Math.max(1, Math.min(9, parseInt(context.passengers ?? '2', 10) || 2));
+      const results = new URL('https://www.klook.com/hotels/searchresult/');
+      results.searchParams.set('room_num', '1');
+      results.searchParams.set('adult_num', String(adults));
+      results.searchParams.set('child_num', '0');
+      results.searchParams.set('stype', 'city');
+      results.searchParams.set('svalue', String(hotelCity.id));
+      results.searchParams.set('override', city);
+      results.searchParams.set('title', city);
+      results.searchParams.set('check_in', context.departureDate);
+      results.searchParams.set('check_out', context.returnDate);
+      return wrapKlookDeepLink(results.toString());
+    }
+    // No dates (window-only alert): the city page, which fills in the
+    // destination; dates are picked on Klook.
+    const destination = new URL(`https://www.klook.com/hotels/city/${hotelCity.page}/`);
+    return wrapKlookDeepLink(destination.toString());
   }
 
   if (vertical === 'cars') {
