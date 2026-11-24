@@ -24,7 +24,7 @@ export default function SiteFooter({ className = '' }: { className?: string }) {
         <a href="/refunds">Refunds</a>
         <a href="/contact">Contact</a>
       </div>
-      <span>© 2026 TripSignal · <a href="https://myhomekansas.com" target="_blank" rel="noopener">My Home Kansas</a></span>
+      <span>© 2026 TripSignal</span>
     </footer>
   );
 }
