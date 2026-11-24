@@ -23,6 +23,7 @@ export default function SiteFooter({ className = '' }: { className?: string }) {
         <a href="/privacy">Privacy</a>
         <a href="/refunds">Refunds</a>
         <a href="/contact">Contact</a>
+        <a href="https://myhomekansas.com" target="_blank" rel="noopener">My Home Kansas</a>
       </div>
       <span>© 2026 TripSignal</span>
     </footer>
