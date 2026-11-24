@@ -82,6 +82,8 @@
   .home-page .pricing-tier-pro{border-left:0!important;border-top:1px solid var(--line)!important}
   .home-page .pricing-tier>strong{font-size:56px!important}
   .home-page .watch-row{grid-template-columns:1fr!important;gap:16px!important}
+  .home-page .watch-fare{grid-column:auto!important;grid-row:auto!important;text-align:left!important}
+  .home-page .watch-pill{grid-column:auto!important;grid-row:auto!important}
   .home-page .watch-pill{justify-self:center!important}
 }
 @media (max-width:600px){
