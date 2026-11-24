@@ -141,10 +141,10 @@
 }
 
 .trip-extra-icon svg {
-  width: 22px !important;
-  height: 22px !important;
+  width: 24px !important;
+  height: 24px !important;
   color: #fff !important;
-  stroke-width: 2.6;
+  stroke-width: 3.5;
 }
 
 .trip-extra-copy {
