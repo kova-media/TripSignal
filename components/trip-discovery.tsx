@@ -53,6 +53,29 @@ function cabinParam(cabin: string) {
   return cabin.toLowerCase();
 }
 
+// Same parsing as the create flow: a bare three-letter code ("BCN") or
+// the "City (BCN)" form a dropdown selection produces.
+function parseAirportCode(value: string) {
+  const trimmed = value.trim();
+  if (/^[A-Za-z]{3}$/.test(trimmed)) return trimmed.toUpperCase();
+  const match = trimmed.match(/\(([A-Za-z]{3})\)$/);
+  return match?.[1]?.toUpperCase() ?? '';
+}
+
+// Midpoint of the trip-length range, in nights, for hotel/car dates.
+function tripLengthNights(value: string) {
+  const match = value.match(/(\d+)\s*[–-]\s*(\d+)\s*(day|week)/);
+  if (!match) return 7;
+  const unit = match[3] === 'week' ? 7 : 1;
+  return Math.round(((Number(match[1]) + Number(match[2])) / 2) * unit);
+}
+
+function addDays(dateStr: string, days: number) {
+  const date = new Date(`${dateStr}T12:00:00`);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
 function AirportSearch({ label, value, code, onSelect, placeholder }: { label: string; value: string; code: string; onSelect: (airport: Airport) => void; placeholder: string }) {
   const [query, setQuery] = useState(value);
   const [results, setResults] = useState<Airport[]>([]);
@@ -115,6 +138,7 @@ export default function TripDiscovery({ hideDestinationSearch = false }: { hideD
   const [destinationMode, setDestinationMode] = useState<DestinationMode>('airport');
   const [region, setRegion] = useState('Europe');
   const [destinationAirport, setDestinationAirport] = useState('');
+  const [typedDestination, setTypedDestination] = useState('');
   const [destinationSearch, setDestinationSearch] = useState('');
   const [destinationCoordinate, setDestinationCoordinate] = useState<Coordinate | undefined>();
   const [cabin, setCabin] = useState('Premium economy');
@@ -137,6 +161,7 @@ export default function TripDiscovery({ hideDestinationSearch = false }: { hideD
         const airport = detail.airport;
         setDestinationMode('airport');
         setDestinationAirport(airport.iata_code);
+        setTypedDestination(airport.iata_code);
         setDestinationSearch(`${airport.municipality || airport.name} (${airport.iata_code})`);
         setDestinationCoordinate(
           airport.latitude != null && airport.longitude != null
@@ -149,6 +174,7 @@ export default function TripDiscovery({ hideDestinationSearch = false }: { hideD
       setDestinationMode('region');
       setDestinationSearch(detail.country.name);
       setDestinationAirport('');
+      setTypedDestination('');
       setDestinationCoordinate(undefined);
     };
 
@@ -156,13 +182,30 @@ export default function TripDiscovery({ hideDestinationSearch = false }: { hideD
     return () => window.removeEventListener('tripsignal:destination-change', handleDestinationChange);
   }, []);
 
+  // A typed code ("BCN", with no dropdown selection) never fires the
+  // destination-change event, so track the destination field directly.
+  // The extras section gates on this, so it appears as soon as a valid
+  // code is typed and disappears when the field is cleared.
+  useEffect(() => {
+    const handleInput = (event: Event) => {
+      const target = event.target as HTMLElement | null;
+      if (!target || target.id !== 'airport-destination') return;
+      setTypedDestination(parseAirportCode((target as HTMLInputElement).value));
+    };
+    document.addEventListener('input', handleInput);
+    return () => document.removeEventListener('input', handleInput);
+  }, []);
+
   const destinationCoordinates = destinationAirport ? (airportCoordinates[destinationAirport] ?? destinationCoordinate) : destinationCoordinate;
   const originCoordinates = origin ? (airportCoordinates[origin] ?? originCoordinate) : originCoordinate;
 
   const affiliateContext: AffiliateContext = {
-    ...(destinationAirport ? { destination: destinationAirport } : {}),
+    ...(typedDestination ? { destination: typedDestination } : {}),
     ...(origin ? { origin } : {}),
-    ...(specificDate ? { departureDate: specificDate, returnDate: specificDate } : {}),
+    // A specific date gives a real stay: check-in on that date, check-out
+    // at the midpoint of the trip length. A window alone ("Next 3 months")
+    // has no exact dates, so no dates are sent.
+    ...(specificDate ? { departureDate: specificDate, returnDate: addDays(specificDate, tripLengthNights(tripLength)) } : {}),
   };
 
   function buildWatch() {
@@ -198,7 +241,7 @@ export default function TripDiscovery({ hideDestinationSearch = false }: { hideD
         </div>
         <DiscoveryMap originCoordinates={originCoordinates} destinationCoordinates={destinationCoordinates} />
       </div>
-      <TripExtras context={affiliateContext} />
+      {typedDestination ? <TripExtras context={affiliateContext} /> : null}
     </section>
   );
 }

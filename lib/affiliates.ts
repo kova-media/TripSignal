@@ -68,6 +68,7 @@ const destinationMetadataByIata: Record<string, { city: string; countryCode: str
 const klookHotelCityIds: Record<string, number> = {
   amsterdam: 90,
   bangkok: 27,
+  barcelona: 108,
   budapest: 307,
   london: 106,
   paris: 107,
@@ -134,6 +135,8 @@ function buildDestinationDeepLink(vertical: AffiliateVertical, context: Affiliat
     if (!cityId) return null;
     const url = new URL(affiliateDestination);
     url.searchParams.set('city_id', String(cityId));
+    if (context.departureDate) url.searchParams.set('checkin', context.departureDate);
+    if (context.returnDate) url.searchParams.set('checkout', context.returnDate);
     return url.toString();
   }
 
