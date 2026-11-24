@@ -9,7 +9,6 @@ import FarePreview from '@/components/fare-preview';
 import styles from './trip-discovery-direct.module.css';
 
 type DiscoveryDirectProps = { children?: ReactNode; accountEmail?: string | null };
-type DestinationMode = 'country' | 'airport' | 'region';
 type TripType = 'round-trip' | 'one-way';
 
 function valueOf(root: HTMLElement, id: string) { const element = root.querySelector<HTMLInputElement | HTMLSelectElement>(`#${id}`); return element?.value.trim() ?? ''; }
@@ -29,7 +28,6 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [destinationMode, setDestinationMode] = useState<DestinationMode>('airport');
   const [tripType, setTripType] = useState<TripType>('round-trip');
   const [controlsHost, setControlsHost] = useState<HTMLElement | null>(null);
 
@@ -69,13 +67,12 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
     const root = event.currentTarget;
     const origin = airportCode(valueOf(root, 'airport-from'));
     const destinationInput = valueOf(root, 'airport-destination');
-    const countryCode = valueOf(root, 'discovery-country-code');
-    const destination = destinationMode === 'region' ? valueOf(root, 'destination-region') : destinationMode === 'country' ? countryCode : airportCode(destinationInput) || airportCode(valueOf(root, 'airport-to'));
+    const destination = airportCode(destinationInput) || airportCode(valueOf(root, 'airport-to'));
     const specificDate = valueOf(root, 'discovery-date');
     const dateRange = specificDate ? 'Custom dates' : valueOf(root, 'discovery-window');
     const email = accountEmail ?? valueOf(root, 'discovery-email');
     const cabin = selectedCabin(root);
-    const payload = { origin, destinationMode, destination, tripType, maxPrice: Number(valueOf(root, 'discovery-budget')), airlineMode: valueOf(root, 'discovery-airline'), maxStops: valueOf(root, 'discovery-stops'), tripLength: valueOf(root, 'discovery-trip-length'), dateRange, ...(specificDate ? { dateStart: specificDate, dateEnd: specificDate } : {}), frequency: valueOf(root, 'discovery-frequency'), cabin: cabinParam(cabin), passengers: Number(valueOf(root, 'discovery-passengers')), email };
+    const payload = { origin, destinationMode: 'airport', destination, tripType, maxPrice: Number(valueOf(root, 'discovery-budget')), airlineMode: valueOf(root, 'discovery-airline'), maxStops: valueOf(root, 'discovery-stops'), tripLength: valueOf(root, 'discovery-trip-length'), dateRange, ...(specificDate ? { dateStart: specificDate, dateEnd: specificDate } : {}), frequency: valueOf(root, 'discovery-frequency'), cabin: cabinParam(cabin), passengers: Number(valueOf(root, 'discovery-passengers')), email };
     setSubmitting(true); setSuccess(''); setError('');
     try {
       const response = await fetch('/api/alerts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -107,7 +104,7 @@ export default function TripDiscoveryDirect({ children, accountEmail }: Discover
     <div className={`${styles.wrapper}${accountEmail ? ' account-bound' : ''}${tripType === 'one-way' ? ` ${styles.oneWay}` : ''}`} data-trip-discovery-direct onClickCapture={handleClick} aria-busy={submitting}>
       <TripDiscovery hideDestinationSearch />
       {controlsHost && createPortal(<>{tripTypeSelector}</>, controlsHost)}
-      <DestinationChooser onModeChange={setDestinationMode} />
+      <DestinationChooser />
       <FarePreview />
       {success && <p className={`${styles.message} discovery-direct-success`} role="status">{success}</p>}
       {error && <p className={`${styles.message} ${styles.error} discovery-direct-error`} role="alert">{error}</p>}
