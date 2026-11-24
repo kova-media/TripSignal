@@ -47,10 +47,29 @@ const structuredData = {
 
 const themeScript = `(() => { try { const saved = localStorage.getItem('tripsignal-theme-v2'); document.documentElement.dataset.theme = saved === 'daylight' ? 'daylight' : 'redeye'; } catch { document.documentElement.dataset.theme = 'redeye'; } })();`;
 
+// Travelpayouts Drive (installed Nov 24, Damian approved) — exact snippet from
+// the Tripsignal project's Drive page (Manual installation). Loads
+// https://tp-em.com/NTcyNTI3.js?t=572527, which monetizes pages.
+const driveScript = `(function () { var script = document.createElement("script"); script.async = 1; script.setAttribute("data-cmp-ab","2"); script.src = 'https://tp-em.com/NTcyNTI3.js?t=572527'; document.head.appendChild(script); })();`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} /></head>
+      <head>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+        <script
+          {...({
+            nowprocket: '',
+            'data-noptimize': '1',
+            'data-cfasync': 'false',
+            'data-wpfc-render': 'false',
+            'seraph-accel-crit': '1',
+            'data-no-defer': '1',
+            'data-cmp-ab': '2',
+          } as any)}
+          dangerouslySetInnerHTML={{ __html: driveScript }}
+        />
+      </head>
       <body><script dangerouslySetInnerHTML={{ __html: themeScript }} />{children}</body>
     </html>
   );
