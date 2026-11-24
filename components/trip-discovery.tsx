@@ -27,8 +27,6 @@ const airlines = [
   { code: 'TP', name: 'TAP Air Portugal' }, { code: 'SK', name: 'SAS' }, { code: 'AY', name: 'Finnair' }, { code: 'TK', name: 'Turkish Airlines' },
 ];
 
-const cabinMax: Record<string, number> = { Economy: 2000, 'Premium economy': 2500, Business: 4000, 'First class': 6000 };
-
 const airportCoordinates: Record<string, Coordinate> = {
   MCI: [-94.7139, 39.2976], ATL: [-84.4277, 33.6407], BOS: [-71.0096, 42.3656], BWI: [-76.6684, 39.1754], CLT: [-80.9431, 35.214],
   DCA: [-77.0402, 38.8512], DEN: [-104.6737, 39.8561], DFW: [-97.0403, 32.8998], DTW: [-83.3534, 42.2162], EWR: [-74.1687, 40.6895],
@@ -158,7 +156,6 @@ export default function TripDiscovery({ hideDestinationSearch = false }: { hideD
     return () => window.removeEventListener('tripsignal:destination-change', handleDestinationChange);
   }, []);
 
-  const budgetValue = Number(budget) || 0;
   const destinationCoordinates = destinationAirport ? (airportCoordinates[destinationAirport] ?? destinationCoordinate) : destinationCoordinate;
   const originCoordinates = origin ? (airportCoordinates[origin] ?? originCoordinate) : originCoordinate;
 
@@ -187,15 +184,15 @@ export default function TripDiscovery({ hideDestinationSearch = false }: { hideD
           <AirportSearch label="From" value={originSearch} code={origin} onSelect={(airport) => { setOrigin(airport.iata_code); setOriginSearch(`${airport.municipality || airport.name} (${airport.iata_code})`); setOriginCoordinate(airport.latitude != null && airport.longitude != null ? [airport.longitude, airport.latitude] : undefined); }} placeholder="Search city or airport" />
           <div className="discovery-field"><label>Where</label><div className="discovery-options"><button type="button" className={destinationMode === 'region' ? 'active' : ''} onClick={() => setDestinationMode('region')}>Region</button><button type="button" className={destinationMode === 'airport' ? 'active' : ''} onClick={() => setDestinationMode('airport')}>Specific airport</button></div></div>
           {!hideDestinationSearch && (destinationMode === 'region' ? <div className="discovery-field"><label htmlFor="discovery-region">Region</label><select id="discovery-region" value={region} onChange={(event) => setRegion(event.target.value)}>{regions.map((item) => <option key={item} value={item}>{item}</option>)}</select></div> : <AirportSearch label="To" value={destinationSearch} code={destinationAirport} onSelect={(airport) => { setDestinationAirport(airport.iata_code); setDestinationSearch(`${airport.municipality || airport.name} (${airport.iata_code})`); setDestinationCoordinate(airport.latitude != null && airport.longitude != null ? [airport.longitude, airport.latitude] : undefined); }} placeholder="Search city or airport" />)}
-          <div className="discovery-field"><label>Budget</label><div className="discovery-range"><input id="discovery-budget" type="range" min="100" max={cabinMax[cabin] ?? 6000} step="50" value={budgetValue} onChange={(event) => setBudget(event.target.value)} /><output>${Number(budgetValue).toLocaleString()}</output></div></div>
+          <div className="discovery-field"><label htmlFor="discovery-budget">Budget</label><div className="input-prefix"><b>$</b><input id="discovery-budget" inputMode="numeric" value={budget} onChange={(event) => setBudget(event.target.value.replace(/[^0-9]/g, ''))} /></div></div>
           <div className="discovery-field"><label>Travel window</label><select id="discovery-window" value={dateRange} onChange={(event) => setDateRange(event.target.value)}><option>Next 3 months</option><option>Next 6 months</option><option>Next 9 months</option></select></div>
           <div className="discovery-field"><label>Specific date</label><input id="discovery-date" type="date" value={specificDate} onChange={(event) => setSpecificDate(event.target.value)} /></div>
-          <div className="discovery-field"><label>Cabin</label><div className="discovery-options discovery-cabin-options">{cabinOptions.map((item) => <button key={item} type="button" className={cabin === item ? 'active' : ''} onClick={() => { setCabin(item); if (Number(budget) > (cabinMax[item] ?? 6000)) setBudget(String(cabinMax[item] ?? 6000)); }}>{item}</button>)}</div></div>
+          <div className="discovery-field"><label>Cabin</label><div className="discovery-options discovery-cabin-options">{cabinOptions.map((item) => <button key={item} type="button" className={cabin === item ? 'active' : ''} onClick={() => setCabin(item)}>{item}</button>)}</div></div>
           <div className="discovery-field"><label htmlFor="discovery-passengers">Passengers</label><select id="discovery-passengers" value={passengers} onChange={(event) => setPassengers(event.target.value)}><option value="1">1 passenger</option><option value="2">2 passengers</option><option value="3">3 passengers</option><option value="4">4 passengers</option><option value="5">5 passengers</option><option value="6">6 passengers</option><option value="7">7 passengers</option><option value="8">8 passengers</option><option value="9">9 passengers</option></select></div>
           <div className="discovery-field"><label htmlFor="discovery-airline">Airline</label><select id="discovery-airline" value={airlineMode} onChange={(event) => setAirlineMode(event.target.value)}>{airlines.map((airline) => <option key={airline.code} value={airline.code}>{airline.name}</option>)}</select></div>
           <div className="discovery-field"><label htmlFor="discovery-stops">Stops</label><select id="discovery-stops" value={stops} onChange={(event) => setStops(event.target.value)}><option value="0">Nonstop</option><option value="1">1 stop max</option><option value="2">2 stops max</option><option value="any">Any</option></select></div>
           <div className="discovery-field"><label htmlFor="discovery-trip-length">Trip length</label><select id="discovery-trip-length" value={tripLength} onChange={(event) => setTripLength(event.target.value)}><option>3–7 days</option><option>1–2 weeks</option><option>1–3 weeks</option><option>1–4 weeks</option></select></div>
-          <div className="discovery-field"><label htmlFor="discovery-frequency">Check frequency</label><select id="discovery-frequency" value={frequency} onChange={(event) => setFrequency(event.target.value as Frequency)}><option>Daily</option><option>Weekly</option><option>Monthly</option></select></div>
+          <div className="discovery-field"><label htmlFor="discovery-frequency">Check frequency</label><select id="discovery-frequency" value={frequency} onChange={(event) => setFrequency(event.target.value as Frequency)}><option value="Daily">Daily (Pro)</option><option value="Weekly">Weekly (Pro)</option><option value="Monthly">Monthly</option></select></div>
           <div className="discovery-field discovery-email-field"><label htmlFor="discovery-email">Email</label><input id="discovery-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" /></div>
           <button type="button" className="button button-primary discovery-cta" onClick={buildWatch}>Start watching</button>
         </div>

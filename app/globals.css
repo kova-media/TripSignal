@@ -60,7 +60,8 @@ a { color: inherit; text-decoration: none; }
 .brand-compact .brand-symbol { width: 22px; height: 22px; }
 .brand-compact { font-size: 17px; }
 .nav-actions { display: flex; align-items: center; justify-content: flex-end; gap: 18px; color: var(--muted); font-size: 13px; min-width: 0; }
-.text-button, .text-link { color: var(--muted); }
+.text-button { background: transparent; border: 0; padding: 0; font: inherit; color: var(--muted); cursor: pointer; }
+.text-link { color: var(--muted); }
 .text-button:hover, .text-link:hover { color: var(--ink); }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 11px; border: 0; border-radius: 10px; padding: 13px 18px; font-size: 13px; font-weight: 600; transition: background-color .15s ease; white-space: nowrap; }
 .button:disabled { cursor: wait; opacity: .65; }

@@ -3,9 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-export type Mode = 'airport' | 'country';
+export type Mode = 'airport' | 'country' | 'region';
 export type Airport = { iata_code: string; name: string; municipality?: string; iso_country?: string; latitude?: number; longitude?: number };
 export type Country = { code: string; name: string };
+
+// Keep in sync with REGION_AIRPORTS in lib/flights/provider.ts (that
+// module pulls in the server-only flight client, so the list is mirrored
+// here rather than imported).
+const REGIONS = ['Europe', 'North America', 'South America', 'Asia', 'Africa', 'Middle East', 'Oceania'];
 export type DestinationSelection =
   | { mode: 'airport'; airport: Airport }
   | { mode: 'country'; country: Country };
@@ -21,6 +26,7 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
   const [countryQuery, setCountryQuery] = useState('');
   const [country, setCountry] = useState<Country | null>(null);
   const [countryResults, setCountryResults] = useState<Country[]>([]);
+  const [region, setRegion] = useState(REGIONS[0]!);
   const [open, setOpen] = useState(false);
   const airportRequestId = useRef(0);
   const countryRequestId = useRef(0);
@@ -87,8 +93,17 @@ export default function DestinationChooser({ onModeChange }: DestinationChooserP
       <div className="discovery-options">
         <button type="button" data-destination-mode="airport" className={mode === 'airport' ? 'active' : ''} onClick={() => { setMode('airport'); setOpen(false); }}>Specific airport</button>
         <button type="button" data-destination-mode="country" className={mode === 'country' ? 'active' : ''} onClick={() => { setMode('country'); setOpen(false); }}>Country</button>
+        <button type="button" data-destination-mode="region" className={mode === 'region' ? 'active' : ''} onClick={() => { setMode('region'); setOpen(false); }}>Region</button>
       </div>
-      {mode === 'airport' ? (
+      {mode === 'region' ? (
+        <div className="discovery-airport-search destination-chooser-search">
+          <label htmlFor="destination-region">Destination region</label>
+          <select id="destination-region" value={region} onChange={(event) => setRegion(event.target.value)} style={{ minHeight: 48, width: '100%', border: '1px solid var(--line-strong)', borderRadius: 12, background: 'var(--surface)', color: 'var(--ink)', padding: '0 14px', font: 'inherit', fontSize: 14, fontWeight: 600 }}>
+            {REGIONS.map((name) => <option key={name} value={name}>{name}</option>)}
+          </select>
+          <small>Flights into airports across the region</small>
+        </div>
+      ) : mode === 'airport' ? (
         <div className="discovery-airport-search destination-chooser-search">
           <label htmlFor="airport-destination">Destination</label>
           <input id="airport-destination" value={airportQuery} onChange={(event) => { setAirportQuery(event.target.value); setAirport(null); setOpen(true); }} onFocus={() => { if (airportQuery.trim().length >= 2) setOpen(true); }} onBlur={() => { window.setTimeout(() => setOpen(false), 150); }} placeholder="Search city or airport" autoComplete="off" aria-autocomplete="list" aria-expanded={open} />

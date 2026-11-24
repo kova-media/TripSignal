@@ -505,6 +505,10 @@ async function confirmRoundTrip(
   departureDate: string,
   returnDate: string,
   criteria: FlightSearchCriteria,
+  // A null override omits the price cap: used when confirming the
+  // cheapest date over the target, so the API returns the real fare
+  // instead of filtering it out.
+  maxPriceOverride?: number | null,
 ): Promise<FlightOffer | null> {
   const body: Record<string, unknown> = {
     from_airport: origin,
@@ -516,8 +520,8 @@ async function confirmRoundTrip(
     limit: 3,
     seat_type: cabinToSeatType(criteria.cabin),
     passengers: Array.from({ length: Math.min(Math.max(criteria.passengers, 1), 9) }, () => 1),
-    max_price: Math.ceil(criteria.maxPrice),
   };
+  if (maxPriceOverride !== null) body.max_price = Math.ceil(maxPriceOverride ?? criteria.maxPrice);
   if (criteria.maxStops !== null) {
     body.max_departure_stops = criteria.maxStops;
     body.max_return_stops = criteria.maxStops;
@@ -541,6 +545,7 @@ async function confirmOneWay(
   destination: string,
   departureDate: string,
   criteria: FlightSearchCriteria,
+  maxPriceOverride?: number | null,
 ): Promise<FlightOffer | null> {
   const body: Record<string, unknown> = {
     from_airport: origin,
@@ -551,8 +556,8 @@ async function confirmOneWay(
     limit: 3,
     seat_type: cabinToSeatType(criteria.cabin),
     passengers: Array.from({ length: Math.min(Math.max(criteria.passengers, 1), 9) }, () => 1),
-    max_price: Math.ceil(criteria.maxPrice),
   };
+  if (maxPriceOverride !== null) body.max_price = Math.ceil(maxPriceOverride ?? criteria.maxPrice);
   if (criteria.maxStops !== null) body.max_stops = criteria.maxStops;
   if (criteria.airlines.length > 0) body.airline_codes = criteria.airlines;
   const json = await flightPowersFetch(apiKey, '/oneway/v1', body);
@@ -633,27 +638,39 @@ class FlightPowersProvider implements FlightProvider {
     }
     await Promise.all(calendarJobs);
 
-    // Confirm only dates under the target, cheapest first, at most three
-    // per airport — a confirm is a second request, so this is what keeps
-    // a run inside the test plan's 2,000-request cap.
-    const qualifying = hits
-      .filter((hit) => hit.price < criteria.maxPrice)
-      .sort((a, b) => a.price - b.price);
+    // Confirm dates under the target, cheapest first, at most three per
+    // airport — a confirm is a second request, so this is what keeps a
+    // run inside the test plan's 2,000-request cap. Also confirm the
+    // cheapest date per airport even when it is over the target (with no
+    // price cap on that confirm): without it, an alert whose target sits
+    // below the cheapest fare returns nothing at all, no fare is ever
+    // recorded, and the dashboard can only ever say "No fare found yet".
+    // The over-target offer is recorded as the latest fare but never
+    // emailed — runAlertSearch still only signals fares under the target.
+    const sortedHits = [...hits].sort((a, b) => a.price - b.price);
     const seen = new Set<string>();
     const confirmedPerAirport = new Map<string, number>();
+    const cheapestConfirmed = new Set<string>();
     const offers: FlightOffer[] = [];
-    for (const hit of qualifying) {
+    for (const hit of sortedHits) {
       const key = `${hit.airport}|${hit.departureDate}|${hit.returnDate ?? ''}`;
       if (seen.has(key)) continue;
       seen.add(key);
       const confirmed = confirmedPerAirport.get(hit.airport) ?? 0;
-      if (confirmed >= 3) continue;
+      const underTarget = hit.price < criteria.maxPrice;
+      if (underTarget) {
+        if (confirmed >= 3) continue;
+      } else if (confirmed > 0 || cheapestConfirmed.has(hit.airport)) {
+        continue;
+      } else {
+        cheapestConfirmed.add(hit.airport);
+      }
       confirmedPerAirport.set(hit.airport, confirmed + 1);
       try {
         const offer = criteria.tripType === 'one-way'
-          ? await confirmOneWay(this.apiKey, criteria.origin, hit.airport, hit.departureDate, criteria)
+          ? await confirmOneWay(this.apiKey, criteria.origin, hit.airport, hit.departureDate, criteria, underTarget ? undefined : null)
           : hit.returnDate
-            ? await confirmRoundTrip(this.apiKey, criteria.origin, hit.airport, hit.departureDate, hit.returnDate, criteria)
+            ? await confirmRoundTrip(this.apiKey, criteria.origin, hit.airport, hit.departureDate, hit.returnDate, criteria, underTarget ? undefined : null)
             : null;
         if (offer) offers.push(offer);
       } catch (error) {
